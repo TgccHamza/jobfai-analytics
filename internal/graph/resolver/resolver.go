@@ -8,6 +8,7 @@ import (
 	"jobfai-analytics/internal/database"
 	"jobfai-analytics/internal/repositories"
 	"jobfai-analytics/internal/services"
+	"jobfai-analytics/internal/subscription"
 )
 
 type Resolver struct {
@@ -18,6 +19,7 @@ type Resolver struct {
 	ConstantParameterService *services.ConstantParameterService
 	StageService             *services.StageService
 	PlayerPerformanceService *services.PlayerPerformanceService
+	subscriptionManager      *subscription.Manager
 }
 
 // NewResolver creates a new resolver with database access and services
@@ -64,5 +66,6 @@ func NewResolver(db database.Service) *Resolver {
 		StageService:             stageService,
 		PlayerPerformanceService: playerPerformanceService,
 		ConstantParameterService: constantParamService,
+		subscriptionManager:      subscription.NewManager(),
 	}
 }

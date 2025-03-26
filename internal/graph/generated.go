@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"jobfai-analytics/internal/graph/model"
 	"jobfai-analytics/internal/models"
 	"strconv"
@@ -48,6 +49,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Stage() StageResolver
+	Subscription() SubscriptionResolver
 }
 
 type DirectiveRoot struct {
@@ -293,6 +295,36 @@ type ComplexityRoot struct {
 		StageName        func(childComplexity int) int
 		TimeTaken        func(childComplexity int) int
 	}
+
+	Subscription struct {
+		CompetenceCreated           func(childComplexity int, gameID *string) int
+		CompetenceDeleted           func(childComplexity int, competenceID *string) int
+		CompetenceMetricCreated     func(childComplexity int, competenceID *string) int
+		CompetenceMetricDeleted     func(childComplexity int, metricID *string) int
+		CompetenceMetricUpdated     func(childComplexity int, metricID *string) int
+		CompetenceUpdated           func(childComplexity int, competenceID *string) int
+		ConstantParameterCreated    func(childComplexity int, gameID *string) int
+		ConstantParameterDeleted    func(childComplexity int, constID *string) int
+		ConstantParameterUpdated    func(childComplexity int, constID *string) int
+		GameCreated                 func(childComplexity int) int
+		GameDeleted                 func(childComplexity int, gameID *string) int
+		GameMetricCreated           func(childComplexity int, gameID *string) int
+		GameMetricDeleted           func(childComplexity int, metricID *string) int
+		GameMetricParameterCreated  func(childComplexity int, metricID *string) int
+		GameMetricParameterDeleted  func(childComplexity int, paramID *string) int
+		GameMetricParameterUpdated  func(childComplexity int, paramID *string) int
+		GameMetricUpdated           func(childComplexity int, metricID *string) int
+		GameUpdated                 func(childComplexity int, gameID *string) int
+		MetricAssignedToStage       func(childComplexity int, stageID *string, metricID *string) int
+		MetricParameterCreated      func(childComplexity int, metricID *string) int
+		MetricParameterDeleted      func(childComplexity int, paramID *string) int
+		MetricParameterUpdated      func(childComplexity int, paramID *string) int
+		MetricRemovedFromStage      func(childComplexity int, stageID *string, metricID *string) int
+		PlayerPerformanceCalculated func(childComplexity int, playerID *string, gameID *string) int
+		StageCreated                func(childComplexity int, gameID *string) int
+		StageDeleted                func(childComplexity int, stageID *string) int
+		StageUpdated                func(childComplexity int, stageID *string) int
+	}
 }
 
 type CompetenceResolver interface {
@@ -377,6 +409,35 @@ type StageResolver interface {
 	OptimalTime(ctx context.Context, obj *models.Stage) (*int32, error)
 	CreatedAt(ctx context.Context, obj *models.Stage) (*string, error)
 	UpdatedAt(ctx context.Context, obj *models.Stage) (*string, error)
+}
+type SubscriptionResolver interface {
+	GameCreated(ctx context.Context) (<-chan *models.Game, error)
+	GameUpdated(ctx context.Context, gameID *string) (<-chan *models.Game, error)
+	GameDeleted(ctx context.Context, gameID *string) (<-chan *string, error)
+	CompetenceCreated(ctx context.Context, gameID *string) (<-chan *models.Competence, error)
+	CompetenceUpdated(ctx context.Context, competenceID *string) (<-chan *models.Competence, error)
+	CompetenceDeleted(ctx context.Context, competenceID *string) (<-chan *string, error)
+	CompetenceMetricCreated(ctx context.Context, competenceID *string) (<-chan *models.CompetenceMetric, error)
+	CompetenceMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.CompetenceMetric, error)
+	CompetenceMetricDeleted(ctx context.Context, metricID *string) (<-chan *string, error)
+	MetricParameterCreated(ctx context.Context, metricID *string) (<-chan *model.MetricParameter, error)
+	MetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *model.MetricParameter, error)
+	MetricParameterDeleted(ctx context.Context, paramID *string) (<-chan *string, error)
+	StageCreated(ctx context.Context, gameID *string) (<-chan *models.Stage, error)
+	StageUpdated(ctx context.Context, stageID *string) (<-chan *models.Stage, error)
+	StageDeleted(ctx context.Context, stageID *string) (<-chan *string, error)
+	MetricAssignedToStage(ctx context.Context, stageID *string, metricID *string) (<-chan *bool, error)
+	MetricRemovedFromStage(ctx context.Context, stageID *string, metricID *string) (<-chan *bool, error)
+	GameMetricCreated(ctx context.Context, gameID *string) (<-chan *models.GameMetric, error)
+	GameMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.GameMetric, error)
+	GameMetricDeleted(ctx context.Context, metricID *string) (<-chan *string, error)
+	GameMetricParameterCreated(ctx context.Context, metricID *string) (<-chan *models.GameMetricParameter, error)
+	GameMetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *models.GameMetricParameter, error)
+	GameMetricParameterDeleted(ctx context.Context, paramID *string) (<-chan *string, error)
+	ConstantParameterCreated(ctx context.Context, gameID *string) (<-chan *models.ConstantParameter, error)
+	ConstantParameterUpdated(ctx context.Context, constID *string) (<-chan *models.ConstantParameter, error)
+	ConstantParameterDeleted(ctx context.Context, constID *string) (<-chan *string, error)
+	PlayerPerformanceCalculated(ctx context.Context, playerID *string, gameID *string) (<-chan *model.PlayerPerformance, error)
 }
 
 type executableSchema struct {
@@ -1930,6 +1991,325 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StagePerformance.TimeTaken(childComplexity), true
 
+	case "Subscription.competenceCreated":
+		if e.complexity.Subscription.CompetenceCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceCreated(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.competenceDeleted":
+		if e.complexity.Subscription.CompetenceDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceDeleted(childComplexity, args["competenceId"].(*string)), true
+
+	case "Subscription.competenceMetricCreated":
+		if e.complexity.Subscription.CompetenceMetricCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceMetricCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceMetricCreated(childComplexity, args["competenceId"].(*string)), true
+
+	case "Subscription.competenceMetricDeleted":
+		if e.complexity.Subscription.CompetenceMetricDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceMetricDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceMetricDeleted(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.competenceMetricUpdated":
+		if e.complexity.Subscription.CompetenceMetricUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceMetricUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceMetricUpdated(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.competenceUpdated":
+		if e.complexity.Subscription.CompetenceUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_competenceUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CompetenceUpdated(childComplexity, args["competenceId"].(*string)), true
+
+	case "Subscription.constantParameterCreated":
+		if e.complexity.Subscription.ConstantParameterCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_constantParameterCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.ConstantParameterCreated(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.constantParameterDeleted":
+		if e.complexity.Subscription.ConstantParameterDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_constantParameterDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.ConstantParameterDeleted(childComplexity, args["constId"].(*string)), true
+
+	case "Subscription.constantParameterUpdated":
+		if e.complexity.Subscription.ConstantParameterUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_constantParameterUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.ConstantParameterUpdated(childComplexity, args["constId"].(*string)), true
+
+	case "Subscription.gameCreated":
+		if e.complexity.Subscription.GameCreated == nil {
+			break
+		}
+
+		return e.complexity.Subscription.GameCreated(childComplexity), true
+
+	case "Subscription.gameDeleted":
+		if e.complexity.Subscription.GameDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameDeleted(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.gameMetricCreated":
+		if e.complexity.Subscription.GameMetricCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricCreated(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.gameMetricDeleted":
+		if e.complexity.Subscription.GameMetricDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricDeleted(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.gameMetricParameterCreated":
+		if e.complexity.Subscription.GameMetricParameterCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricParameterCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricParameterCreated(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.gameMetricParameterDeleted":
+		if e.complexity.Subscription.GameMetricParameterDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricParameterDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricParameterDeleted(childComplexity, args["paramId"].(*string)), true
+
+	case "Subscription.gameMetricParameterUpdated":
+		if e.complexity.Subscription.GameMetricParameterUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricParameterUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricParameterUpdated(childComplexity, args["paramId"].(*string)), true
+
+	case "Subscription.gameMetricUpdated":
+		if e.complexity.Subscription.GameMetricUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameMetricUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameMetricUpdated(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.gameUpdated":
+		if e.complexity.Subscription.GameUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_gameUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.GameUpdated(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.metricAssignedToStage":
+		if e.complexity.Subscription.MetricAssignedToStage == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_metricAssignedToStage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MetricAssignedToStage(childComplexity, args["stageId"].(*string), args["metricId"].(*string)), true
+
+	case "Subscription.metricParameterCreated":
+		if e.complexity.Subscription.MetricParameterCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_metricParameterCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MetricParameterCreated(childComplexity, args["metricId"].(*string)), true
+
+	case "Subscription.metricParameterDeleted":
+		if e.complexity.Subscription.MetricParameterDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_metricParameterDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MetricParameterDeleted(childComplexity, args["paramId"].(*string)), true
+
+	case "Subscription.metricParameterUpdated":
+		if e.complexity.Subscription.MetricParameterUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_metricParameterUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MetricParameterUpdated(childComplexity, args["paramId"].(*string)), true
+
+	case "Subscription.metricRemovedFromStage":
+		if e.complexity.Subscription.MetricRemovedFromStage == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_metricRemovedFromStage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MetricRemovedFromStage(childComplexity, args["stageId"].(*string), args["metricId"].(*string)), true
+
+	case "Subscription.playerPerformanceCalculated":
+		if e.complexity.Subscription.PlayerPerformanceCalculated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_playerPerformanceCalculated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.PlayerPerformanceCalculated(childComplexity, args["playerId"].(*string), args["gameId"].(*string)), true
+
+	case "Subscription.stageCreated":
+		if e.complexity.Subscription.StageCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_stageCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.StageCreated(childComplexity, args["gameId"].(*string)), true
+
+	case "Subscription.stageDeleted":
+		if e.complexity.Subscription.StageDeleted == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_stageDeleted_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.StageDeleted(childComplexity, args["stageId"].(*string)), true
+
+	case "Subscription.stageUpdated":
+		if e.complexity.Subscription.StageUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_stageUpdated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.StageUpdated(childComplexity, args["stageId"].(*string)), true
+
 	}
 	return 0, false
 }
@@ -2001,6 +2381,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, opCtx.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -2503,6 +2900,55 @@ type BenchmarkComparison {
 # Custom scalar for JSON data
 scalar JSON
 scalar DateTime`, BuiltIn: false},
+	{Name: "../../schema-ql/subscription.graphqls", Input: `# Subscriptions
+type Subscription {
+  # Game Subscriptions
+  gameCreated: Game
+  gameUpdated(gameId: ID): Game
+  gameDeleted(gameId: ID): ID
+  
+  # Competence Subscriptions
+  competenceCreated(gameId: ID): Competence
+  competenceUpdated(competenceId: ID): Competence
+  competenceDeleted(competenceId: ID): ID
+  
+  # CompetenceMetric Subscriptions
+  competenceMetricCreated(competenceId: ID): CompetenceMetric
+  competenceMetricUpdated(metricId: ID): CompetenceMetric
+  competenceMetricDeleted(metricId: ID): ID
+  
+  # MetricParameter Subscriptions
+  metricParameterCreated(metricId: ID): MetricParameter
+  metricParameterUpdated(paramId: ID): MetricParameter
+  metricParameterDeleted(paramId: ID): ID
+  
+  # Stage Subscriptions
+  stageCreated(gameId: ID): Stage
+  stageUpdated(stageId: ID): Stage
+  stageDeleted(stageId: ID): ID
+  
+  # Stage-Metric Relationship Subscriptions
+  metricAssignedToStage(stageId: ID, metricId: ID): Boolean
+  metricRemovedFromStage(stageId: ID, metricId: ID): Boolean
+  
+  # GameMetric Subscriptions
+  gameMetricCreated(gameId: ID): GameMetric
+  gameMetricUpdated(metricId: ID): GameMetric
+  gameMetricDeleted(metricId: ID): ID
+  
+  # GameMetricParameter Subscriptions
+  gameMetricParameterCreated(metricId: ID): GameMetricParameter
+  gameMetricParameterUpdated(paramId: ID): GameMetricParameter
+  gameMetricParameterDeleted(paramId: ID): ID
+  
+  # ConstantParameter Subscriptions
+  constantParameterCreated(gameId: ID): ConstantParameter
+  constantParameterUpdated(constId: ID): ConstantParameter
+  constantParameterDeleted(constId: ID): ID
+  
+  # Player Performance Subscriptions
+  playerPerformanceCalculated(playerId: ID, gameId: ID): PlayerPerformance
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -3588,6 +4034,658 @@ func (ec *executionContext) field_Query_getStagesByGame_argsGameID(
 	}
 
 	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceCreated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceCreated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceDeleted_argsCompetenceID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["competenceId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceDeleted_argsCompetenceID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+	if tmp, ok := rawArgs["competenceId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceMetricCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceMetricCreated_argsCompetenceID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["competenceId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceMetricCreated_argsCompetenceID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+	if tmp, ok := rawArgs["competenceId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceMetricDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceMetricDeleted_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceMetricDeleted_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceMetricUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceMetricUpdated_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceMetricUpdated_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_competenceUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_competenceUpdated_argsCompetenceID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["competenceId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_competenceUpdated_argsCompetenceID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+	if tmp, ok := rawArgs["competenceId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_constantParameterCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_constantParameterCreated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_constantParameterCreated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_constantParameterDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_constantParameterDeleted_argsConstID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["constId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_constantParameterDeleted_argsConstID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("constId"))
+	if tmp, ok := rawArgs["constId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_constantParameterUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_constantParameterUpdated_argsConstID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["constId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_constantParameterUpdated_argsConstID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("constId"))
+	if tmp, ok := rawArgs["constId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameDeleted_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameDeleted_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricCreated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricCreated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricDeleted_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricDeleted_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricParameterCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricParameterCreated_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricParameterCreated_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricParameterDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricParameterDeleted_argsParamID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["paramId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricParameterDeleted_argsParamID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
+	if tmp, ok := rawArgs["paramId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricParameterUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricParameterUpdated_argsParamID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["paramId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricParameterUpdated_argsParamID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
+	if tmp, ok := rawArgs["paramId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameMetricUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameMetricUpdated_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameMetricUpdated_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_gameUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_gameUpdated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_gameUpdated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricAssignedToStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_metricAssignedToStage_argsStageID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["stageId"] = arg0
+	arg1, err := ec.field_Subscription_metricAssignedToStage_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_metricAssignedToStage_argsStageID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("stageId"))
+	if tmp, ok := rawArgs["stageId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricAssignedToStage_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricParameterCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_metricParameterCreated_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_metricParameterCreated_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricParameterDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_metricParameterDeleted_argsParamID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["paramId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_metricParameterDeleted_argsParamID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
+	if tmp, ok := rawArgs["paramId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricParameterUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_metricParameterUpdated_argsParamID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["paramId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_metricParameterUpdated_argsParamID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
+	if tmp, ok := rawArgs["paramId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricRemovedFromStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_metricRemovedFromStage_argsStageID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["stageId"] = arg0
+	arg1, err := ec.field_Subscription_metricRemovedFromStage_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_metricRemovedFromStage_argsStageID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("stageId"))
+	if tmp, ok := rawArgs["stageId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_metricRemovedFromStage_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_playerPerformanceCalculated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_playerPerformanceCalculated_argsPlayerID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["playerId"] = arg0
+	arg1, err := ec.field_Subscription_playerPerformanceCalculated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_playerPerformanceCalculated_argsPlayerID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("playerId"))
+	if tmp, ok := rawArgs["playerId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_playerPerformanceCalculated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_stageCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_stageCreated_argsGameID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["gameId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_stageCreated_argsGameID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+	if tmp, ok := rawArgs["gameId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_stageDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_stageDeleted_argsStageID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["stageId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_stageDeleted_argsStageID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("stageId"))
+	if tmp, ok := rawArgs["stageId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Subscription_stageUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Subscription_stageUpdated_argsStageID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["stageId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Subscription_stageUpdated_argsStageID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("stageId"))
+	if tmp, ok := rawArgs["stageId"]; ok {
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -13428,6 +14526,2201 @@ func (ec *executionContext) fieldContext_StagePerformance_completionStatus(_ con
 	return fc, nil
 }
 
+func (ec *executionContext) _Subscription_gameCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameCreated(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Game):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameCreated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "gameId":
+				return ec.fieldContext_Game_gameId(ctx, field)
+			case "gameName":
+				return ec.fieldContext_Game_gameName(ctx, field)
+			case "description":
+				return ec.fieldContext_Game_description(ctx, field)
+			case "active":
+				return ec.fieldContext_Game_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Game_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Game_updatedAt(ctx, field)
+			case "competencies":
+				return ec.fieldContext_Game_competencies(ctx, field)
+			case "stages":
+				return ec.fieldContext_Game_stages(ctx, field)
+			case "gameMetrics":
+				return ec.fieldContext_Game_gameMetrics(ctx, field)
+			case "constantParameters":
+				return ec.fieldContext_Game_constantParameters(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameUpdated(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Game):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "gameId":
+				return ec.fieldContext_Game_gameId(ctx, field)
+			case "gameName":
+				return ec.fieldContext_Game_gameName(ctx, field)
+			case "description":
+				return ec.fieldContext_Game_description(ctx, field)
+			case "active":
+				return ec.fieldContext_Game_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Game_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Game_updatedAt(ctx, field)
+			case "competencies":
+				return ec.fieldContext_Game_competencies(ctx, field)
+			case "stages":
+				return ec.fieldContext_Game_stages(ctx, field)
+			case "gameMetrics":
+				return ec.fieldContext_Game_gameMetrics(ctx, field)
+			case "constantParameters":
+				return ec.fieldContext_Game_constantParameters(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameDeleted(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceCreated(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Competence):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOCompetence2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "competenceId":
+				return ec.fieldContext_Competence_competenceId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Competence_gameId(ctx, field)
+			case "competenceKey":
+				return ec.fieldContext_Competence_competenceKey(ctx, field)
+			case "competenceName":
+				return ec.fieldContext_Competence_competenceName(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "description":
+				return ec.fieldContext_Competence_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Competence_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Competence_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Competence_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Competence_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Competence_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceUpdated(rctx, fc.Args["competenceId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Competence):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOCompetence2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "competenceId":
+				return ec.fieldContext_Competence_competenceId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Competence_gameId(ctx, field)
+			case "competenceKey":
+				return ec.fieldContext_Competence_competenceKey(ctx, field)
+			case "competenceName":
+				return ec.fieldContext_Competence_competenceName(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "description":
+				return ec.fieldContext_Competence_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Competence_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Competence_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Competence_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Competence_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Competence_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceDeleted(rctx, fc.Args["competenceId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceMetricCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceMetricCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceMetricCreated(rctx, fc.Args["competenceId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.CompetenceMetric):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceMetricCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metricId":
+				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+			case "metricKey":
+				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+			case "metricName":
+				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+			case "metricDescription":
+				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+			case "formula":
+				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+			case "weight":
+				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+			case "parameters":
+				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+			case "competence":
+				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
+			case "stages":
+				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceMetricCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceMetricUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceMetricUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceMetricUpdated(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.CompetenceMetric):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceMetricUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metricId":
+				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+			case "metricKey":
+				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+			case "metricName":
+				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+			case "metricDescription":
+				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+			case "formula":
+				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+			case "weight":
+				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+			case "parameters":
+				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+			case "competence":
+				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
+			case "stages":
+				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceMetricUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_competenceMetricDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_competenceMetricDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CompetenceMetricDeleted(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_competenceMetricDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_competenceMetricDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_metricParameterCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_metricParameterCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MetricParameterCreated(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.MetricParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_metricParameterCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "paramId":
+				return ec.fieldContext_MetricParameter_paramId(ctx, field)
+			case "metricId":
+				return ec.fieldContext_MetricParameter_metricId(ctx, field)
+			case "paramKey":
+				return ec.fieldContext_MetricParameter_paramKey(ctx, field)
+			case "paramName":
+				return ec.fieldContext_MetricParameter_paramName(ctx, field)
+			case "paramDescription":
+				return ec.fieldContext_MetricParameter_paramDescription(ctx, field)
+			case "paramType":
+				return ec.fieldContext_MetricParameter_paramType(ctx, field)
+			case "isRequired":
+				return ec.fieldContext_MetricParameter_isRequired(ctx, field)
+			case "defaultValue":
+				return ec.fieldContext_MetricParameter_defaultValue(ctx, field)
+			case "description":
+				return ec.fieldContext_MetricParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_MetricParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_MetricParameter_updatedAt(ctx, field)
+			case "metric":
+				return ec.fieldContext_MetricParameter_metric(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MetricParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_metricParameterCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_metricParameterUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_metricParameterUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MetricParameterUpdated(rctx, fc.Args["paramId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.MetricParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_metricParameterUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "paramId":
+				return ec.fieldContext_MetricParameter_paramId(ctx, field)
+			case "metricId":
+				return ec.fieldContext_MetricParameter_metricId(ctx, field)
+			case "paramKey":
+				return ec.fieldContext_MetricParameter_paramKey(ctx, field)
+			case "paramName":
+				return ec.fieldContext_MetricParameter_paramName(ctx, field)
+			case "paramDescription":
+				return ec.fieldContext_MetricParameter_paramDescription(ctx, field)
+			case "paramType":
+				return ec.fieldContext_MetricParameter_paramType(ctx, field)
+			case "isRequired":
+				return ec.fieldContext_MetricParameter_isRequired(ctx, field)
+			case "defaultValue":
+				return ec.fieldContext_MetricParameter_defaultValue(ctx, field)
+			case "description":
+				return ec.fieldContext_MetricParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_MetricParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_MetricParameter_updatedAt(ctx, field)
+			case "metric":
+				return ec.fieldContext_MetricParameter_metric(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MetricParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_metricParameterUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_metricParameterDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_metricParameterDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MetricParameterDeleted(rctx, fc.Args["paramId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_metricParameterDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_metricParameterDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_stageCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_stageCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().StageCreated(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Stage):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOStage2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_stageCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "stageId":
+				return ec.fieldContext_Stage_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Stage_gameId(ctx, field)
+			case "stageKey":
+				return ec.fieldContext_Stage_stageKey(ctx, field)
+			case "stageName":
+				return ec.fieldContext_Stage_stageName(ctx, field)
+			case "stageOrder":
+				return ec.fieldContext_Stage_stageOrder(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "description":
+				return ec.fieldContext_Stage_description(ctx, field)
+			case "optimalTime":
+				return ec.fieldContext_Stage_optimalTime(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Stage_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Stage_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Stage_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Stage_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Stage", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_stageCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_stageUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_stageUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().StageUpdated(rctx, fc.Args["stageId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.Stage):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOStage2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_stageUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "stageId":
+				return ec.fieldContext_Stage_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Stage_gameId(ctx, field)
+			case "stageKey":
+				return ec.fieldContext_Stage_stageKey(ctx, field)
+			case "stageName":
+				return ec.fieldContext_Stage_stageName(ctx, field)
+			case "stageOrder":
+				return ec.fieldContext_Stage_stageOrder(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "description":
+				return ec.fieldContext_Stage_description(ctx, field)
+			case "optimalTime":
+				return ec.fieldContext_Stage_optimalTime(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Stage_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Stage_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Stage_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Stage_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Stage", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_stageUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_stageDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_stageDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().StageDeleted(rctx, fc.Args["stageId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_stageDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_stageDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_metricAssignedToStage(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_metricAssignedToStage(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MetricAssignedToStage(rctx, fc.Args["stageId"].(*string), fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *bool):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_metricAssignedToStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_metricAssignedToStage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_metricRemovedFromStage(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_metricRemovedFromStage(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MetricRemovedFromStage(rctx, fc.Args["stageId"].(*string), fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *bool):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_metricRemovedFromStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_metricRemovedFromStage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricCreated(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.GameMetric):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metricId":
+				return ec.fieldContext_GameMetric_metricId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "metricKey":
+				return ec.fieldContext_GameMetric_metricKey(ctx, field)
+			case "metricName":
+				return ec.fieldContext_GameMetric_metricName(ctx, field)
+			case "metricDescription":
+				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "formula":
+				return ec.fieldContext_GameMetric_formula(ctx, field)
+			case "description":
+				return ec.fieldContext_GameMetric_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_GameMetric_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_GameMetric_updatedAt(ctx, field)
+			case "parameters":
+				return ec.fieldContext_GameMetric_parameters(ctx, field)
+			case "game":
+				return ec.fieldContext_GameMetric_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GameMetric", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricUpdated(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.GameMetric):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metricId":
+				return ec.fieldContext_GameMetric_metricId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "metricKey":
+				return ec.fieldContext_GameMetric_metricKey(ctx, field)
+			case "metricName":
+				return ec.fieldContext_GameMetric_metricName(ctx, field)
+			case "metricDescription":
+				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "formula":
+				return ec.fieldContext_GameMetric_formula(ctx, field)
+			case "description":
+				return ec.fieldContext_GameMetric_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_GameMetric_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_GameMetric_updatedAt(ctx, field)
+			case "parameters":
+				return ec.fieldContext_GameMetric_parameters(ctx, field)
+			case "game":
+				return ec.fieldContext_GameMetric_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GameMetric", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricDeleted(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricParameterCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricParameterCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricParameterCreated(rctx, fc.Args["metricId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.GameMetricParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricParameterCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "paramId":
+				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
+			case "metricId":
+				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
+			case "paramKey":
+				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
+			case "paramName":
+				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
+			case "paramDescription":
+				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
+			case "paramType":
+				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
+			case "isRequired":
+				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
+			case "defaultValue":
+				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
+			case "description":
+				return ec.fieldContext_GameMetricParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
+			case "metric":
+				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricParameterCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricParameterUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricParameterUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricParameterUpdated(rctx, fc.Args["paramId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.GameMetricParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricParameterUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "paramId":
+				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
+			case "metricId":
+				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
+			case "paramKey":
+				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
+			case "paramName":
+				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
+			case "paramDescription":
+				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
+			case "paramType":
+				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
+			case "isRequired":
+				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
+			case "defaultValue":
+				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
+			case "description":
+				return ec.fieldContext_GameMetricParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
+			case "metric":
+				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricParameterUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_gameMetricParameterDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_gameMetricParameterDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GameMetricParameterDeleted(rctx, fc.Args["paramId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_gameMetricParameterDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_gameMetricParameterDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_constantParameterCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_constantParameterCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().ConstantParameterCreated(rctx, fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.ConstantParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOConstantParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_constantParameterCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "constId":
+				return ec.fieldContext_ConstantParameter_constId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_ConstantParameter_gameId(ctx, field)
+			case "constKey":
+				return ec.fieldContext_ConstantParameter_constKey(ctx, field)
+			case "constName":
+				return ec.fieldContext_ConstantParameter_constName(ctx, field)
+			case "constDescription":
+				return ec.fieldContext_ConstantParameter_constDescription(ctx, field)
+			case "constValue":
+				return ec.fieldContext_ConstantParameter_constValue(ctx, field)
+			case "description":
+				return ec.fieldContext_ConstantParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_ConstantParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_ConstantParameter_updatedAt(ctx, field)
+			case "game":
+				return ec.fieldContext_ConstantParameter_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ConstantParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_constantParameterCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_constantParameterUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_constantParameterUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().ConstantParameterUpdated(rctx, fc.Args["constId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *models.ConstantParameter):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOConstantParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_constantParameterUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "constId":
+				return ec.fieldContext_ConstantParameter_constId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_ConstantParameter_gameId(ctx, field)
+			case "constKey":
+				return ec.fieldContext_ConstantParameter_constKey(ctx, field)
+			case "constName":
+				return ec.fieldContext_ConstantParameter_constName(ctx, field)
+			case "constDescription":
+				return ec.fieldContext_ConstantParameter_constDescription(ctx, field)
+			case "constValue":
+				return ec.fieldContext_ConstantParameter_constValue(ctx, field)
+			case "description":
+				return ec.fieldContext_ConstantParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_ConstantParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_ConstantParameter_updatedAt(ctx, field)
+			case "game":
+				return ec.fieldContext_ConstantParameter_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ConstantParameter", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_constantParameterUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_constantParameterDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_constantParameterDeleted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().ConstantParameterDeleted(rctx, fc.Args["constId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *string):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_constantParameterDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_constantParameterDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_playerPerformanceCalculated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_playerPerformanceCalculated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().PlayerPerformanceCalculated(rctx, fc.Args["playerId"].(*string), fc.Args["gameId"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.PlayerPerformance):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOPlayerPerformance2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐPlayerPerformance(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_playerPerformanceCalculated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "playerId":
+				return ec.fieldContext_PlayerPerformance_playerId(ctx, field)
+			case "playerName":
+				return ec.fieldContext_PlayerPerformance_playerName(ctx, field)
+			case "profileType":
+				return ec.fieldContext_PlayerPerformance_profileType(ctx, field)
+			case "gameDate":
+				return ec.fieldContext_PlayerPerformance_gameDate(ctx, field)
+			case "gameId":
+				return ec.fieldContext_PlayerPerformance_gameId(ctx, field)
+			case "totalScore":
+				return ec.fieldContext_PlayerPerformance_totalScore(ctx, field)
+			case "totalTimeTaken":
+				return ec.fieldContext_PlayerPerformance_totalTimeTaken(ctx, field)
+			case "competenceDetails":
+				return ec.fieldContext_PlayerPerformance_competenceDetails(ctx, field)
+			case "stagePerformance":
+				return ec.fieldContext_PlayerPerformance_stagePerformance(ctx, field)
+			case "globalMetrics":
+				return ec.fieldContext_PlayerPerformance_globalMetrics(ctx, field)
+			case "benchmarkComparison":
+				return ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PlayerPerformance", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_playerPerformanceCalculated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Directive_name(ctx, field)
 	if err != nil {
@@ -18575,6 +21868,78 @@ func (ec *executionContext) _StagePerformance(ctx context.Context, sel ast.Selec
 	}
 
 	return out
+}
+
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "gameCreated":
+		return ec._Subscription_gameCreated(ctx, fields[0])
+	case "gameUpdated":
+		return ec._Subscription_gameUpdated(ctx, fields[0])
+	case "gameDeleted":
+		return ec._Subscription_gameDeleted(ctx, fields[0])
+	case "competenceCreated":
+		return ec._Subscription_competenceCreated(ctx, fields[0])
+	case "competenceUpdated":
+		return ec._Subscription_competenceUpdated(ctx, fields[0])
+	case "competenceDeleted":
+		return ec._Subscription_competenceDeleted(ctx, fields[0])
+	case "competenceMetricCreated":
+		return ec._Subscription_competenceMetricCreated(ctx, fields[0])
+	case "competenceMetricUpdated":
+		return ec._Subscription_competenceMetricUpdated(ctx, fields[0])
+	case "competenceMetricDeleted":
+		return ec._Subscription_competenceMetricDeleted(ctx, fields[0])
+	case "metricParameterCreated":
+		return ec._Subscription_metricParameterCreated(ctx, fields[0])
+	case "metricParameterUpdated":
+		return ec._Subscription_metricParameterUpdated(ctx, fields[0])
+	case "metricParameterDeleted":
+		return ec._Subscription_metricParameterDeleted(ctx, fields[0])
+	case "stageCreated":
+		return ec._Subscription_stageCreated(ctx, fields[0])
+	case "stageUpdated":
+		return ec._Subscription_stageUpdated(ctx, fields[0])
+	case "stageDeleted":
+		return ec._Subscription_stageDeleted(ctx, fields[0])
+	case "metricAssignedToStage":
+		return ec._Subscription_metricAssignedToStage(ctx, fields[0])
+	case "metricRemovedFromStage":
+		return ec._Subscription_metricRemovedFromStage(ctx, fields[0])
+	case "gameMetricCreated":
+		return ec._Subscription_gameMetricCreated(ctx, fields[0])
+	case "gameMetricUpdated":
+		return ec._Subscription_gameMetricUpdated(ctx, fields[0])
+	case "gameMetricDeleted":
+		return ec._Subscription_gameMetricDeleted(ctx, fields[0])
+	case "gameMetricParameterCreated":
+		return ec._Subscription_gameMetricParameterCreated(ctx, fields[0])
+	case "gameMetricParameterUpdated":
+		return ec._Subscription_gameMetricParameterUpdated(ctx, fields[0])
+	case "gameMetricParameterDeleted":
+		return ec._Subscription_gameMetricParameterDeleted(ctx, fields[0])
+	case "constantParameterCreated":
+		return ec._Subscription_constantParameterCreated(ctx, fields[0])
+	case "constantParameterUpdated":
+		return ec._Subscription_constantParameterUpdated(ctx, fields[0])
+	case "constantParameterDeleted":
+		return ec._Subscription_constantParameterDeleted(ctx, fields[0])
+	case "playerPerformanceCalculated":
+		return ec._Subscription_playerPerformanceCalculated(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
 }
 
 var __DirectiveImplementors = []string{"__Directive"}

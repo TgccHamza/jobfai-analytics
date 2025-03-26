@@ -274,3 +274,6 @@ type StageUpdateInput struct {
 	Description *string  `json:"description,omitempty"`
 	OptimalTime *int32   `json:"optimalTime,omitempty"`
 }
+
+type Subscription struct {
+}

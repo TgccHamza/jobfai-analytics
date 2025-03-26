@@ -34,6 +34,7 @@ func (r *mutationResolver) CreateGame(ctx context.Context, input model.GameInput
 		return nil, fmt.Errorf("failed to create game: %w", err)
 	}
 
+	r.subscriptionManager.Publish("game:created", game)
 	return game, nil
 }
 
@@ -66,6 +67,10 @@ func (r *mutationResolver) UpdateGame(ctx context.Context, input model.GameUpdat
 		return nil, fmt.Errorf("failed to update game: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("game:updated", game)
+	r.subscriptionManager.Publish(fmt.Sprintf("game:updated:%s", game.GameID), game)
+
 	return game, nil
 }
 
@@ -75,6 +80,10 @@ func (r *mutationResolver) DeleteGame(ctx context.Context, gameID string) (*bool
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete game: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("game:deleted", &gameID)
+	r.subscriptionManager.Publish(fmt.Sprintf("game:deleted:%s", gameID), &gameID)
 
 	success := true
 	return &success, nil
@@ -95,6 +104,10 @@ func (r *mutationResolver) CreateCompetence(ctx context.Context, input model.Com
 	if err != nil {
 		return nil, fmt.Errorf("failed to create competence: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("competence:created", competence)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence:created:%s", competence.GameID), competence)
 
 	return competence, nil
 }
@@ -139,6 +152,10 @@ func (r *mutationResolver) UpdateCompetence(ctx context.Context, input model.Com
 		return nil, fmt.Errorf("failed to update competence: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("competence:updated", competence)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence:updated:%s", input.CompetenceID), competence)
+
 	return competence, nil
 }
 
@@ -153,6 +170,10 @@ func (r *mutationResolver) DeleteCompetence(ctx context.Context, competenceID st
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete competence: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("competence:deleted", &competenceID)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence:deleted:%s", competenceID), &competenceID)
 
 	success := true
 	return &success, nil
@@ -178,6 +199,10 @@ func (r *mutationResolver) CreateCompetenceMetric(ctx context.Context, input mod
 	if err != nil {
 		return nil, fmt.Errorf("failed to create competence metric: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("competence_metric:created", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence_metric:created:%s", input.CompetenceID), metric)
 
 	return metric, nil
 }
@@ -222,6 +247,10 @@ func (r *mutationResolver) UpdateCompetenceMetric(ctx context.Context, input mod
 		return nil, fmt.Errorf("failed to update competence metric: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("competence_metric:updated", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence_metric:updated:%s", input.MetricID), metric)
+
 	return metric, nil
 }
 
@@ -236,6 +265,10 @@ func (r *mutationResolver) DeleteCompetenceMetric(ctx context.Context, metricID 
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete competence metric: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("competence_metric:deleted", &metricID)
+	r.subscriptionManager.Publish(fmt.Sprintf("competence_metric:deleted:%s", metricID), &metricID)
 
 	success := true
 	return &success, nil
@@ -272,6 +305,10 @@ func (r *mutationResolver) CreateMetricParameter(ctx context.Context, input mode
 		ParamType:   &input.ParamType,
 		IsRequired:  &parameter.IsRequired,
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("metric_parameter:created", result)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric_parameter:created:%s", input.MetricID), result)
 
 	return result, nil
 }
@@ -330,6 +367,10 @@ func (r *mutationResolver) UpdateMetricParameter(ctx context.Context, input mode
 		IsRequired:  &parameter.IsRequired,
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("metric_parameter:updated", result)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric_parameter:updated:%s", input.ParamID), result)
+
 	return result, nil
 }
 
@@ -344,6 +385,10 @@ func (r *mutationResolver) DeleteMetricParameter(ctx context.Context, paramID st
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete metric parameter: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("metric_parameter:deleted", &paramID)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric_parameter:deleted:%s", paramID), &paramID)
 
 	success := true
 	return &success, nil
@@ -363,6 +408,10 @@ func (r *mutationResolver) CreateStage(ctx context.Context, input model.StageInp
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stage: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("stage:created", stage)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage:created:%s", input.GameID), stage)
 
 	return stage, nil
 }
@@ -404,6 +453,10 @@ func (r *mutationResolver) UpdateStage(ctx context.Context, input model.StageUpd
 		return nil, fmt.Errorf("failed to update stage: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("stage:updated", stage)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage:updated:%s", input.StageID), stage)
+
 	return stage, nil
 }
 
@@ -418,6 +471,10 @@ func (r *mutationResolver) DeleteStage(ctx context.Context, stageID string) (*bo
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete stage: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("stage:deleted", &stageID)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage:deleted:%s", stageID), &stageID)
 
 	success := true
 	return &success, nil
@@ -440,6 +497,21 @@ func (r *mutationResolver) AssignMetricToStage(ctx context.Context, input model.
 		return nil, fmt.Errorf("failed to assign metric to stage: %w", err)
 	}
 
+	// Publish assignment event
+	assignmentEvent := struct {
+		StageID  string
+		MetricID string
+		Assigned bool
+	}{
+		StageID:  input.StageID,
+		MetricID: input.MetricID,
+		Assigned: true,
+	}
+
+	r.subscriptionManager.Publish("metric:assigned_to_stage", &assignmentEvent)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric:assigned_to_stage:%s", input.StageID), &assignmentEvent)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric:assigned_to_stage:%s:%s", input.StageID, input.MetricID), &assignmentEvent)
+
 	success := true
 	return &success, nil
 }
@@ -461,6 +533,21 @@ func (r *mutationResolver) RemoveMetricFromStage(ctx context.Context, input mode
 		return nil, fmt.Errorf("failed to remove metric from stage: %w", err)
 	}
 
+	// Publish removal event
+	removalEvent := struct {
+		StageID  string
+		MetricID string
+		Removed  bool
+	}{
+		StageID:  input.StageID,
+		MetricID: input.MetricID,
+		Removed:  true,
+	}
+
+	r.subscriptionManager.Publish("metric:removed_from_stage", &removalEvent)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric:removed_from_stage:%s", input.StageID), &removalEvent)
+	r.subscriptionManager.Publish(fmt.Sprintf("metric:removed_from_stage:%s:%s", input.StageID, input.MetricID), &removalEvent)
+
 	success := true
 	return &success, nil
 }
@@ -479,6 +566,10 @@ func (r *mutationResolver) CreateGameMetric(ctx context.Context, input model.Gam
 	if err != nil {
 		return nil, fmt.Errorf("failed to create game metric: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("game_metric:created", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric:created:%s", input.GameID), metric)
 
 	return metric, nil
 }
@@ -520,6 +611,10 @@ func (r *mutationResolver) UpdateGameMetric(ctx context.Context, input model.Gam
 		return nil, fmt.Errorf("failed to update game metric: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("game_metric:updated", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric:updated:%s", input.MetricID), metric)
+
 	return metric, nil
 }
 
@@ -534,6 +629,10 @@ func (r *mutationResolver) DeleteGameMetric(ctx context.Context, metricID string
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete game metric: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("game_metric:deleted", &metricID)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric:deleted:%s", metricID), &metricID)
 
 	success := true
 	return &success, nil
@@ -559,6 +658,10 @@ func (r *mutationResolver) CreateGameMetricParameter(ctx context.Context, input 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create game metric parameter: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("game_metric_parameter:created", parameter)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric_parameter:created:%s", input.MetricID), parameter)
 
 	return parameter, nil
 }
@@ -603,6 +706,10 @@ func (r *mutationResolver) UpdateGameMetricParameter(ctx context.Context, input 
 		return nil, fmt.Errorf("failed to update game metric parameter: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("game_metric_parameter:updated", parameter)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric_parameter:updated:%s", input.ParamID), parameter)
+
 	return parameter, nil
 }
 
@@ -617,6 +724,10 @@ func (r *mutationResolver) DeleteGameMetricParameter(ctx context.Context, paramI
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete game metric parameter: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("game_metric_parameter:deleted", &paramID)
+	r.subscriptionManager.Publish(fmt.Sprintf("game_metric_parameter:deleted:%s", paramID), &paramID)
 
 	success := true
 	return &success, nil
@@ -636,6 +747,10 @@ func (r *mutationResolver) CreateConstantParameter(ctx context.Context, input mo
 	if err != nil {
 		return nil, fmt.Errorf("failed to create constant parameter: %w", err)
 	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("constant_parameter:created", constant)
+	r.subscriptionManager.Publish(fmt.Sprintf("constant_parameter:created:%s", input.GameID), constant)
 
 	return constant, nil
 }
@@ -677,6 +792,10 @@ func (r *mutationResolver) UpdateConstantParameter(ctx context.Context, input mo
 		return nil, fmt.Errorf("failed to update constant parameter: %w", err)
 	}
 
+	// Publish update event
+	r.subscriptionManager.Publish("constant_parameter:updated", constant)
+	r.subscriptionManager.Publish(fmt.Sprintf("constant_parameter:updated:%s", input.ConstID), constant)
+
 	return constant, nil
 }
 
@@ -691,6 +810,10 @@ func (r *mutationResolver) DeleteConstantParameter(ctx context.Context, constID 
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete constant parameter: %w", err)
 	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("constant_parameter:deleted", &constID)
+	r.subscriptionManager.Publish(fmt.Sprintf("constant_parameter:deleted:%s", constID), &constID)
 
 	success := true
 	return &success, nil
