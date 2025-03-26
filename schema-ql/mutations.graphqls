@@ -1,0 +1,42 @@
+
+# Mutations
+type Mutation {
+  # Admin Mutations
+  createGame(input: GameInput!): Game
+  updateGame(input: GameUpdateInput!): Game
+  deleteGame(gameId: ID!): Boolean
+
+  createCompetence(input: CompetenceInput!): Competence
+  updateCompetence(input: CompetenceUpdateInput!): Competence
+  deleteCompetence(competenceId: ID!): Boolean
+
+  createCompetenceMetric(input: CompetenceMetricInput!): CompetenceMetric
+  updateCompetenceMetric(input: CompetenceMetricUpdateInput!): CompetenceMetric
+  deleteCompetenceMetric(metricId: ID!): Boolean
+
+  createMetricParameter(input: MetricParameterInput!): MetricParameter
+  updateMetricParameter(input: MetricParameterUpdateInput!): MetricParameter
+  deleteMetricParameter(paramId: ID!): Boolean
+
+  createStage(input: StageInput!): Stage
+  updateStage(input: StageUpdateInput!): Stage
+  deleteStage(stageId: ID!): Boolean
+
+  assignMetricToStage(input: StageMetricInput!): Boolean
+  removeMetricFromStage(input: StageMetricInput!): Boolean
+
+  createGameMetric(input: GameMetricInput!): GameMetric
+  updateGameMetric(input: GameMetricUpdateInput!): GameMetric
+  deleteGameMetric(metricId: ID!): Boolean
+
+  createGameMetricParameter(input: GameMetricParameterInput!): GameMetricParameter
+  updateGameMetricParameter(input: GameMetricParameterUpdateInput!): GameMetricParameter
+  deleteGameMetricParameter(paramId: ID!): Boolean
+
+  createConstantParameter(input: ConstantParameterInput!): ConstantParameter
+  updateConstantParameter(input: ConstantParameterUpdateInput!): ConstantParameter
+  deleteConstantParameter(constId: ID!): Boolean
+
+  # Player Mutations
+  calculatePlayerPerformance(input: PlayerPerformanceInput!): PlayerPerformance
+}

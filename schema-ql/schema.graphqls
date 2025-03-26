@@ -1,0 +1,201 @@
+# Base Types
+type Game {
+  gameId: ID!
+  gameName: String
+  description: String
+  active: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  competencies: [Competence]
+  stages: [Stage]
+  gameMetrics: [GameMetric]
+  constantParameters: [ConstantParameter]
+}
+
+type Competence {
+  competenceId: ID!
+  gameId: ID
+  competenceKey: String
+  competenceName: String
+  benchmark: Float
+  description: String
+  weight: Float
+  createdAt: DateTime
+  updatedAt: DateTime
+  metrics: [CompetenceMetric]
+  game: Game
+}
+
+type CompetenceMetric {
+  metricId: ID!
+  competenceId: ID
+  metricKey: String
+  metricName: String
+  metricDescription: String
+  benchmark: Float
+  formula: String
+  weight: Float
+  createdAt: DateTime
+  updatedAt: DateTime
+  parameters: [MetricParameter]
+  competence: Competence
+  stages: [Stage]
+}
+
+type MetricParameter {
+  paramId: ID!
+  metricId: ID
+  paramKey: String
+  paramName: String
+  paramDescription: String
+  paramType: ParameterType
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  metric: CompetenceMetric
+}
+
+type Stage {
+  stageId: ID!
+  gameId: ID
+  stageKey: String
+  stageName: String
+  stageOrder: Int
+  benchmark: Float
+  description: String
+  optimalTime: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+  metrics: [CompetenceMetric]
+  game: Game
+}
+
+type GameMetric {
+  metricId: ID!
+  gameId: ID
+  metricKey: String
+  metricName: String
+  metricDescription: String
+  benchmark: String
+  formula: String
+  description: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  parameters: [GameMetricParameter]
+  game: Game
+}
+
+type GameMetricParameter {
+  paramId: ID!
+  metricId: ID
+  paramKey: String
+  paramName: String
+  paramDescription: String
+  paramType: ParameterType
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  metric: GameMetric
+}
+
+type ConstantParameter {
+  constId: ID!
+  gameId: ID
+  constKey: String
+  constName: String
+  constDescription: String
+  constValue: Float
+  description: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  game: Game
+}
+
+enum ParameterType {
+  INTEGER
+  DECIMAL
+  BOOLEAN
+  STRING
+  CONSTANT
+  GLOBAL
+}
+
+# Player Performance Types
+type PlayerPerformance {
+  playerId: ID!
+  playerName: String
+  profileType: String
+  gameDate: DateTime
+  gameId: ID!
+  totalScore: Float
+  totalTimeTaken: Float
+  competenceDetails: [CompetenceDetail]
+  stagePerformance: [StagePerformance]
+  globalMetrics: GlobalMetrics
+  benchmarkComparison: BenchmarkComparison
+}
+
+type CompetenceDetail {
+  competenceKey: String!
+  name: String
+  score: Float
+  benchmark: Float
+  weight: Float
+  metrics: [MetricResult]
+}
+
+type MetricResult {
+  kpiId: String!
+  kpiName: String
+  value: Float
+  benchmark: Float
+}
+
+type StagePerformance {
+  stageId: ID!
+  stageName: String
+  metrics: [StageMetricResult]
+  timeTaken: Float
+  optimalTime: Float
+  score: Float
+  benchmark: Float
+  completionStatus: String
+}
+
+type StageMetricResult {
+  kpiId: String!
+  kpiName: String
+  category: String
+  value: Float
+  benchmark: Float
+  formula: String
+  rawData: JSON
+}
+
+type GlobalMetrics {
+  timeEfficiency: GlobalMetricResult
+  autonomy: GlobalMetricResult
+  errorRecovery: GlobalMetricResult
+  stressPerformance: GlobalMetricResult
+  consistency: GlobalMetricResult
+  adaptability: GlobalMetricResult
+}
+
+type GlobalMetricResult {
+  value: Float
+  formula: String
+}
+
+type BenchmarkComparison {
+  percentileRank: Int
+  relativeToBenchmark: String
+  benchmarkScore: Float
+}
+
+# Custom scalar for JSON data
+scalar JSON
+scalar DateTime

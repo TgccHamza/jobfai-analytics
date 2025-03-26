@@ -1,0 +1,178 @@
+# Input Types
+input GameInput {
+  gameName: String!
+  description: String
+  active: Boolean
+}
+
+input GameUpdateInput {
+  gameId: ID!
+  gameName: String
+  description: String
+  active: Boolean
+}
+
+input CompetenceInput {
+  gameId: ID!
+  competenceKey: String!
+  competenceName: String!
+  benchmark: Float
+  description: String
+  weight: Float
+}
+
+input CompetenceUpdateInput {
+  competenceId: ID!
+  competenceKey: String
+  competenceName: String
+  benchmark: Float
+  description: String
+  weight: Float
+}
+
+input CompetenceMetricInput {
+  competenceId: ID!
+  metricKey: String!
+  metricName: String!
+  metricDescription: String
+  benchmark: Float
+  formula: String!
+  weight: Float
+}
+
+input CompetenceMetricUpdateInput {
+  metricId: ID!
+  metricKey: String
+  metricName: String
+  metricDescription: String
+  benchmark: Float
+  formula: String
+  weight: Float
+}
+
+input MetricParameterInput {
+  metricId: ID!
+  paramKey: String!
+  paramName: String!
+  paramDescription: String
+  paramType: ParameterType!
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+}
+
+input MetricParameterUpdateInput {
+  paramId: ID!
+  paramKey: String
+  paramName: String
+  paramDescription: String
+  paramType: ParameterType
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+}
+
+input StageInput {
+  gameId: ID!
+  stageKey: String!
+  stageName: String!
+  stageOrder: Int!
+  benchmark: Float
+  description: String
+  optimalTime: Int
+}
+
+input StageUpdateInput {
+  stageId: ID!
+  stageKey: String
+  stageName: String
+  stageOrder: Int
+  benchmark: Float
+  description: String
+  optimalTime: Int
+}
+
+input StageMetricInput {
+  stageId: ID!
+  metricId: ID!
+}
+
+input GameMetricInput {
+  gameId: ID!
+  metricKey: String!
+  metricName: String!
+  metricDescription: String
+  benchmark: String
+  formula: String!
+  description: String
+}
+
+input GameMetricUpdateInput {
+  metricId: ID!
+  metricKey: String
+  metricName: String
+  metricDescription: String
+  benchmark: String
+  formula: String
+  description: String
+}
+
+input GameMetricParameterInput {
+  metricId: ID!
+  paramKey: String!
+  paramName: String!
+  paramDescription: String
+  paramType: ParameterType!
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+}
+
+input GameMetricParameterUpdateInput {
+  paramId: ID!
+  paramKey: String
+  paramName: String
+  paramDescription: String
+  paramType: ParameterType
+  isRequired: Boolean
+  defaultValue: String
+  description: String
+}
+
+input ConstantParameterInput {
+  gameId: ID!
+  constKey: String!
+  constName: String!
+  constDescription: String
+  constValue: Float!
+  description: String
+}
+
+input ConstantParameterUpdateInput {
+  constId: ID!
+  constKey: String
+  constName: String
+  constDescription: String
+  constValue: Float
+  description: String
+}
+
+# Player Performance Input
+input PlayerPerformanceInput {
+  playerId: ID!
+  playerName: String!
+  profileType: String
+  gameId: ID!
+  stageParameters: [StageParametersInput!]!
+}
+
+input StageParametersInput {
+  stageId: ID!
+  parameters: [ParameterValueInput!]!
+  timeTaken: Float!
+}
+
+input ParameterValueInput {
+  paramId: ID!
+  value: JSON!
+}

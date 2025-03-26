@@ -2,15 +2,18 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/joho/godotenv/autoload"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+
+	"jobfai-analytics/internal/models"
 )
 
 // Service represents a service that interacts with a database.
@@ -22,10 +25,15 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	// AutoMigrate creates or updates database tables based on models
+	AutoMigrate() error
+
+	DB() *gorm.DB
 }
 
 type service struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
 var (
@@ -43,21 +51,76 @@ func New() Service {
 		return dbInstance
 	}
 
-	// Opening a driver typically will not attempt to connect to the database.
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbname))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		username, password, host, port, dbname)
+
+	log.Printf("Connecting to database with DSN: %s", dsn)
+
+	// Configure GORM logger
+	gormLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second,  // Slow SQL threshold
+			LogLevel:                  logger.Error, // Log level (Silent, Error, Warn, Info)
+			IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error
+			Colorful:                  true,         // Enable color
+		},
+	)
+
+	// Open connection to database
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: gormLogger,
+	})
 	if err != nil {
-		// This will not be a connection error, but a DSN parse error or
-		// another initialization error.
 		log.Fatal(err)
 	}
-	db.SetConnMaxLifetime(0)
-	db.SetMaxIdleConns(50)
-	db.SetMaxOpenConns(50)
+
+	// Configure connection pool
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sqlDB.SetMaxIdleConns(50)
+	sqlDB.SetMaxOpenConns(50)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	dbInstance = &service{
 		db: db,
 	}
 	return dbInstance
+}
+
+// AutoMigrate creates or updates database tables based on the defined models
+func (s *service) AutoMigrate() error {
+	log.Println("Running database migrations...")
+	s.db.Config.DisableForeignKeyConstraintWhenMigrating = true
+	// Define migration order explicitly
+	migrationOrder := []interface{}{
+		&models.Game{},
+		&models.Competence{},
+		&models.Stage{},
+		&models.GameMetric{},
+		&models.CompetenceMetric{},
+		&models.StageMetric{},
+		&models.CompetenceMetricParameter{},
+		&models.GameMetricParameter{},
+		&models.ConstantParameter{},
+	}
+
+	// Migrate models in order
+	for _, model := range migrationOrder {
+		if err := s.db.AutoMigrate(model); err != nil {
+			return fmt.Errorf("failed to migrate %T: %w", model, err)
+		}
+		log.Printf("Migrated model: %T", model)
+	}
+
+	log.Println("Database migrations completed successfully")
+	return nil
+}
+
+func (s *service) DB() *gorm.DB {
+	return s.db
 }
 
 // Health checks the health of the database connection by pinging the database.
@@ -68,8 +131,17 @@ func (s *service) Health() map[string]string {
 
 	stats := make(map[string]string)
 
+	// Get the underlying SQL DB
+	sqlDB, err := s.db.DB()
+	if err != nil {
+		stats["status"] = "down"
+		stats["error"] = fmt.Sprintf("db down: %v", err)
+		log.Fatalf(fmt.Sprintf("db down: %v", err)) // Log the error and terminate the program
+		return stats
+	}
+
 	// Ping the database
-	err := s.db.PingContext(ctx)
+	err = sqlDB.PingContext(ctx)
 	if err != nil {
 		stats["status"] = "down"
 		stats["error"] = fmt.Sprintf("db down: %v", err)
@@ -82,7 +154,7 @@ func (s *service) Health() map[string]string {
 	stats["message"] = "It's healthy"
 
 	// Get database stats (like open connections, in use, idle, etc.)
-	dbStats := s.db.Stats()
+	dbStats := sqlDB.Stats()
 	stats["open_connections"] = strconv.Itoa(dbStats.OpenConnections)
 	stats["in_use"] = strconv.Itoa(dbStats.InUse)
 	stats["idle"] = strconv.Itoa(dbStats.Idle)
@@ -116,5 +188,9 @@ func (s *service) Health() map[string]string {
 // If an error occurs while closing the connection, it returns the error.
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", dbname)
-	return s.db.Close()
+	sqlDB, err := s.db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
 }

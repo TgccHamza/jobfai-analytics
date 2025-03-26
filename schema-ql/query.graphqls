@@ -1,0 +1,26 @@
+# Queries
+type Query {
+  # Admin Queries
+  getGames: [Game]
+  getGameById(gameId: ID!): Game
+  getCompetenciesByGame(gameId: ID!): [Competence]
+  getCompetenceById(competenceId: ID!): Competence
+  getMetricsByCompetence(competenceId: ID!): [CompetenceMetric]
+  getMetricById(metricId: ID!): CompetenceMetric
+  getParametersByMetric(metricId: ID!): [MetricParameter]
+  getStagesByGame(gameId: ID!): [Stage]
+  getStageById(stageId: ID!): Stage
+  getMetricsByStage(stageId: ID!): [CompetenceMetric]
+  getGameMetricsByGame(gameId: ID!): [GameMetric]
+  getGameMetricById(metricId: ID!): GameMetric
+  getParametersByGameMetric(metricId: ID!): [GameMetricParameter]
+  getConstantsByGame(gameId: ID!): [ConstantParameter]
+  getConstantById(constId: ID!): ConstantParameter
+
+  # Player Queries
+  getGameConfiguration(gameId: ID!): Game
+  getRequiredParametersForGame(gameId: ID!): [Stage]
+  getRequiredParametersForStage(stageId: ID!): [MetricParameter]
+  getGameFormulas(gameId: ID!): Game
+  getBenchmarkData(gameId: ID!): Game
+}
