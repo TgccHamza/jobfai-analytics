@@ -210,7 +210,7 @@ type ComplexityRoot struct {
 		DeleteGameMetricParameter  func(childComplexity int, paramID string) int
 		DeleteMetricParameter      func(childComplexity int, paramID string) int
 		DeleteStage                func(childComplexity int, stageID string) int
-		RemoveMetricFromStage      func(childComplexity int, stageMetricID string) int
+		RemoveMetricFromStage      func(childComplexity int, input model.StageMetricInput) int
 		UpdateCompetence           func(childComplexity int, input model.CompetenceUpdateInput) int
 		UpdateCompetenceMetric     func(childComplexity int, input model.CompetenceMetricUpdateInput) int
 		UpdateConstantParameter    func(childComplexity int, input model.ConstantParameterUpdateInput) int
@@ -337,7 +337,7 @@ type MutationResolver interface {
 	UpdateStage(ctx context.Context, input model.StageUpdateInput) (*models.Stage, error)
 	DeleteStage(ctx context.Context, stageID string) (*bool, error)
 	AssignMetricToStage(ctx context.Context, input model.StageMetricInput) (*bool, error)
-	RemoveMetricFromStage(ctx context.Context, stageMetricID string) (*bool, error)
+	RemoveMetricFromStage(ctx context.Context, input model.StageMetricInput) (*bool, error)
 	CreateGameMetric(ctx context.Context, input model.GameMetricInput) (*models.GameMetric, error)
 	UpdateGameMetric(ctx context.Context, input model.GameMetricUpdateInput) (*models.GameMetric, error)
 	DeleteGameMetric(ctx context.Context, metricID string) (*bool, error)
@@ -1331,7 +1331,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RemoveMetricFromStage(childComplexity, args["stageMetricId"].(string)), true
+		return e.complexity.Mutation.RemoveMetricFromStage(childComplexity, args["input"].(model.StageMetricInput)), true
 
 	case "Mutation.updateCompetence":
 		if e.complexity.Mutation.UpdateCompetence == nil {
@@ -2152,7 +2152,6 @@ input StageUpdateInput {
 input StageMetricInput {
   stageId: ID!
   metricId: ID!
-  competenceId: ID!
 }
 
 input GameMetricInput {
@@ -2259,7 +2258,7 @@ type Mutation {
   deleteStage(stageId: ID!): Boolean
 
   assignMetricToStage(input: StageMetricInput!): Boolean
-  removeMetricFromStage(stageMetricId: ID!): Boolean
+  removeMetricFromStage(input: StageMetricInput!): Boolean
 
   createGameMetric(input: GameMetricInput!): GameMetric
   updateGameMetric(input: GameMetricUpdateInput!): GameMetric
@@ -2928,23 +2927,23 @@ func (ec *executionContext) field_Mutation_deleteStage_argsStageID(
 func (ec *executionContext) field_Mutation_removeMetricFromStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Mutation_removeMetricFromStage_argsStageMetricID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_removeMetricFromStage_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["stageMetricId"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_removeMetricFromStage_argsStageMetricID(
+func (ec *executionContext) field_Mutation_removeMetricFromStage_argsInput(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("stageMetricId"))
-	if tmp, ok := rawArgs["stageMetricId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+) (model.StageMetricInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricInput(ctx, tmp)
 	}
 
-	var zeroVal string
+	var zeroVal model.StageMetricInput
 	return zeroVal, nil
 }
 
@@ -9352,7 +9351,7 @@ func (ec *executionContext) _Mutation_removeMetricFromStage(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveMetricFromStage(rctx, fc.Args["stageMetricId"].(string))
+		return ec.resolvers.Mutation().RemoveMetricFromStage(rctx, fc.Args["input"].(model.StageMetricInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16462,7 +16461,7 @@ func (ec *executionContext) unmarshalInputStageMetricInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"stageId", "metricId", "competenceId"}
+	fieldsInOrder := [...]string{"stageId", "metricId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16483,13 +16482,6 @@ func (ec *executionContext) unmarshalInputStageMetricInput(ctx context.Context, 
 				return it, err
 			}
 			it.MetricID = data
-		case "competenceId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CompetenceID = data
 		}
 	}
 

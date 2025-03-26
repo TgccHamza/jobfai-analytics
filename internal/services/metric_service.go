@@ -196,12 +196,12 @@ func (s *MetricService) CreateGameMetric(metric *models.GameMetric) error {
 		return errors.New("game ID, metric key, and name are required")
 	}
 
-	// Validate formula
-	if metric.Formula != "" {
-		if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
-			return fmt.Errorf("invalid formula: %w", err)
-		}
-	}
+	// // Validate formula
+	// if metric.Formula != "" {
+	// 	if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
+	// 		return fmt.Errorf("invalid formula: %w", err)
+	// 	}
+	// }
 
 	return s.gameMetricRepository.Create(metric)
 }
@@ -222,11 +222,11 @@ func (s *MetricService) UpdateGameMetric(metric *models.GameMetric) error {
 	}
 
 	// Validate formula
-	if metric.Formula != "" {
-		if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
-			return fmt.Errorf("invalid formula: %w", err)
-		}
-	}
+	// if metric.Formula != "" {
+	// 	if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
+	// 		return fmt.Errorf("invalid formula: %w", err)
+	// 	}
+	// }
 
 	return s.gameMetricRepository.Update(metric)
 }

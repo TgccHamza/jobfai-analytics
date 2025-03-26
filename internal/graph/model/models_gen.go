@@ -234,9 +234,8 @@ type StageInput struct {
 }
 
 type StageMetricInput struct {
-	StageID      string `json:"stageId"`
-	MetricID     string `json:"metricId"`
-	CompetenceID string `json:"competenceId"`
+	StageID  string `json:"stageId"`
+	MetricID string `json:"metricId"`
 }
 
 type StageMetricResult struct {

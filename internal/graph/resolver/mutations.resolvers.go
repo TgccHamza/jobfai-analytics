@@ -445,13 +445,13 @@ func (r *mutationResolver) AssignMetricToStage(ctx context.Context, input model.
 }
 
 // RemoveMetricFromStage is the resolver for the removeMetricFromStage field.
-func (r *mutationResolver) RemoveMetricFromStage(ctx context.Context, stageID, metricID string) (*bool, error) {
-	stage_id, err := strconv.Atoi(stageID)
+func (r *mutationResolver) RemoveMetricFromStage(ctx context.Context, input model.StageMetricInput) (*bool, error) {
+	stage_id, err := strconv.Atoi(input.StageID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid stage metric ID format: %w", err)
 	}
 
-	metric_id, err := strconv.Atoi(metricID)
+	metric_id, err := strconv.Atoi(input.MetricID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid stage metric ID format: %w", err)
 	}
