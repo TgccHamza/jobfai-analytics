@@ -42,20 +42,6 @@ func (s *StageService) GetStageByID(stageID int) (*models.Stage, error) {
 	return stage, nil
 }
 
-// GetStageWithMetrics retrieves a stage with all its metrics
-func (s *StageService) GetStageWithMetrics(stageID int) (*models.Stage, error) {
-	stage, err := s.stageRepository.FindWithMetrics(stageID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving stage with metrics: %w", err)
-	}
-
-	if stage == nil {
-		return nil, errors.New("stage not found")
-	}
-
-	return stage, nil
-}
-
 // CreateStage creates a new stage
 func (s *StageService) CreateStage(stage *models.Stage) error {
 	if stage.GameID == "" || stage.StageKey == "" || stage.StageName == "" {
@@ -99,7 +85,7 @@ func (s *StageService) DeleteStage(stageID int) error {
 
 // AssociateMetricWithStage associates a metric with a stage
 func (s *StageService) AssociateMetricWithStage(stageID, metricID int) error {
-	stageMetric := &models.StageMetric{
+	stageMetric := &models.Metric{
 		StageID:  stageID,
 		MetricID: metricID,
 	}
@@ -113,7 +99,7 @@ func (s *StageService) RemoveMetricFromStage(stageID, metricID int) error {
 }
 
 // GetStageMetrics retrieves all metrics associated with a stage
-func (s *StageService) GetStageMetrics(stageID int) ([]models.CompetenceMetric, error) {
+func (s *StageService) GetStageMetrics(stageID int) ([]models.Metric, error) {
 	// First get all stage-metric associations
 	stageMetrics, err := s.stageMetricRepository.FindByStage(stageID)
 	if err != nil {
@@ -122,7 +108,7 @@ func (s *StageService) GetStageMetrics(stageID int) ([]models.CompetenceMetric, 
 
 	// If no metrics are associated, return empty slice
 	if len(stageMetrics) == 0 {
-		return []models.CompetenceMetric{}, nil
+		return []models.Metric{}, nil
 	}
 
 	// Extract metric IDs to fetch the actual metrics
@@ -146,40 +132,8 @@ func (s *StageService) GetStageMetrics(stageID int) ([]models.CompetenceMetric, 
 	return metrics, nil
 }
 
-// GetStagesWithRequiredParameters retrieves all stages for a game with their required parameters
-func (s *StageService) GetStagesWithRequiredParameters(gameID string) ([]models.Stage, error) {
-	// First, get all stages for the game
-	stages, err := s.stageRepository.FindByGame(gameID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving stages: %w", err)
-	}
-
-	// If no stages found, return empty slice
-	if len(stages) == 0 {
-		return []models.Stage{}, nil
-	}
-
-	// For each stage, load its required parameters
-	result := make([]models.Stage, len(stages))
-	for i, stage := range stages {
-		// Get the stage with required parameters
-		stageWithParams, err := s.stageRepository.FindWithRequiredParameters(stage.StageID)
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving stage parameters: %w", err)
-		}
-
-		if stageWithParams != nil {
-			result[i] = *stageWithParams
-		} else {
-			result[i] = stage
-		}
-	}
-
-	return result, nil
-}
-
 // GetRequiredParametersForStage retrieves all required parameters for a stage
-func (s *StageService) GetRequiredParametersForStage(stageID int) ([]models.CompetenceMetricParameter, error) {
+func (s *StageService) GetRequiredParametersForStage(stageID int) ([]models.MetricParameter, error) {
 	// Get all metrics associated with the stage
 	stageMetrics, err := s.stageMetricRepository.FindByStage(stageID)
 	if err != nil {
@@ -188,33 +142,33 @@ func (s *StageService) GetRequiredParametersForStage(stageID int) ([]models.Comp
 
 	// If no metrics are associated, return empty slice
 	if len(stageMetrics) == 0 {
-		return []models.CompetenceMetricParameter{}, nil
+		return []models.MetricParameter{}, nil
 	}
 
 	// Collect all required parameters from all metrics
-	var allParameters []models.CompetenceMetricParameter
+	var allParameters []models.MetricParameter
 
-	for _, sm := range stageMetrics {
-		// For each metric, get its required parameters
-		metricID := sm.MetricID
+	// for _, sm := range stageMetrics {
+	// 	// For each metric, get its required parameters
+	// 	metricID := sm.MetricID
 
-		// Use the metric parameter repository to get required parameters
-		// Since we don't have direct access to it, we'll need to use the competence metric repository
-		// to get the metric first, then extract its parameters
-		metric, err := s.competenceMetricRepository.FindWithParameters(metricID)
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving metric parameters: %w", err)
-		}
+	// 	// Use the metric parameter repository to get required parameters
+	// 	// Since we don't have direct access to it, we'll need to use the competence metric repository
+	// 	// to get the metric first, then extract its parameters
+	// 	metric, err := s.competenceMetricRepository.FindWithParameters(metricID)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error retrieving metric parameters: %w", err)
+	// 	}
 
-		if metric != nil && len(metric.Parameters) > 0 {
-			// Filter for required parameters only
-			for _, param := range metric.Parameters {
-				if param.IsRequired {
-					allParameters = append(allParameters, param)
-				}
-			}
-		}
-	}
+	// 	if metric != nil && len(metric.Parameters) > 0 {
+	// 		// Filter for required parameters only
+	// 		for _, param := range metric.Parameters {
+	// 			if param.IsRequired {
+	// 				allParameters = append(allParameters, param)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	return allParameters, nil
 }

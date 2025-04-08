@@ -37,6 +37,7 @@ type service struct {
 }
 
 var (
+	dsn        = os.Getenv("AZURE_MYSQL_CONNECTIONSTRING")
 	dbname     = os.Getenv("BLUEPRINT_DB_DATABASE")
 	password   = os.Getenv("BLUEPRINT_DB_PASSWORD")
 	username   = os.Getenv("BLUEPRINT_DB_USERNAME")
@@ -51,9 +52,10 @@ func New() Service {
 		return dbInstance
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		username, password, host, port, dbname)
-
+	if dsn == "" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			username, password, host, port, dbname)
+	}
 	log.Printf("Connecting to database with DSN: %s", dsn)
 
 	// Configure GORM logger
@@ -99,11 +101,8 @@ func (s *service) AutoMigrate() error {
 		&models.Game{},
 		&models.Competence{},
 		&models.Stage{},
-		&models.GameMetric{},
-		&models.CompetenceMetric{},
-		&models.StageMetric{},
-		&models.CompetenceMetricParameter{},
-		&models.GameMetricParameter{},
+		&models.Metric{},
+		&models.MetricParameter{},
 		&models.ConstantParameter{},
 	}
 

@@ -45,17 +45,3 @@ func (r *CompetenceRepository) FindByGame(gameID string) ([]models.Competence, e
 	err := r.db.Where("game_id = ?", gameID).Order("competence_name ASC").Find(&competencies).Error
 	return competencies, err
 }
-
-func (r *CompetenceRepository) FindWithMetrics(competenceID int) (*models.Competence, error) {
-	var competence models.Competence
-	err := r.db.Preload("Metrics.Parameters").
-		First(&competence, "competence_id = ?", competenceID).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &competence, nil
-}

@@ -42,20 +42,6 @@ func (s *GameService) GetGameByID(gameID string) (*models.Game, error) {
 	return game, nil
 }
 
-// GetGameWithFullConfiguration retrieves a game with all its configuration
-func (s *GameService) GetGameWithFullConfiguration(gameID string) (*models.Game, error) {
-	game, err := s.gameRepository.FindWithFullConfiguration(gameID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving game configuration: %w", err)
-	}
-
-	if game == nil {
-		return nil, errors.New("game not found")
-	}
-
-	return game, nil
-}
-
 // CreateGame creates a new game
 func (s *GameService) CreateGame(game *models.Game) error {
 	if game.GameID == "" || game.GameName == "" {

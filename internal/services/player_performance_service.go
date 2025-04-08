@@ -79,8 +79,8 @@ func (s *PlayerPerformanceService) CalculatePlayerPerformance(input PlayerPerfor
 		return nil, err
 	}
 
-	// Get game configuration
-	game, err := s.gameRepository.FindWithFullConfiguration(input.GameID)
+	// // Get game configuration
+	game, err := s.gameRepository.FindByID(input.GameID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game: %w", err)
 	}
@@ -155,81 +155,81 @@ func (s *PlayerPerformanceService) calculateStagePerformance(
 ) ([]map[string]interface{}, error) {
 	stagePerformance := make([]map[string]interface{}, 0)
 
-	for _, stageData := range stageParameters {
-		stage, err := s.stageRepository.FindWithMetrics(stageData.StageID)
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving stage: %w", err)
-		}
+	// for _, stageData := range stageParameters {
+	// 	stage, err := s.stageRepository.FindWithMetrics(stageData.StageID)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error retrieving stage: %w", err)
+	// 	}
 
-		if stage == nil {
-			continue
-		}
+	// 	if stage == nil {
+	// 		continue
+	// 	}
 
-		stageMetrics := make([]map[string]interface{}, 0)
+	// 	stageMetrics := make([]map[string]interface{}, 0)
 
-		for _, stageMetric := range stage.Metrics {
-			metric, err := s.competenceMetricRepository.FindWithParameters(stageMetric.MetricID)
-			if err != nil {
-				return nil, fmt.Errorf("error retrieving metric: %w", err)
-			}
+	// 	for _, stageMetric := range stage.Metrics {
+	// 		metric, err := s.competenceMetricRepository.FindWithParameters(stageMetric.MetricID)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("error retrieving metric: %w", err)
+	// 		}
 
-			if metric == nil {
-				continue
-			}
+	// 		if metric == nil {
+	// 			continue
+	// 		}
 
-			competence, err := s.competenceRepository.FindByID(stageMetric.CompetenceID)
-			if err != nil {
-				return nil, fmt.Errorf("error retrieving competence: %w", err)
-			}
+	// 		competence, err := s.competenceRepository.FindByID(stageMetric.CompetenceID)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("error retrieving competence: %w", err)
+	// 		}
 
-			if competence == nil {
-				continue
-			}
+	// 		if competence == nil {
+	// 			continue
+	// 		}
 
-			metricResult, err := s.metricCalculator.CalculateCompetenceMetric(
-				metric,
-				stageData.Parameters,
-				constants,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("error calculating metric: %w", err)
-			}
+	// 		metricResult, err := s.metricCalculator.CalculateCompetenceMetric(
+	// 			metric,
+	// 			stageData.Parameters,
+	// 			constants,
+	// 		)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("error calculating metric: %w", err)
+	// 		}
 
-			stageMetrics = append(stageMetrics, map[string]interface{}{
-				"kpiId":     metric.MetricKey,
-				"kpiName":   metric.MetricName,
-				"category":  competence.CompetenceKey,
-				"value":     metricResult["value"],
-				"benchmark": metric.Benchmark,
-				"formula":   metric.Formula,
-				"rawData":   metricResult["rawData"],
-			})
-		}
+	// 		stageMetrics = append(stageMetrics, map[string]interface{}{
+	// 			"kpiId":     metric.MetricKey,
+	// 			"kpiName":   metric.MetricName,
+	// 			"category":  competence.CompetenceKey,
+	// 			"value":     metricResult["value"],
+	// 			"benchmark": metric.Benchmark,
+	// 			"formula":   metric.Formula,
+	// 			"rawData":   metricResult["rawData"],
+	// 		})
+	// 	}
 
-		// Calculate stage score (simple average of metrics)
-		var stageScore float64
-		if len(stageMetrics) > 0 {
-			var totalScore float64
-			for _, metric := range stageMetrics {
-				value, ok := metric["value"].(float64)
-				if ok {
-					totalScore += value
-				}
-			}
-			stageScore = totalScore / float64(len(stageMetrics))
-		}
+	// 	// Calculate stage score (simple average of metrics)
+	// 	var stageScore float64
+	// 	if len(stageMetrics) > 0 {
+	// 		var totalScore float64
+	// 		for _, metric := range stageMetrics {
+	// 			value, ok := metric["value"].(float64)
+	// 			if ok {
+	// 				totalScore += value
+	// 			}
+	// 		}
+	// 		stageScore = totalScore / float64(len(stageMetrics))
+	// 	}
 
-		stagePerformance = append(stagePerformance, map[string]interface{}{
-			"stageId":          stage.StageID,
-			"stageName":        stage.StageName,
-			"metrics":          stageMetrics,
-			"timeTaken":        stageData.TimeTaken,
-			"optimalTime":      stage.OptimalTime,
-			"score":            stageScore,
-			"benchmark":        stage.Benchmark,
-			"completionStatus": "completed",
-		})
-	}
+	// 	stagePerformance = append(stagePerformance, map[string]interface{}{
+	// 		"stageId":          stage.StageID,
+	// 		"stageName":        stage.StageName,
+	// 		"metrics":          stageMetrics,
+	// 		"timeTaken":        stageData.TimeTaken,
+	// 		"optimalTime":      stage.OptimalTime,
+	// 		"score":            stageScore,
+	// 		"benchmark":        stage.Benchmark,
+	// 		"completionStatus": "completed",
+	// 	})
+	// }
 
 	return stagePerformance, nil
 }
@@ -264,44 +264,44 @@ func (s *PlayerPerformanceService) calculateCompetenceDetails(
 	}
 
 	// Calculate competence scores
-	for _, competence := range game.Competencies {
-		competenceKey := competence.CompetenceKey
-		metrics, exists := competenceMetrics[competenceKey]
-		if !exists {
-			continue
-		}
+	// for _, competence := range game.Competencies {
+	// 	competenceKey := competence.CompetenceKey
+	// 	metrics, exists := competenceMetrics[competenceKey]
+	// 	if !exists {
+	// 		continue
+	// 	}
 
-		// Calculate competence score (simple average of metrics)
-		var competenceScore float64
-		if len(metrics) > 0 {
-			var totalScore float64
-			for _, metric := range metrics {
-				value, ok := metric["value"].(float64)
-				if ok {
-					totalScore += value
-				}
-			}
-			competenceScore = totalScore / float64(len(metrics))
-		}
+	// 	// Calculate competence score (simple average of metrics)
+	// 	var competenceScore float64
+	// 	if len(metrics) > 0 {
+	// 		var totalScore float64
+	// 		for _, metric := range metrics {
+	// 			value, ok := metric["value"].(float64)
+	// 			if ok {
+	// 				totalScore += value
+	// 			}
+	// 		}
+	// 		competenceScore = totalScore / float64(len(metrics))
+	// 	}
 
-		metricDetails := make([]map[string]interface{}, 0)
-		for _, metric := range metrics {
-			metricDetails = append(metricDetails, map[string]interface{}{
-				"kpiId":     metric["kpiId"],
-				"kpiName":   metric["kpiName"],
-				"value":     metric["value"],
-				"benchmark": metric["benchmark"],
-			})
-		}
+	// 	metricDetails := make([]map[string]interface{}, 0)
+	// 	for _, metric := range metrics {
+	// 		metricDetails = append(metricDetails, map[string]interface{}{
+	// 			"kpiId":     metric["kpiId"],
+	// 			"kpiName":   metric["kpiName"],
+	// 			"value":     metric["value"],
+	// 			"benchmark": metric["benchmark"],
+	// 		})
+	// 	}
 
-		competenceDetails[competenceKey] = map[string]interface{}{
-			"name":      competence.CompetenceName,
-			"score":     competenceScore,
-			"benchmark": competence.Benchmark,
-			"weight":    competence.Weight,
-			"metrics":   metricDetails,
-		}
-	}
+	// 	competenceDetails[competenceKey] = map[string]interface{}{
+	// 		"name":      competence.CompetenceName,
+	// 		"score":     competenceScore,
+	// 		"benchmark": competence.Benchmark,
+	// 		"weight":    competence.Weight,
+	// 		"metrics":   metricDetails,
+	// 	}
+	// }
 
 	return competenceDetails, nil
 }
@@ -322,26 +322,26 @@ func (s *PlayerPerformanceService) calculateGlobalMetrics(
 		}
 	}
 
-	for _, gameMetric := range game.GameMetrics {
-		metricWithParams, err := s.gameMetricRepository.FindWithParameters(gameMetric.MetricID)
-		if err != nil {
-			return nil, fmt.Errorf("error retrieving game metric parameters: %w", err)
-		}
+	// for _, gameMetric := range game.GameMetrics {
+	// 	metricWithParams, err := s.gameMetricRepository.FindWithParameters(gameMetric.MetricID)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error retrieving game metric parameters: %w", err)
+	// 	}
 
-		metricResult, err := s.metricCalculator.CalculateGameMetric(
-			metricWithParams,
-			stagePerformance,
-			competenceMap,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error calculating global metric: %w", err)
-		}
+	// 	metricResult, err := s.metricCalculator.CalculateGameMetric(
+	// 		metricWithParams,
+	// 		stagePerformance,
+	// 		competenceMap,
+	// 	)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error calculating global metric: %w", err)
+	// 	}
 
-		globalMetrics[gameMetric.MetricKey] = map[string]interface{}{
-			"value":   metricResult["value"],
-			"formula": gameMetric.Formula,
-		}
-	}
+	// 	globalMetrics[gameMetric.MetricKey] = map[string]interface{}{
+	// 		"value":   metricResult["value"],
+	// 		"formula": gameMetric.Formula,
+	// 	}
+	// }
 
 	return globalMetrics, nil
 }

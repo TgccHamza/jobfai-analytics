@@ -45,31 +45,3 @@ func (r *StageRepository) FindByGame(gameID string) ([]models.Stage, error) {
 	err := r.db.Where("game_id = ?", gameID).Order("stage_order ASC").Find(&stages).Error
 	return stages, err
 }
-
-func (r *StageRepository) FindWithMetrics(stageID int) (*models.Stage, error) {
-	var stage models.Stage
-	err := r.db.Preload("Metrics").
-		First(&stage, "stage_id = ?", stageID).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &stage, nil
-}
-
-func (r *StageRepository) FindWithRequiredParameters(stageID int) (*models.Stage, error) {
-	var stage models.Stage
-	err := r.db.Preload("Metrics.Parameters", "is_required = ?", true).
-		First(&stage, "stage_id = ?", stageID).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &stage, nil
-}

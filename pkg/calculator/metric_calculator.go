@@ -22,7 +22,7 @@ func NewMetricCalculator(formulaEvaluator *evaluator.FormulaEvaluator) *MetricCa
 
 // CalculateCompetenceMetric calculates a single competence metric based on parameters and constants
 func (c *MetricCalculator) CalculateCompetenceMetric(
-	metric *models.CompetenceMetric,
+	metric *models.Metric,
 	parameters map[string]interface{},
 	constants []models.ConstantParameter,
 ) (map[string]interface{}, error) {
@@ -39,19 +39,19 @@ func (c *MetricCalculator) CalculateCompetenceMetric(
 		evalParams[constant.ConstKey] = constant.ConstValue
 	}
 
-	// Validate required parameters
-	for _, param := range metric.Parameters {
-		if param.IsRequired {
-			if _, exists := evalParams[param.ParamKey]; !exists {
-				if param.DefaultValue != "" {
-					// Use default value if available
-					evalParams[param.ParamKey] = c.convertParameter(param.DefaultValue)
-				} else {
-					return nil, fmt.Errorf("required parameter %s is missing", param.ParamKey)
-				}
-			}
-		}
-	}
+	// // Validate required parameters
+	// for _, param := range metric.Parameters {
+	// 	if param.IsRequired {
+	// 		if _, exists := evalParams[param.ParamKey]; !exists {
+	// 			if param.DefaultValue != "" {
+	// 				// Use default value if available
+	// 				evalParams[param.ParamKey] = c.convertParameter(param.DefaultValue)
+	// 			} else {
+	// 				return nil, fmt.Errorf("required parameter %s is missing", param.ParamKey)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	// Evaluate the formula
 	result, err := c.formulaEvaluator.Evaluate(metric.Formula, evalParams)
@@ -67,7 +67,7 @@ func (c *MetricCalculator) CalculateCompetenceMetric(
 
 // CalculateGameMetric calculates a global game metric based on stage performances and competence details
 func (c *MetricCalculator) CalculateGameMetric(
-	gameMetric *models.GameMetric,
+	gameMetric *models.Metric,
 	stagePerformance []map[string]interface{},
 	competenceDetails map[string]map[string]interface{},
 ) (map[string]interface{}, error) {

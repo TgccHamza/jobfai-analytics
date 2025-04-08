@@ -30,7 +30,8 @@ input CompetenceUpdateInput {
   weight: Float
 }
 
-input CompetenceMetricInput {
+input StageMetricInput {
+  stageId: ID!
   competenceId: ID!
   metricKey: String!
   metricName: String!
@@ -40,7 +41,7 @@ input CompetenceMetricInput {
   weight: Float
 }
 
-input CompetenceMetricUpdateInput {
+input StageMetricUpdateInput {
   metricId: ID!
   metricKey: String
   metricName: String
@@ -90,11 +91,6 @@ input StageUpdateInput {
   benchmark: Float
   description: String
   optimalTime: Int
-}
-
-input StageMetricInput {
-  stageId: ID!
-  metricId: ID!
 }
 
 input GameMetricInput {

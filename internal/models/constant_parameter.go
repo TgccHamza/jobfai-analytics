@@ -14,9 +14,6 @@ type ConstantParameter struct {
 	Description      string    `gorm:"column:description;type:text" json:"description"`
 	CreatedAt        time.Time `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
 	UpdatedAt        time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updatedAt"`
-
-	// Relationships
-	Game Game `gorm:"foreignKey:GameID;references:GameID" json:"game,omitempty"`
 }
 
 func (ConstantParameter) TableName() string {

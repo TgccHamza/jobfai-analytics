@@ -16,20 +16,20 @@ func NewGameMetricParameterRepository(db *gorm.DB) *GameMetricParameterRepositor
 	return &GameMetricParameterRepository{db: db}
 }
 
-func (r *GameMetricParameterRepository) Create(parameter *models.GameMetricParameter) error {
+func (r *GameMetricParameterRepository) Create(parameter *models.MetricParameter) error {
 	return r.db.Create(parameter).Error
 }
 
-func (r *GameMetricParameterRepository) Update(parameter *models.GameMetricParameter) error {
+func (r *GameMetricParameterRepository) Update(parameter *models.MetricParameter) error {
 	return r.db.Save(parameter).Error
 }
 
 func (r *GameMetricParameterRepository) Delete(paramID int) error {
-	return r.db.Delete(&models.GameMetricParameter{}, "param_id = ?", paramID).Error
+	return r.db.Delete(&models.MetricParameter{}, "param_id = ?", paramID).Error
 }
 
-func (r *GameMetricParameterRepository) FindByID(paramID int) (*models.GameMetricParameter, error) {
-	var parameter models.GameMetricParameter
+func (r *GameMetricParameterRepository) FindByID(paramID int) (*models.MetricParameter, error) {
+	var parameter models.MetricParameter
 	err := r.db.First(&parameter, "param_id = ?", paramID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -40,14 +40,14 @@ func (r *GameMetricParameterRepository) FindByID(paramID int) (*models.GameMetri
 	return &parameter, nil
 }
 
-func (r *GameMetricParameterRepository) FindByMetric(metricID int) ([]models.GameMetricParameter, error) {
-	var parameters []models.GameMetricParameter
+func (r *GameMetricParameterRepository) FindByMetric(metricID int) ([]models.MetricParameter, error) {
+	var parameters []models.MetricParameter
 	err := r.db.Where("metric_id = ?", metricID).Order("param_name ASC").Find(&parameters).Error
 	return parameters, err
 }
 
-func (r *GameMetricParameterRepository) FindRequiredParametersForMetric(metricID int) ([]models.GameMetricParameter, error) {
-	var parameters []models.GameMetricParameter
+func (r *GameMetricParameterRepository) FindRequiredParametersForMetric(metricID int) ([]models.MetricParameter, error) {
+	var parameters []models.MetricParameter
 	err := r.db.Where("metric_id = ? AND is_required = ?", metricID, true).Find(&parameters).Error
 	return parameters, err
 }
