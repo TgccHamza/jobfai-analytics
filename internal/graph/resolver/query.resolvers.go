@@ -106,7 +106,7 @@ func (r *queryResolver) GetMetricByID(ctx context.Context, metricID string) (*mo
 		return nil, fmt.Errorf("invalid metric ID format: %w", err)
 	}
 
-	metric, err := r.MetricService.GetCompetenceMetricByID(id)
+	metric, err := r.MetricService.GetMetricByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching metric: %w", err)
 	}
@@ -125,7 +125,7 @@ func (r *queryResolver) GetParametersByMetric(ctx context.Context, metricID stri
 		return nil, fmt.Errorf("invalid metric ID format: %w", err)
 	}
 
-	parameters, err := r.MetricService.GetCompetenceMetricParameters(id)
+	parameters, err := r.MetricService.GetMetricParameters(id)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching parameters: %w", err)
 	}

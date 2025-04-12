@@ -19,5 +19,5 @@ type Metric struct {
 }
 
 func (Metric) TableName() string {
-	return "stage_metrics"
+	return "metrics"
 }

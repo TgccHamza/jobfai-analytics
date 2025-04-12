@@ -8,7 +8,7 @@ type Game {
   updatedAt: DateTime
   competencies: [Competence]
   stages: [Stage]
-  gameMetrics: [GameMetric]
+  gameMetrics: [Metric]
   constantParameters: [ConstantParameter]
 }
 
@@ -25,11 +25,14 @@ type Competence {
   updatedAt: DateTime
   metrics: [Metric]
   game: Game
+  parentCompetence: Competence
 }
 
 type Metric {
   metricId: ID!
   competenceId: ID
+  stageId: ID
+  gameId: ID
   metricKey: String
   metricName: String
   metricDescription: String
@@ -41,7 +44,8 @@ type Metric {
   updatedAt: DateTime
   parameters: [MetricParameter]
   competence: Competence
-  stages: [Stage]
+  stage: Stage
+  game: Game
 }
 
 type MetricParameter {

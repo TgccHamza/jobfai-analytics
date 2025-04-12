@@ -50,3 +50,9 @@ func (r *GameRepository) FindAllActive() ([]models.Game, error) {
 	err := r.db.Where("active = ?", true).Order("created_at DESC").Find(&games).Error
 	return games, err
 }
+
+func (r *GameRepository) FindByGame(gameID string) ([]models.Metric, error) {
+	var gameMetrics []models.Metric
+	err := r.db.Where("game_id = ?", gameID).Find(&gameMetrics).Error
+	return gameMetrics, err
+}

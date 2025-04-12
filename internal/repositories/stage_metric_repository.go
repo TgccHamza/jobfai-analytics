@@ -30,6 +30,12 @@ func (r *StageMetricRepository) FindByStage(stageID int) ([]models.Metric, error
 	return stageMetrics, err
 }
 
+func (r *StageMetricRepository) FindByCompetence(competenceID int) ([]models.Metric, error) {
+	var competenceMetrics []models.Metric
+	err := r.db.Where("competence_id = ?", competenceID).Find(&competenceMetrics).Error
+	return competenceMetrics, err
+}
+
 func (r *StageMetricRepository) FindByStageAndMetric(stageID int, metricID int) (*models.Metric, error) {
 	var Metric models.Metric
 	err := r.db.Where("stage_id = ? AND metric_id = ?", stageID, metricID).First(&Metric).Error

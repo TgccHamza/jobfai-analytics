@@ -23,21 +23,25 @@ type CompetenceDetail struct {
 }
 
 type CompetenceInput struct {
-	GameID         string   `json:"gameId"`
-	CompetenceKey  string   `json:"competenceKey"`
-	CompetenceName string   `json:"competenceName"`
-	Benchmark      *float64 `json:"benchmark,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	Weight         *float64 `json:"weight,omitempty"`
+	GameID          string   `json:"gameId"`
+	ParentID        *int32   `json:"parentId,omitempty"`
+	CompetenceKey   string   `json:"competenceKey"`
+	CompetenceName  string   `json:"competenceName"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Weight          *float64 `json:"weight,omitempty"`
 }
 
 type CompetenceUpdateInput struct {
-	CompetenceID   string   `json:"competenceId"`
-	CompetenceKey  *string  `json:"competenceKey,omitempty"`
-	CompetenceName *string  `json:"competenceName,omitempty"`
-	Benchmark      *float64 `json:"benchmark,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	Weight         *float64 `json:"weight,omitempty"`
+	CompetenceID    string   `json:"competenceId"`
+	ParentID        *int32   `json:"parentId,omitempty"`
+	CompetenceKey   *string  `json:"competenceKey,omitempty"`
+	CompetenceName  *string  `json:"competenceName,omitempty"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Weight          *float64 `json:"weight,omitempty"`
 }
 
 type ConstantParameterInput struct {
@@ -81,13 +85,15 @@ type GameMetric struct {
 }
 
 type GameMetricInput struct {
-	GameID            string  `json:"gameId"`
-	MetricKey         string  `json:"metricKey"`
-	MetricName        string  `json:"metricName"`
-	MetricDescription *string `json:"metricDescription,omitempty"`
-	Benchmark         *string `json:"benchmark,omitempty"`
-	Formula           string  `json:"formula"`
-	Description       *string `json:"description,omitempty"`
+	GameID            string   `json:"gameId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         string   `json:"metricKey"`
+	MetricName        string   `json:"metricName"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           string   `json:"formula"`
+	Description       *string  `json:"description,omitempty"`
 }
 
 type GameMetricParameter struct {
@@ -128,13 +134,15 @@ type GameMetricParameterUpdateInput struct {
 }
 
 type GameMetricUpdateInput struct {
-	MetricID          string  `json:"metricId"`
-	MetricKey         *string `json:"metricKey,omitempty"`
-	MetricName        *string `json:"metricName,omitempty"`
-	MetricDescription *string `json:"metricDescription,omitempty"`
-	Benchmark         *string `json:"benchmark,omitempty"`
-	Formula           *string `json:"formula,omitempty"`
-	Description       *string `json:"description,omitempty"`
+	MetricID          string   `json:"metricId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         *string  `json:"metricKey,omitempty"`
+	MetricName        *string  `json:"metricName,omitempty"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           *string  `json:"formula,omitempty"`
+	Description       *string  `json:"description,omitempty"`
 }
 
 type GameUpdateInput struct {
@@ -222,22 +230,24 @@ type Query struct {
 }
 
 type StageInput struct {
-	GameID      string   `json:"gameId"`
-	StageKey    string   `json:"stageKey"`
-	StageName   string   `json:"stageName"`
-	StageOrder  int32    `json:"stageOrder"`
-	Benchmark   *float64 `json:"benchmark,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	OptimalTime *int32   `json:"optimalTime,omitempty"`
+	GameID          string   `json:"gameId"`
+	StageKey        string   `json:"stageKey"`
+	StageName       string   `json:"stageName"`
+	StageOrder      int32    `json:"stageOrder"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	OptimalTime     *int32   `json:"optimalTime,omitempty"`
 }
 
 type StageMetricInput struct {
 	StageID           string   `json:"stageId"`
-	CompetenceID      string   `json:"competenceId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
 	MetricKey         string   `json:"metricKey"`
 	MetricName        string   `json:"metricName"`
 	MetricDescription *string  `json:"metricDescription,omitempty"`
 	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
 	Formula           string   `json:"formula"`
 	Weight            *float64 `json:"weight,omitempty"`
 }
@@ -255,10 +265,12 @@ type StageMetricResult struct {
 
 type StageMetricUpdateInput struct {
 	MetricID          string   `json:"metricId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
 	MetricKey         *string  `json:"metricKey,omitempty"`
 	MetricName        *string  `json:"metricName,omitempty"`
 	MetricDescription *string  `json:"metricDescription,omitempty"`
 	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
 	Formula           *string  `json:"formula,omitempty"`
 	Weight            *float64 `json:"weight,omitempty"`
 }
@@ -282,13 +294,14 @@ type StagePerformance struct {
 }
 
 type StageUpdateInput struct {
-	StageID     string   `json:"stageId"`
-	StageKey    *string  `json:"stageKey,omitempty"`
-	StageName   *string  `json:"stageName,omitempty"`
-	StageOrder  *int32   `json:"stageOrder,omitempty"`
-	Benchmark   *float64 `json:"benchmark,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	OptimalTime *int32   `json:"optimalTime,omitempty"`
+	StageID         string   `json:"stageId"`
+	StageKey        *string  `json:"stageKey,omitempty"`
+	StageName       *string  `json:"stageName,omitempty"`
+	StageOrder      *int32   `json:"stageOrder,omitempty"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	OptimalTime     *int32   `json:"optimalTime,omitempty"`
 }
 
 type Subscription struct {

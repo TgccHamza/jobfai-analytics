@@ -91,13 +91,17 @@ func (r *mutationResolver) DeleteGame(ctx context.Context, gameID string) (*bool
 
 // CreateCompetence is the resolver for the createCompetence field.
 func (r *mutationResolver) CreateCompetence(ctx context.Context, input model.CompetenceInput) (*models.Competence, error) {
+	//parse parent id to int
+
 	competence := &models.Competence{
-		GameID:         input.GameID,
-		CompetenceKey:  input.CompetenceKey,
-		CompetenceName: input.CompetenceName,
-		Benchmark:      *input.Benchmark,
-		Description:    *input.Description,
-		Weight:         *input.Weight,
+		GameID:          input.GameID,
+		ParentID:        int(*input.ParentID),
+		CompetenceKey:   input.CompetenceKey,
+		CompetenceName:  input.CompetenceName,
+		Benchmark:       *input.Benchmark,
+		BenchmarkMargin: *input.BenchmarkMargin,
+		Description:     *input.Description,
+		Weight:          *input.Weight,
 	}
 
 	err := r.CompetenceService.CreateCompetence(competence)
@@ -130,6 +134,10 @@ func (r *mutationResolver) UpdateCompetence(ctx context.Context, input model.Com
 	}
 
 	// Update fields
+	if input.ParentID != nil {
+		competence.ParentID = int(*input.ParentID)
+	}
+
 	if input.CompetenceKey != nil {
 		competence.CompetenceKey = *input.CompetenceKey
 	}
@@ -138,6 +146,9 @@ func (r *mutationResolver) UpdateCompetence(ctx context.Context, input model.Com
 	}
 	if input.Benchmark != nil {
 		competence.Benchmark = *input.Benchmark
+	}
+	if input.BenchmarkMargin != nil {
+		competence.BenchmarkMargin = *input.BenchmarkMargin
 	}
 	if input.Description != nil {
 		competence.Description = *input.Description
@@ -181,17 +192,128 @@ func (r *mutationResolver) DeleteCompetence(ctx context.Context, competenceID st
 
 // CreateStageMetric is the resolver for the createStageMetric field.
 func (r *mutationResolver) CreateStageMetric(ctx context.Context, input model.StageMetricInput) (*models.Metric, error) {
-	panic(fmt.Errorf("not implemented: CreateStageMetric - createStageMetric"))
+	stageID, err := strconv.Atoi(input.StageID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid stage ID format: %w", err)
+	}
+
+	competenceID, err := strconv.Atoi(*input.CompetenceID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid competence ID format: %w", err)
+	}
+
+	metric := &models.Metric{
+		StageID:           stageID,
+		CompetenceID:      competenceID,
+		MetricKey:         input.MetricKey,
+		MetricName:        input.MetricName,
+		MetricDescription: *input.MetricDescription,
+		Formula:           input.Formula,
+	}
+
+	if input.Benchmark != nil {
+		metric.Benchmark = *input.Benchmark
+	}
+
+	if input.BenchmarkMargin != nil {
+		metric.BenchmarkMargin = *input.BenchmarkMargin
+	}
+
+	if input.Weight != nil {
+		metric.Weight = *input.Weight
+	}
+
+	err = r.MetricService.CreateStageMetric(metric)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create stage metric: %w", err)
+	}
+
+	// Publish create event
+	r.subscriptionManager.Publish("stage_metric:created", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage_metric:created:%s", input.StageID), metric)
+
+	return metric, nil
 }
 
 // UpdateStageMetric is the resolver for the updateStageMetric field.
 func (r *mutationResolver) UpdateStageMetric(ctx context.Context, input model.StageMetricUpdateInput) (*models.Metric, error) {
-	panic(fmt.Errorf("not implemented: UpdateStageMetric - updateStageMetric"))
+	metricID, err := strconv.Atoi(input.MetricID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid metric ID format: %w", err)
+	}
+
+	// Fetch the existing metric
+	metric, err := r.MetricService.GetMetricByID(metricID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find stage metric: %w", err)
+	}
+
+	if metric == nil {
+		return nil, fmt.Errorf("stage metric not found with ID: %s", input.MetricID)
+	}
+
+	// Update fields
+	if input.CompetenceID != nil {
+		competenceID, err := strconv.Atoi(*input.CompetenceID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid competence ID format: %w", err)
+		}
+		metric.CompetenceID = competenceID
+	}
+
+	if input.MetricKey != nil {
+		metric.MetricKey = *input.MetricKey
+	}
+	if input.MetricName != nil {
+		metric.MetricName = *input.MetricName
+	}
+	if input.MetricDescription != nil {
+		metric.MetricDescription = *input.MetricDescription
+	}
+	if input.Benchmark != nil {
+		metric.Benchmark = *input.Benchmark
+	}
+	if input.BenchmarkMargin != nil {
+		metric.BenchmarkMargin = *input.BenchmarkMargin
+	}
+	if input.Formula != nil {
+		metric.Formula = *input.Formula
+	}
+	if input.Weight != nil {
+		metric.Weight = *input.Weight
+	}
+
+	// Save the updated metric
+	err = r.MetricService.UpdateStageMetric(metric)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update stage metric: %w", err)
+	}
+
+	// Publish update event
+	r.subscriptionManager.Publish("stage_metric:updated", metric)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage_metric:updated:%s", input.MetricID), metric)
+
+	return metric, nil
 }
 
 // DeleteStageMetric is the resolver for the deleteStageMetric field.
 func (r *mutationResolver) DeleteStageMetric(ctx context.Context, metricID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteStageMetric - deleteStageMetric"))
+	id, err := strconv.Atoi(metricID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid metric ID format: %w", err)
+	}
+
+	err = r.MetricService.DeleteStageMetric(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete stage metric: %w", err)
+	}
+
+	// Publish delete event
+	r.subscriptionManager.Publish("stage_metric:deleted", &metricID)
+	r.subscriptionManager.Publish(fmt.Sprintf("stage_metric:deleted:%s", metricID), &metricID)
+
+	success := true
+	return &success, nil
 }
 
 // CreateMetricParameter is the resolver for the createMetricParameter field.
@@ -210,7 +332,7 @@ func (r *mutationResolver) CreateMetricParameter(ctx context.Context, input mode
 		IsRequired:  *input.IsRequired,
 	}
 
-	err = r.MetricService.CreateCompetenceMetricParameter(parameter)
+	err = r.MetricService.CreateMetricParameter(parameter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create metric parameter: %w", err)
 	}
@@ -385,11 +507,7 @@ func (r *mutationResolver) CreateGameMetric(ctx context.Context, input model.Gam
 	}
 
 	if input.Benchmark != nil {
-		benchmark, err := strconv.ParseFloat(*input.Benchmark, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid benchmark value: %w", err)
-		}
-		metric.Benchmark = benchmark
+		metric.Benchmark = *input.Benchmark
 	}
 
 	err := r.MetricService.CreateGameMetric(metric)
@@ -427,7 +545,7 @@ func (r *mutationResolver) UpdateGameMetric(ctx context.Context, input model.Gam
 	}
 
 	// Fetch the existing metric
-	metric, err := r.MetricService.GetGameMetricByID(metricID)
+	metric, err := r.MetricService.GetMetricByID(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find game metric: %w", err)
 	}
@@ -450,11 +568,7 @@ func (r *mutationResolver) UpdateGameMetric(ctx context.Context, input model.Gam
 		metric.MetricDescription = *input.Description
 	}
 	if input.Benchmark != nil {
-		benchmark, err := strconv.ParseFloat(*input.Benchmark, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid benchmark value: %w", err)
-		}
-		metric.Benchmark = benchmark
+		metric.Benchmark = *input.Benchmark
 	}
 
 	// Save the updated metric

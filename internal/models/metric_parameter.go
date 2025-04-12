@@ -30,5 +30,5 @@ type MetricParameter struct {
 }
 
 func (MetricParameter) TableName() string {
-	return "competence_metric_parameters"
+	return "metric_parameters"
 }

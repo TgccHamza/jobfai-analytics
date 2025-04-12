@@ -102,3 +102,19 @@ func (s *GameService) GetGameStages(gameID string) ([]models.Stage, error) {
 func (s *GameService) GetGameCompetencies(gameID string) ([]models.Competence, error) {
 	return s.competenceRepository.FindByGame(gameID)
 }
+
+// GetGameMetrics retrieves all metrics associated with a stage
+func (s *GameService) GetGameMetrics(gameID string) ([]models.Metric, error) {
+	// First get all stage-metric associations
+	gameMetrics, err := s.gameRepository.FindByGame(gameID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving stage metrics: %w", err)
+	}
+
+	// If no metrics are associated, return empty slice
+	if len(gameMetrics) == 0 {
+		return []models.Metric{}, nil
+	}
+
+	return gameMetrics, nil
+}

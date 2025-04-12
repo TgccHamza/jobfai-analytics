@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"jobfai-analytics/internal/graph"
-	"jobfai-analytics/internal/graph/model"
 	"jobfai-analytics/internal/models"
 	"time"
 )
@@ -27,12 +26,28 @@ func (r *competenceResolver) UpdatedAt(ctx context.Context, obj *models.Competen
 
 // Metrics is the resolver for the metrics field.
 func (r *competenceResolver) Metrics(ctx context.Context, obj *models.Competence) ([]*models.Metric, error) {
-	panic(fmt.Errorf("not implemented: Metrics - metrics"))
+	metrics, err := r.StageService.GetCompetenceMetrics(obj.CompetenceID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching metrics: %w", err)
+	}
+
+	// Convert []models.Metric to []*models.Metric
+	result := make([]*models.Metric, len(metrics))
+	for i := range metrics {
+		result[i] = &metrics[i]
+	}
+
+	return result, nil
 }
 
 // Game is the resolver for the game field.
 func (r *competenceResolver) Game(ctx context.Context, obj *models.Competence) (*models.Game, error) {
-	panic(fmt.Errorf("not implemented: Game - game"))
+	return r.GameService.GetGameByID(obj.GameID)
+}
+
+// ParentCompetence is the resolver for the parentCompetence field.
+func (r *competenceResolver) ParentCompetence(ctx context.Context, obj *models.Competence) (*models.Competence, error) {
+	return r.CompetenceService.GetCompetenceByID(obj.ParentID)
 }
 
 // CreatedAt is the resolver for the createdAt field.
@@ -49,7 +64,7 @@ func (r *constantParameterResolver) UpdatedAt(ctx context.Context, obj *models.C
 
 // Game is the resolver for the game field.
 func (r *constantParameterResolver) Game(ctx context.Context, obj *models.ConstantParameter) (*models.Game, error) {
-	panic(fmt.Errorf("not implemented: Game - game"))
+	return r.GameService.GetGameByID(obj.GameID)
 }
 
 // CreatedAt is the resolver for the createdAt field.
@@ -66,62 +81,134 @@ func (r *gameResolver) UpdatedAt(ctx context.Context, obj *models.Game) (*string
 
 // Competencies is the resolver for the competencies field.
 func (r *gameResolver) Competencies(ctx context.Context, obj *models.Game) ([]*models.Competence, error) {
-	panic(fmt.Errorf("not implemented: Competencies - competencies"))
+	competencies, err := r.GameService.GetGameCompetencies(obj.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching competencies: %w", err)
+	}
+
+	// Convert []models.Competence to []*models.Competence
+	result := make([]*models.Competence, len(competencies))
+	for i := range competencies {
+		result[i] = &competencies[i]
+	}
+
+	return result, nil
 }
 
 // Stages is the resolver for the stages field.
 func (r *gameResolver) Stages(ctx context.Context, obj *models.Game) ([]*models.Stage, error) {
-	panic(fmt.Errorf("not implemented: Stages - stages"))
+	stages, err := r.GameService.GetGameStages(obj.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching stages: %w", err)
+	}
+
+	// Convert []models.Stage to []*models.Stage
+	result := make([]*models.Stage, len(stages))
+	for i := range stages {
+		result[i] = &stages[i]
+	}
+
+	return result, nil
 }
 
 // GameMetrics is the resolver for the gameMetrics field.
-func (r *gameResolver) GameMetrics(ctx context.Context, obj *models.Game) ([]*model.GameMetric, error) {
-	panic(fmt.Errorf("not implemented: GameMetrics - gameMetrics"))
+func (r *gameResolver) GameMetrics(ctx context.Context, obj *models.Game) ([]*models.Metric, error) {
+	metrics, err := r.GameService.GetGameMetrics(obj.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching metrics: %w", err)
+	}
+
+	// Convert []models.Metric to []*models.Metric
+	result := make([]*models.Metric, len(metrics))
+	for i := range metrics {
+		result[i] = &metrics[i]
+	}
+
+	return result, nil
 }
 
 // ConstantParameters is the resolver for the constantParameters field.
 func (r *gameResolver) ConstantParameters(ctx context.Context, obj *models.Game) ([]*models.ConstantParameter, error) {
-	panic(fmt.Errorf("not implemented: ConstantParameters - constantParameters"))
+	constants, err := r.MetricService.GetConstantParametersByGame(obj.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching constants: %w", err)
+	}
+
+	// Convert []models.ConstantParameter to []*models.ConstantParameter
+	result := make([]*models.ConstantParameter, len(constants))
+	for i := range constants {
+		result[i] = &constants[i]
+	}
+
+	return result, nil
 }
 
 // CreatedAt is the resolver for the createdAt field.
 func (r *metricResolver) CreatedAt(ctx context.Context, obj *models.Metric) (*string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
+	timeStr := obj.CreatedAt.Format(time.RFC3339)
+	return &timeStr, nil
 }
 
 // UpdatedAt is the resolver for the updatedAt field.
 func (r *metricResolver) UpdatedAt(ctx context.Context, obj *models.Metric) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
+	timeStr := obj.UpdatedAt.Format(time.RFC3339)
+	return &timeStr, nil
 }
 
 // Parameters is the resolver for the parameters field.
 func (r *metricResolver) Parameters(ctx context.Context, obj *models.Metric) ([]*models.MetricParameter, error) {
-	panic(fmt.Errorf("not implemented: Parameters - parameters"))
+	parameters, err := r.MetricService.GetMetricParameters(obj.MetricID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching parameters: %w", err)
+	}
+
+	// Convert []models.MetricParameter to []*model.MetricParameter
+	result := make([]*models.MetricParameter, len(parameters))
+	for i, param := range parameters {
+		result[i] = &models.MetricParameter{
+			ParamID:     param.ParamID,
+			MetricID:    param.MetricID,
+			ParamName:   param.ParamName,
+			ParamKey:    param.ParamKey,
+			Description: param.Description,
+			ParamType:   param.ParamType,
+			IsRequired:  param.IsRequired,
+		}
+	}
+
+	return result, nil
 }
 
 // Competence is the resolver for the competence field.
 func (r *metricResolver) Competence(ctx context.Context, obj *models.Metric) (*models.Competence, error) {
-	panic(fmt.Errorf("not implemented: Competence - competence"))
+	return r.CompetenceService.GetCompetenceByID(obj.CompetenceID)
 }
 
-// Stages is the resolver for the stages field.
-func (r *metricResolver) Stages(ctx context.Context, obj *models.Metric) ([]*models.Stage, error) {
-	panic(fmt.Errorf("not implemented: Stages - stages"))
+// Stage is the resolver for the stage field.
+func (r *metricResolver) Stage(ctx context.Context, obj *models.Metric) (*models.Stage, error) {
+	return r.StageService.GetStageByID(obj.StageID)
+}
+
+// Game is the resolver for the game field.
+func (r *metricResolver) Game(ctx context.Context, obj *models.Metric) (*models.Game, error) {
+	return r.GameService.GetGameByID(obj.GameID)
 }
 
 // CreatedAt is the resolver for the createdAt field.
 func (r *metricParameterResolver) CreatedAt(ctx context.Context, obj *models.MetricParameter) (*string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
+	timeStr := obj.CreatedAt.Format(time.RFC3339)
+	return &timeStr, nil
 }
 
 // UpdatedAt is the resolver for the updatedAt field.
 func (r *metricParameterResolver) UpdatedAt(ctx context.Context, obj *models.MetricParameter) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
+	timeStr := obj.UpdatedAt.Format(time.RFC3339)
+	return &timeStr, nil
 }
 
 // Metric is the resolver for the metric field.
 func (r *metricParameterResolver) Metric(ctx context.Context, obj *models.MetricParameter) (*models.Metric, error) {
-	panic(fmt.Errorf("not implemented: Metric - metric"))
+	return r.MetricService.GetMetricByID(obj.MetricID)
 }
 
 // StageOrder is the resolver for the stageOrder field.
@@ -153,12 +240,23 @@ func (r *stageResolver) UpdatedAt(ctx context.Context, obj *models.Stage) (*stri
 
 // Metrics is the resolver for the metrics field.
 func (r *stageResolver) Metrics(ctx context.Context, obj *models.Stage) ([]*models.Metric, error) {
-	panic(fmt.Errorf("not implemented: Metrics - metrics"))
+	metrics, err := r.StageService.GetStageMetrics(obj.StageID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching metrics: %w", err)
+	}
+
+	// Convert []models.Metric to []*models.Metric
+	result := make([]*models.Metric, len(metrics))
+	for i := range metrics {
+		result[i] = &metrics[i]
+	}
+
+	return result, nil
 }
 
 // Game is the resolver for the game field.
 func (r *stageResolver) Game(ctx context.Context, obj *models.Stage) (*models.Game, error) {
-	panic(fmt.Errorf("not implemented: Game - game"))
+	return r.GameService.GetGameByID(obj.GameID)
 }
 
 // Competence returns graph.CompetenceResolver implementation.

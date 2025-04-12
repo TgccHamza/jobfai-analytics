@@ -1,7 +1,7 @@
 # Queries
 type Query {
   # Admin Queries
-  getGames: [Game]
+  getGames: [Game!]
   getGameById(gameId: ID!): Game
   getCompetenciesByGame(gameId: ID!): [Competence]
   getCompetenceById(competenceId: ID!): Competence

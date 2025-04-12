@@ -111,25 +111,23 @@ func (s *StageService) GetStageMetrics(stageID int) ([]models.Metric, error) {
 		return []models.Metric{}, nil
 	}
 
-	// Extract metric IDs to fetch the actual metrics
-	metricIDs := make([]int, len(stageMetrics))
-	for i, sm := range stageMetrics {
-		metricIDs[i] = sm.MetricID
-	}
+	return stageMetrics, nil
+}
 
-	// This would typically call a repository method to get metrics by IDs
-	// Since we don't have direct access to the competence metric repository here,
-	// we'll need to either:
-	// 1. Add it as a dependency to StageService, or
-	// 2. Join the tables in the repository query
-
-	// For now, let's assume we've added the competence metric repository
-	metrics, err := s.competenceMetricRepository.FindByIDs(metricIDs)
+// GetStageMetrics retrieves all metrics associated with a stage
+func (s *StageService) GetCompetenceMetrics(competenceID int) ([]models.Metric, error) {
+	// First get all stage-metric associations
+	competenceMetrics, err := s.stageMetricRepository.FindByCompetence(competenceID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving competence metrics: %w", err)
+		return nil, fmt.Errorf("error retrieving stage metrics: %w", err)
 	}
 
-	return metrics, nil
+	// If no metrics are associated, return empty slice
+	if len(competenceMetrics) == 0 {
+		return []models.Metric{}, nil
+	}
+
+	return competenceMetrics, nil
 }
 
 // GetRequiredParametersForStage retrieves all required parameters for a stage

@@ -39,7 +39,7 @@ func NewMetricService(
 }
 
 // GetCompetenceMetricByID retrieves a competence metric by its ID
-func (s *MetricService) GetCompetenceMetricByID(metricID int) (*models.Metric, error) {
+func (s *MetricService) GetMetricByID(metricID int) (*models.Metric, error) {
 	metric, err := s.competenceMetricRepository.FindByID(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving competence metric: %w", err)
@@ -52,24 +52,17 @@ func (s *MetricService) GetCompetenceMetricByID(metricID int) (*models.Metric, e
 	return metric, nil
 }
 
-// CreateCompetenceMetric creates a new competence metric
-func (s *MetricService) CreateCompetenceMetric(metric *models.Metric) error {
+// CreateStageMetric creates a new competence metric
+func (s *MetricService) CreateStageMetric(metric *models.Metric) error {
 	if metric.CompetenceID == 0 || metric.MetricKey == "" || metric.MetricName == "" {
 		return errors.New("competence ID, metric key, and name are required")
 	}
 
-	// Validate formula
-	// if metric.Formula != "" {
-	// 	if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
-	// 		return fmt.Errorf("invalid formula: %w", err)
-	// 	}
-	// }
-
 	return s.competenceMetricRepository.Create(metric)
 }
 
-// UpdateCompetenceMetric updates an existing competence metric
-func (s *MetricService) UpdateCompetenceMetric(metric *models.Metric) error {
+// UpdateStageMetric updates an existing competence metric
+func (s *MetricService) UpdateStageMetric(metric *models.Metric) error {
 	if metric.MetricID == 0 {
 		return errors.New("metric ID is required")
 	}
@@ -94,7 +87,7 @@ func (s *MetricService) UpdateCompetenceMetric(metric *models.Metric) error {
 }
 
 // DeleteCompetenceMetric deletes a competence metric
-func (s *MetricService) DeleteCompetenceMetric(metricID int) error {
+func (s *MetricService) DeleteStageMetric(metricID int) error {
 	existingMetric, err := s.competenceMetricRepository.FindByID(metricID)
 	if err != nil {
 		return fmt.Errorf("error checking existing metric: %w", err)
@@ -108,7 +101,7 @@ func (s *MetricService) DeleteCompetenceMetric(metricID int) error {
 }
 
 // CreateCompetenceMetricParameter adds a parameter to a competence metric
-func (s *MetricService) CreateCompetenceMetricParameter(parameter *models.MetricParameter) error {
+func (s *MetricService) CreateMetricParameter(parameter *models.MetricParameter) error {
 	if parameter.MetricID == 0 || parameter.ParamKey == "" || parameter.ParamName == "" {
 		return errors.New("metric ID, parameter key, and name are required")
 	}
@@ -217,49 +210,8 @@ func (s *MetricService) DeleteGameMetric(metricID int) error {
 	return s.gameMetricRepository.Delete(metricID)
 }
 
-// CreateGameMetricParameter adds a parameter to a game metric
-func (s *MetricService) CreateGameMetricParameter(parameter *models.MetricParameter) error {
-	if parameter.MetricID == 0 || parameter.ParamKey == "" || parameter.ParamName == "" {
-		return errors.New("metric ID, parameter key, and name are required")
-	}
-
-	return s.gameMetricParameterRepository.Create(parameter)
-}
-
-// UpdateGameMetricParameter updates an existing game metric parameter
-func (s *MetricService) UpdateGameMetricParameter(parameter *models.MetricParameter) error {
-	if parameter.ParamID == 0 {
-		return errors.New("parameter ID is required")
-	}
-
-	existingParameter, err := s.gameMetricParameterRepository.FindByID(parameter.ParamID)
-	if err != nil {
-		return fmt.Errorf("error checking existing parameter: %w", err)
-	}
-
-	if existingParameter == nil {
-		return errors.New("parameter not found")
-	}
-
-	return s.gameMetricParameterRepository.Update(parameter)
-}
-
-// DeleteGameMetricParameter deletes a game metric parameter
-func (s *MetricService) DeleteGameMetricParameter(paramID int) error {
-	existingParameter, err := s.gameMetricParameterRepository.FindByID(paramID)
-	if err != nil {
-		return fmt.Errorf("error checking existing parameter: %w", err)
-	}
-
-	if existingParameter == nil {
-		return errors.New("parameter not found")
-	}
-
-	return s.gameMetricParameterRepository.Delete(paramID)
-}
-
-// GetCompetenceMetricParameters retrieves all parameters for a competence metric
-func (s *MetricService) GetCompetenceMetricParameters(metricID int) ([]models.MetricParameter, error) {
+// GetMetricParameters retrieves all parameters for a competence metric
+func (s *MetricService) GetMetricParameters(metricID int) ([]models.MetricParameter, error) {
 	parameters, err := s.metricParameterRepository.FindByMetric(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving competence metric parameters: %w", err)

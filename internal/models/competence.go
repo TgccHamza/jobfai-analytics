@@ -6,7 +6,7 @@ import (
 
 type Competence struct {
 	CompetenceID    int       `gorm:"column:competence_id;primaryKey;autoIncrement" json:"competenceId"`
-	ParentID        int       `gorm:"column:parent_id;primaryKey;autoIncrement" json:"parentId"`
+	ParentID        int       `gorm:"column:parent_id;" json:"parentId"`
 	GameID          string    `gorm:"column:game_id;type:varchar(72)" json:"gameId"`
 	CompetenceKey   string    `gorm:"column:competence_key;type:varchar(255)" json:"competenceKey"`
 	CompetenceName  string    `gorm:"column:competence_name;type:varchar(255)" json:"competenceName"`
