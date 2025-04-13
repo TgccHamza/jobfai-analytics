@@ -221,6 +221,7 @@ func (r *queryResolver) GetGameMetricsByGame(ctx context.Context, gameID string)
 		result[i] = &model.GameMetric{
 			MetricID:          strconv.Itoa(metric.MetricID),
 			GameID:            &metric.GameID,
+			CompetenceID:      int32(metric.CompetenceID),
 			MetricKey:         &metric.MetricKey,
 			MetricName:        &metric.MetricName,
 			MetricDescription: &metric.MetricDescription,

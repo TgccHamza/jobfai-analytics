@@ -55,12 +55,6 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	BenchmarkComparison struct {
-		BenchmarkScore      func(childComplexity int) int
-		PercentileRank      func(childComplexity int) int
-		RelativeToBenchmark func(childComplexity int) int
-	}
-
 	Competence struct {
 		Benchmark        func(childComplexity int) int
 		BenchmarkMargin  func(childComplexity int) int
@@ -116,6 +110,7 @@ type ComplexityRoot struct {
 	GameMetric struct {
 		Benchmark         func(childComplexity int) int
 		BenchmarkMargin   func(childComplexity int) int
+		CompetenceID      func(childComplexity int) int
 		CreatedAt         func(childComplexity int) int
 		Description       func(childComplexity int) int
 		Formula           func(childComplexity int) int
@@ -227,17 +222,16 @@ type ComplexityRoot struct {
 	}
 
 	PlayerPerformance struct {
-		BenchmarkComparison func(childComplexity int) int
-		CompetenceDetails   func(childComplexity int) int
-		GameDate            func(childComplexity int) int
-		GameID              func(childComplexity int) int
-		GlobalMetrics       func(childComplexity int) int
-		PlayerID            func(childComplexity int) int
-		PlayerName          func(childComplexity int) int
-		ProfileType         func(childComplexity int) int
-		StagePerformance    func(childComplexity int) int
-		TotalScore          func(childComplexity int) int
-		TotalTimeTaken      func(childComplexity int) int
+		CompetenceDetails func(childComplexity int) int
+		GameDate          func(childComplexity int) int
+		GameID            func(childComplexity int) int
+		GlobalMetrics     func(childComplexity int) int
+		PlayerID          func(childComplexity int) int
+		PlayerName        func(childComplexity int) int
+		ProfileType       func(childComplexity int) int
+		StagePerformance  func(childComplexity int) int
+		TotalScore        func(childComplexity int) int
+		TotalTimeTaken    func(childComplexity int) int
 	}
 
 	Query struct {
@@ -463,27 +457,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "BenchmarkComparison.benchmarkScore":
-		if e.complexity.BenchmarkComparison.BenchmarkScore == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.BenchmarkScore(childComplexity), true
-
-	case "BenchmarkComparison.percentileRank":
-		if e.complexity.BenchmarkComparison.PercentileRank == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.PercentileRank(childComplexity), true
-
-	case "BenchmarkComparison.relativeToBenchmark":
-		if e.complexity.BenchmarkComparison.RelativeToBenchmark == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.RelativeToBenchmark(childComplexity), true
 
 	case "Competence.benchmark":
 		if e.complexity.Competence.Benchmark == nil {
@@ -778,6 +751,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GameMetric.BenchmarkMargin(childComplexity), true
+
+	case "GameMetric.competenceId":
+		if e.complexity.GameMetric.CompetenceID == nil {
+			break
+		}
+
+		return e.complexity.GameMetric.CompetenceID(childComplexity), true
 
 	case "GameMetric.createdAt":
 		if e.complexity.GameMetric.CreatedAt == nil {
@@ -1497,13 +1477,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateStageMetric(childComplexity, args["input"].(model.StageMetricUpdateInput)), true
-
-	case "PlayerPerformance.benchmarkComparison":
-		if e.complexity.PlayerPerformance.BenchmarkComparison == nil {
-			break
-		}
-
-		return e.complexity.PlayerPerformance.BenchmarkComparison(childComplexity), true
 
 	case "PlayerPerformance.competenceDetails":
 		if e.complexity.PlayerPerformance.CompetenceDetails == nil {
@@ -2615,10 +2588,8 @@ input ConstantParameterUpdateInput {
 # Player Performance Input
 input PlayerPerformanceInput {
   playerId: ID!
-  playerName: String!
-  profileType: String
   gameId: ID!
-  stageParameters: [StageParametersInput!]!
+  dbIndex: ID!
 }
 
 input StageParametersInput {
@@ -2777,6 +2748,7 @@ type Stage {
 type GameMetric {
   metricId: ID!
   gameId: ID
+  competenceId: Int!
   metricKey: String
   metricName: String
   metricDescription: String
@@ -2838,8 +2810,7 @@ type PlayerPerformance {
   totalTimeTaken: Float
   competenceDetails: [CompetenceDetail]
   stagePerformance: [StagePerformance]
-  globalMetrics: GlobalMetrics
-  benchmarkComparison: BenchmarkComparison
+  globalMetrics: [StageMetricResult]
 }
 
 type CompetenceDetail {
@@ -2897,11 +2868,6 @@ type GlobalMetricResult {
   formula: String
 }
 
-type BenchmarkComparison {
-  percentileRank: Int
-  relativeToBenchmark: String
-  benchmarkScore: Float
-}
 
 # Custom scalar for JSON data
 scalar JSON
@@ -4606,129 +4572,6 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _BenchmarkComparison_percentileRank(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_percentileRank(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PercentileRank, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int32)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_percentileRank(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _BenchmarkComparison_relativeToBenchmark(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_relativeToBenchmark(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.RelativeToBenchmark, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_relativeToBenchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _BenchmarkComparison_benchmarkScore(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_benchmarkScore(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BenchmarkScore, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_benchmarkScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
 
 func (ec *executionContext) _Competence_competenceId(ctx context.Context, field graphql.CollectedField, obj *models.Competence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Competence_competenceId(ctx, field)
@@ -6701,6 +6544,50 @@ func (ec *executionContext) fieldContext_GameMetric_gameId(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _GameMetric_competenceId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GameMetric_competenceId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompetenceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GameMetric_competenceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GameMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _GameMetric_metricKey(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_metricKey(ctx, field)
 	if err != nil {
@@ -7694,6 +7581,8 @@ func (ec *executionContext) fieldContext_GameMetricParameter_metric(_ context.Co
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -10730,6 +10619,8 @@ func (ec *executionContext) fieldContext_Mutation_createGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -10810,6 +10701,8 @@ func (ec *executionContext) fieldContext_Mutation_updateGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -11158,8 +11051,6 @@ func (ec *executionContext) fieldContext_Mutation_calculatePlayerPerformance(ctx
 				return ec.fieldContext_PlayerPerformance_stagePerformance(ctx, field)
 			case "globalMetrics":
 				return ec.fieldContext_PlayerPerformance_globalMetrics(ctx, field)
-			case "benchmarkComparison":
-				return ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerPerformance", field.Name)
 		},
@@ -11612,9 +11503,9 @@ func (ec *executionContext) _PlayerPerformance_globalMetrics(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.GlobalMetrics)
+	res := resTmp.([]*model.StageMetricResult)
 	fc.Result = res
-	return ec.marshalOGlobalMetrics2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGlobalMetrics(ctx, field.Selections, res)
+	return ec.marshalOStageMetricResult2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PlayerPerformance_globalMetrics(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11625,69 +11516,24 @@ func (ec *executionContext) fieldContext_PlayerPerformance_globalMetrics(_ conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "timeEfficiency":
-				return ec.fieldContext_GlobalMetrics_timeEfficiency(ctx, field)
-			case "autonomy":
-				return ec.fieldContext_GlobalMetrics_autonomy(ctx, field)
-			case "errorRecovery":
-				return ec.fieldContext_GlobalMetrics_errorRecovery(ctx, field)
-			case "stressPerformance":
-				return ec.fieldContext_GlobalMetrics_stressPerformance(ctx, field)
-			case "consistency":
-				return ec.fieldContext_GlobalMetrics_consistency(ctx, field)
-			case "adaptability":
-				return ec.fieldContext_GlobalMetrics_adaptability(ctx, field)
+			case "kpiId":
+				return ec.fieldContext_StageMetricResult_kpiId(ctx, field)
+			case "kpiName":
+				return ec.fieldContext_StageMetricResult_kpiName(ctx, field)
+			case "category":
+				return ec.fieldContext_StageMetricResult_category(ctx, field)
+			case "value":
+				return ec.fieldContext_StageMetricResult_value(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_StageMetricResult_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_StageMetricResult_benchmarkMargin(ctx, field)
+			case "formula":
+				return ec.fieldContext_StageMetricResult_formula(ctx, field)
+			case "rawData":
+				return ec.fieldContext_StageMetricResult_rawData(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type GlobalMetrics", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PlayerPerformance_benchmarkComparison(ctx context.Context, field graphql.CollectedField, obj *model.PlayerPerformance) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BenchmarkComparison, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.BenchmarkComparison)
-	fc.Result = res
-	return ec.marshalOBenchmarkComparison2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐBenchmarkComparison(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PlayerPerformance_benchmarkComparison(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PlayerPerformance",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "percentileRank":
-				return ec.fieldContext_BenchmarkComparison_percentileRank(ctx, field)
-			case "relativeToBenchmark":
-				return ec.fieldContext_BenchmarkComparison_relativeToBenchmark(ctx, field)
-			case "benchmarkScore":
-				return ec.fieldContext_BenchmarkComparison_benchmarkScore(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type BenchmarkComparison", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type StageMetricResult", field.Name)
 		},
 	}
 	return fc, nil
@@ -12532,6 +12378,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricsByGame(ctx context.
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -12612,6 +12460,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricById(ctx context.Con
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -14296,9 +14146,9 @@ func (ec *executionContext) _StageMetricResult_rawData(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(map[string]any)
 	fc.Result = res
-	return ec.marshalOJSON2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOJSON2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StageMetricResult_rawData(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -16149,6 +15999,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricCreated(ctx cont
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -16243,6 +16095,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricUpdated(ctx cont
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -16661,8 +16515,6 @@ func (ec *executionContext) fieldContext_Subscription_playerPerformanceCalculate
 				return ec.fieldContext_PlayerPerformance_stagePerformance(ctx, field)
 			case "globalMetrics":
 				return ec.fieldContext_PlayerPerformance_globalMetrics(ctx, field)
-			case "benchmarkComparison":
-				return ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerPerformance", field.Name)
 		},
@@ -19490,7 +19342,7 @@ func (ec *executionContext) unmarshalInputParameterValueInput(ctx context.Contex
 			it.ParamID = data
 		case "value":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
-			data, err := ec.unmarshalNJSON2string(ctx, v)
+			data, err := ec.unmarshalNJSON2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19508,7 +19360,7 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"playerId", "playerName", "profileType", "gameId", "stageParameters"}
+	fieldsInOrder := [...]string{"playerId", "gameId", "dbIndex"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19522,20 +19374,6 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 				return it, err
 			}
 			it.PlayerID = data
-		case "playerName":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerName"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PlayerName = data
-		case "profileType":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("profileType"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ProfileType = data
 		case "gameId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
@@ -19543,13 +19381,13 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 				return it, err
 			}
 			it.GameID = data
-		case "stageParameters":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageParameters"))
-			data, err := ec.unmarshalNStageParametersInput2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInputᚄ(ctx, v)
+		case "dbIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbIndex"))
+			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.StageParameters = data
+			it.DbIndex = data
 		}
 	}
 
@@ -19922,46 +19760,6 @@ func (ec *executionContext) unmarshalInputStageUpdateInput(ctx context.Context, 
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
-
-var benchmarkComparisonImplementors = []string{"BenchmarkComparison"}
-
-func (ec *executionContext) _BenchmarkComparison(ctx context.Context, sel ast.SelectionSet, obj *model.BenchmarkComparison) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, benchmarkComparisonImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("BenchmarkComparison")
-		case "percentileRank":
-			out.Values[i] = ec._BenchmarkComparison_percentileRank(ctx, field, obj)
-		case "relativeToBenchmark":
-			out.Values[i] = ec._BenchmarkComparison_relativeToBenchmark(ctx, field, obj)
-		case "benchmarkScore":
-			out.Values[i] = ec._BenchmarkComparison_benchmarkScore(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
 
 var competenceImplementors = []string{"Competence"}
 
@@ -20643,6 +20441,11 @@ func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSe
 			}
 		case "gameId":
 			out.Values[i] = ec._GameMetric_gameId(ctx, field, obj)
+		case "competenceId":
+			out.Values[i] = ec._GameMetric_competenceId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "metricKey":
 			out.Values[i] = ec._GameMetric_metricKey(ctx, field, obj)
 		case "metricName":
@@ -21458,8 +21261,6 @@ func (ec *executionContext) _PlayerPerformance(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._PlayerPerformance_stagePerformance(ctx, field, obj)
 		case "globalMetrics":
 			out.Values[i] = ec._PlayerPerformance_globalMetrics(ctx, field, obj)
-		case "benchmarkComparison":
-			out.Values[i] = ec._PlayerPerformance_benchmarkComparison(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22796,13 +22597,19 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNJSON2string(ctx context.Context, v any) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNJSON2map(ctx context.Context, v any) (map[string]any, error) {
+	res, err := graphql.UnmarshalMap(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNJSON2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
+func (ec *executionContext) marshalNJSON2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalMap(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -22875,26 +22682,6 @@ func (ec *executionContext) unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinte
 func (ec *executionContext) unmarshalNStageMetricUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricUpdateInput(ctx context.Context, v any) (model.StageMetricUpdateInput, error) {
 	res, err := ec.unmarshalInputStageMetricUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNStageParametersInput2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInputᚄ(ctx context.Context, v any) ([]*model.StageParametersInput, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*model.StageParametersInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNStageParametersInput2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNStageParametersInput2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInput(ctx context.Context, v any) (*model.StageParametersInput, error) {
-	res, err := ec.unmarshalInputStageParametersInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNStageUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageUpdateInput(ctx context.Context, v any) (model.StageUpdateInput, error) {
@@ -23166,13 +22953,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalOBenchmarkComparison2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐBenchmarkComparison(ctx context.Context, sel ast.SelectionSet, v *model.BenchmarkComparison) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._BenchmarkComparison(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
@@ -23544,13 +23324,6 @@ func (ec *executionContext) marshalOGlobalMetricResult2ᚖjobfaiᚑanalyticsᚋi
 	return ec._GlobalMetricResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOGlobalMetrics2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGlobalMetrics(ctx context.Context, sel ast.SelectionSet, v *model.GlobalMetrics) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._GlobalMetrics(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOID2int(ctx context.Context, v any) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23603,19 +23376,19 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalOJSON2ᚖstring(ctx context.Context, v any) (*string, error) {
+func (ec *executionContext) unmarshalOJSON2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOJSON2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOJSON2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	res := graphql.MarshalString(*v)
+	res := graphql.MarshalMap(v)
 	return res
 }
 

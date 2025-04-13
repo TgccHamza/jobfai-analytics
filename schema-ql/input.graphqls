@@ -169,10 +169,8 @@ input ConstantParameterUpdateInput {
 # Player Performance Input
 input PlayerPerformanceInput {
   playerId: ID!
-  playerName: String!
-  profileType: String
   gameId: ID!
-  stageParameters: [StageParametersInput!]!
+  dbIndex: ID!
 }
 
 input StageParametersInput {

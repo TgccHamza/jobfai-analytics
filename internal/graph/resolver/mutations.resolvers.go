@@ -92,10 +92,16 @@ func (r *mutationResolver) DeleteGame(ctx context.Context, gameID string) (*bool
 // CreateCompetence is the resolver for the createCompetence field.
 func (r *mutationResolver) CreateCompetence(ctx context.Context, input model.CompetenceInput) (*models.Competence, error) {
 	//parse parent id to int
+	var parentId *int
+	parentId = nil
+	if input.ParentID != nil {
+		parentId = new(int)
+		*parentId = int(*input.ParentID)
+	}
 
 	competence := &models.Competence{
 		GameID:          input.GameID,
-		ParentID:        int(*input.ParentID),
+		ParentID:        parentId,
 		CompetenceKey:   input.CompetenceKey,
 		CompetenceName:  input.CompetenceName,
 		Benchmark:       *input.Benchmark,
@@ -135,7 +141,7 @@ func (r *mutationResolver) UpdateCompetence(ctx context.Context, input model.Com
 
 	// Update fields
 	if input.ParentID != nil {
-		competence.ParentID = int(*input.ParentID)
+		competence.ParentID = func() *int { val := int(*input.ParentID); return &val }()
 	}
 
 	if input.CompetenceKey != nil {
@@ -324,12 +330,14 @@ func (r *mutationResolver) CreateMetricParameter(ctx context.Context, input mode
 	}
 
 	parameter := &models.MetricParameter{
-		MetricID:    metricID,
-		ParamKey:    input.ParamKey,
-		ParamName:   input.ParamName,
-		Description: *input.Description,
-		ParamType:   input.ParamType,
-		IsRequired:  *input.IsRequired,
+		MetricID:         metricID,
+		ParamKey:         input.ParamKey,
+		ParamName:        input.ParamName,
+		Description:      *input.ParamDescription,
+		ParamDescription: *input.ParamDescription,
+		ParamType:        input.ParamType,
+		DefaultValue:     *input.DefaultValue,
+		IsRequired:       *input.IsRequired,
 	}
 
 	err = r.MetricService.CreateMetricParameter(parameter)
@@ -367,14 +375,19 @@ func (r *mutationResolver) UpdateMetricParameter(ctx context.Context, input mode
 	if input.ParamName != nil {
 		parameter.ParamName = *input.ParamName
 	}
-	if input.Description != nil {
-		parameter.Description = *input.Description
+	if input.ParamDescription != nil {
+		parameter.Description = *input.ParamDescription
+		parameter.ParamDescription = *input.ParamDescription
 	}
 	if input.ParamType != nil {
 		parameter.ParamType = *input.ParamType
 	}
 	if input.IsRequired != nil {
 		parameter.IsRequired = *input.IsRequired
+	}
+
+	if input.DefaultValue != nil {
+		parameter.DefaultValue = *input.DefaultValue
 	}
 
 	// Save the updated parameter
@@ -555,6 +568,14 @@ func (r *mutationResolver) UpdateGameMetric(ctx context.Context, input model.Gam
 	}
 
 	// Update fields
+	if input.CompetenceID != nil {
+		competenceID, err := strconv.Atoi(*input.CompetenceID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid competence ID format: %w", err)
+		}
+		metric.CompetenceID = competenceID
+	}
+
 	if input.MetricKey != nil {
 		metric.MetricKey = *input.MetricKey
 	}
@@ -709,32 +730,9 @@ func (r *mutationResolver) DeleteConstantParameter(ctx context.Context, constID 
 func (r *mutationResolver) CalculatePlayerPerformance(ctx context.Context, input model.PlayerPerformanceInput) (*model.PlayerPerformance, error) {
 	// Convert input parameters to the format expected by the service
 	playerPerformanceInput := &services.PlayerPerformanceInput{
-		PlayerID:    input.PlayerID,
-		PlayerName:  input.PlayerName,
-		ProfileType: *input.ProfileType,
-		GameID:      input.GameID,
-	}
-
-	// Convert stage parameters
-	for _, stage := range input.StageParameters {
-		// Convert StageID from string to int
-		stageID, err := strconv.Atoi(stage.StageID)
-		if err != nil {
-			return nil, fmt.Errorf("invalid stage ID format: %w", err)
-		}
-
-		stageParams := services.StageParametersInput{
-			StageID:    stageID,
-			Parameters: make(map[string]interface{}),
-			TimeTaken:  stage.TimeTaken,
-		}
-
-		// Copy parameters
-		for _, param := range stage.Parameters {
-			stageParams.Parameters[param.ParamID] = param.Value
-		}
-
-		playerPerformanceInput.StageParameters = append(playerPerformanceInput.StageParameters, stageParams)
+		PlayerID: input.PlayerID,
+		GameID:   input.GameID,
+		DbIndex:  input.DbIndex,
 	}
 
 	// Call the service to calculate performance
@@ -769,11 +767,134 @@ func (r *mutationResolver) CalculatePlayerPerformance(ctx context.Context, input
 		if benchmark, ok := compData["benchmark"].(float64); ok {
 			competenceScore.Benchmark = &benchmark
 		}
+		if benchmarkMargin, ok := compData["benchmarkMargin"].(float64); ok {
+			competenceScore.BenchmarkMargin = &benchmarkMargin
+		}
 		if weight, ok := compData["weight"].(float64); ok {
 			competenceScore.Weight = &weight
 		}
 
+		// Add metrics for this competence
+		if metricsData, ok := compData["metrics"].([]map[string]interface{}); ok {
+			for _, metric := range metricsData {
+				metricResult := &model.MetricResult{
+					KpiID: metric["kpiId"].(string),
+				}
+
+				if kpiName, ok := metric["kpiName"].(string); ok {
+					metricResult.KpiName = &kpiName
+				}
+				if value, ok := metric["value"].(float64); ok {
+					metricResult.Value = &value
+				}
+				if benchmark, ok := metric["benchmark"].(float64); ok {
+					metricResult.Benchmark = &benchmark
+				}
+				if benchmarkMargin, ok := metric["benchmarkMargin"].(float64); ok {
+					metricResult.BenchmarkMargin = &benchmarkMargin
+				}
+
+				competenceScore.Metrics = append(competenceScore.Metrics, metricResult)
+			}
+		}
+
 		performance.CompetenceDetails = append(performance.CompetenceDetails, competenceScore)
+	}
+
+	// Add stage performance data
+	for _, stage := range result.StagePerformance {
+		stagePerf := &model.StagePerformance{
+			StageID: fmt.Sprintf("%v", stage["stageId"]),
+		}
+
+		if stageName, ok := stage["stageName"].(string); ok {
+			stagePerf.StageName = &stageName
+		}
+		if score, ok := stage["score"].(float64); ok {
+			stagePerf.Score = &score
+		}
+		if benchmark, ok := stage["benchmark"].(float64); ok {
+			stagePerf.Benchmark = &benchmark
+		}
+		if timeTaken, ok := stage["timeTaken"].(float64); ok {
+			stagePerf.TimeTaken = &timeTaken
+		}
+		if optimalTime, ok := stage["optimalTime"].(float64); ok {
+			stagePerf.OptimalTime = &optimalTime
+		}
+		if completionStatus, ok := stage["completionStatus"].(string); ok {
+			stagePerf.CompletionStatus = &completionStatus
+		}
+
+		// Add metrics for this stage
+		if metricsData, ok := stage["metrics"].([]map[string]interface{}); ok {
+			for _, metric := range metricsData {
+				stageMetric := &model.StageMetricResult{}
+
+				if kpiId, ok := metric["kpiId"].(string); ok {
+					stageMetric.KpiID = kpiId
+				}
+				if kpiName, ok := metric["kpiName"].(string); ok {
+					stageMetric.KpiName = &kpiName
+				}
+
+				if category, ok := metric["category"].(string); ok {
+					stageMetric.Category = &category
+				}
+
+				if formula, ok := metric["formula"].(string); ok {
+					stageMetric.Formula = &formula
+				}
+
+				if rawData, ok := metric["rawData"].(map[string]interface{}); ok {
+					stageMetric.RawData = rawData
+				}
+
+				if value, ok := metric["value"].(float64); ok {
+					stageMetric.Value = &value
+				}
+				if benchmark, ok := metric["benchmark"].(float64); ok {
+					stageMetric.Benchmark = &benchmark
+				}
+
+				stagePerf.Metrics = append(stagePerf.Metrics, stageMetric)
+			}
+		}
+
+		performance.StagePerformance = append(performance.StagePerformance, stagePerf)
+	}
+
+	// Add stage performance data
+	for _, metric := range result.GlobalMetrics {
+		gameMetric := &model.StageMetricResult{}
+
+		if kpiId, ok := metric["kpiId"].(string); ok {
+			gameMetric.KpiID = kpiId
+		}
+		if kpiName, ok := metric["kpiName"].(string); ok {
+			gameMetric.KpiName = &kpiName
+		}
+
+		if category, ok := metric["category"].(string); ok {
+			gameMetric.Category = &category
+		}
+
+		if formula, ok := metric["formula"].(string); ok {
+			gameMetric.Formula = &formula
+		}
+
+		if rawData, ok := metric["rawData"].(map[string]interface{}); ok {
+			gameMetric.RawData = rawData
+		}
+
+		if value, ok := metric["value"].(float64); ok {
+			gameMetric.Value = &value
+		}
+		if benchmark, ok := metric["benchmark"].(float64); ok {
+			gameMetric.Benchmark = &benchmark
+		}
+
+		performance.GlobalMetrics = append(performance.GlobalMetrics, gameMetric)
 	}
 
 	return performance, nil

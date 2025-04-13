@@ -48,8 +48,7 @@ func (r *CompetenceMetricRepository) FindByCompetence(competenceID int) ([]model
 
 func (r *CompetenceMetricRepository) FindByStage(stageID int) ([]models.Metric, error) {
 	var metrics []models.Metric
-	err := r.db.Joins("JOIN stage_metrics ON competence_metrics.metric_id = stage_metrics.metric_id").
-		Where("stage_metrics.stage_id = ?", stageID).
+	err := r.db.Where("metrics.stage_id = ?", stageID).
 		Find(&metrics).Error
 	return metrics, err
 }

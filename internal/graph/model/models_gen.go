@@ -6,12 +6,6 @@ import (
 	"jobfai-analytics/internal/models"
 )
 
-type BenchmarkComparison struct {
-	PercentileRank      *int32   `json:"percentileRank,omitempty"`
-	RelativeToBenchmark *string  `json:"relativeToBenchmark,omitempty"`
-	BenchmarkScore      *float64 `json:"benchmarkScore,omitempty"`
-}
-
 type CompetenceDetail struct {
 	CompetenceKey   string          `json:"competenceKey"`
 	Name            *string         `json:"name,omitempty"`
@@ -71,6 +65,7 @@ type GameInput struct {
 type GameMetric struct {
 	MetricID          string                 `json:"metricId"`
 	GameID            *string                `json:"gameId,omitempty"`
+	CompetenceID      int32                  `json:"competenceId"`
 	MetricKey         *string                `json:"metricKey,omitempty"`
 	MetricName        *string                `json:"metricName,omitempty"`
 	MetricDescription *string                `json:"metricDescription,omitempty"`
@@ -200,30 +195,27 @@ type Mutation struct {
 }
 
 type ParameterValueInput struct {
-	ParamID string `json:"paramId"`
-	Value   string `json:"value"`
+	ParamID string         `json:"paramId"`
+	Value   map[string]any `json:"value"`
 }
 
 type PlayerPerformance struct {
-	PlayerID            string               `json:"playerId"`
-	PlayerName          *string              `json:"playerName,omitempty"`
-	ProfileType         *string              `json:"profileType,omitempty"`
-	GameDate            *string              `json:"gameDate,omitempty"`
-	GameID              string               `json:"gameId"`
-	TotalScore          *float64             `json:"totalScore,omitempty"`
-	TotalTimeTaken      *float64             `json:"totalTimeTaken,omitempty"`
-	CompetenceDetails   []*CompetenceDetail  `json:"competenceDetails,omitempty"`
-	StagePerformance    []*StagePerformance  `json:"stagePerformance,omitempty"`
-	GlobalMetrics       *GlobalMetrics       `json:"globalMetrics,omitempty"`
-	BenchmarkComparison *BenchmarkComparison `json:"benchmarkComparison,omitempty"`
+	PlayerID          string               `json:"playerId"`
+	PlayerName        *string              `json:"playerName,omitempty"`
+	ProfileType       *string              `json:"profileType,omitempty"`
+	GameDate          *string              `json:"gameDate,omitempty"`
+	GameID            string               `json:"gameId"`
+	TotalScore        *float64             `json:"totalScore,omitempty"`
+	TotalTimeTaken    *float64             `json:"totalTimeTaken,omitempty"`
+	CompetenceDetails []*CompetenceDetail  `json:"competenceDetails,omitempty"`
+	StagePerformance  []*StagePerformance  `json:"stagePerformance,omitempty"`
+	GlobalMetrics     []*StageMetricResult `json:"globalMetrics,omitempty"`
 }
 
 type PlayerPerformanceInput struct {
-	PlayerID        string                  `json:"playerId"`
-	PlayerName      string                  `json:"playerName"`
-	ProfileType     *string                 `json:"profileType,omitempty"`
-	GameID          string                  `json:"gameId"`
-	StageParameters []*StageParametersInput `json:"stageParameters"`
+	PlayerID string `json:"playerId"`
+	GameID   string `json:"gameId"`
+	DbIndex  string `json:"dbIndex"`
 }
 
 type Query struct {
@@ -253,14 +245,14 @@ type StageMetricInput struct {
 }
 
 type StageMetricResult struct {
-	KpiID           string   `json:"kpiId"`
-	KpiName         *string  `json:"kpiName,omitempty"`
-	Category        *string  `json:"category,omitempty"`
-	Value           *float64 `json:"value,omitempty"`
-	Benchmark       *float64 `json:"benchmark,omitempty"`
-	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
-	Formula         *string  `json:"formula,omitempty"`
-	RawData         *string  `json:"rawData,omitempty"`
+	KpiID           string         `json:"kpiId"`
+	KpiName         *string        `json:"kpiName,omitempty"`
+	Category        *string        `json:"category,omitempty"`
+	Value           *float64       `json:"value,omitempty"`
+	Benchmark       *float64       `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64       `json:"benchmarkMargin,omitempty"`
+	Formula         *string        `json:"formula,omitempty"`
+	RawData         map[string]any `json:"rawData,omitempty"`
 }
 
 type StageMetricUpdateInput struct {

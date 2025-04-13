@@ -15,6 +15,7 @@ services:
       BLUEPRINT_DB_DATABASE: ${BLUEPRINT_DB_DATABASE}
       BLUEPRINT_DB_USERNAME: ${BLUEPRINT_DB_USERNAME}
       BLUEPRINT_DB_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
+      URL_MONGO: ${URL_MONGO}
     depends_on:
       mysql_bp:
         condition: service_healthy

@@ -9,6 +9,8 @@ import (
 	"jobfai-analytics/internal/repositories"
 	"jobfai-analytics/internal/services"
 	"jobfai-analytics/internal/subscription"
+	"jobfai-analytics/pkg/calculator"
+	"jobfai-analytics/pkg/evaluator"
 )
 
 type Resolver struct {
@@ -34,6 +36,8 @@ func NewResolver(db database.Service) *Resolver {
 	gameMetricRepo := repositories.NewGameMetricRepository(db.DB())
 	gameMetricParamRepo := repositories.NewGameMetricParameterRepository(db.DB())
 	constantParamRepo := repositories.NewConstantParameterRepository(db.DB())
+	formulaEvaluator := evaluator.NewFormulaEvaluator()
+	metricCalc := calculator.NewMetricCalculator(formulaEvaluator)
 
 	// Create services
 	gameService := services.NewGameService(gameRepo, stageRepo, competenceRepo)
@@ -52,9 +56,10 @@ func NewResolver(db database.Service) *Resolver {
 		stageRepo,
 		competenceRepo,
 		competenceMetricRepo,
+		metricParamRepo,
 		gameMetricRepo,
 		constantParamRepo,
-		nil, // MetricCalculator will be initialized in the service
+		metricCalc, // MetricCalculator will be initialized in the service
 	)
 	constantParamService := services.NewConstantParameterService(constantParamRepo)
 

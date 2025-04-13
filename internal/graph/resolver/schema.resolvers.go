@@ -47,7 +47,7 @@ func (r *competenceResolver) Game(ctx context.Context, obj *models.Competence) (
 
 // ParentCompetence is the resolver for the parentCompetence field.
 func (r *competenceResolver) ParentCompetence(ctx context.Context, obj *models.Competence) (*models.Competence, error) {
-	return r.CompetenceService.GetCompetenceByID(obj.ParentID)
+	return r.CompetenceService.GetCompetenceByID(*obj.ParentID)
 }
 
 // CreatedAt is the resolver for the createdAt field.

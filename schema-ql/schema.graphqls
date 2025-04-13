@@ -82,6 +82,7 @@ type Stage {
 type GameMetric {
   metricId: ID!
   gameId: ID
+  competenceId: Int!
   metricKey: String
   metricName: String
   metricDescription: String
@@ -143,8 +144,7 @@ type PlayerPerformance {
   totalTimeTaken: Float
   competenceDetails: [CompetenceDetail]
   stagePerformance: [StagePerformance]
-  globalMetrics: GlobalMetrics
-  benchmarkComparison: BenchmarkComparison
+  globalMetrics: [StageMetricResult]
 }
 
 type CompetenceDetail {
@@ -202,11 +202,6 @@ type GlobalMetricResult {
   formula: String
 }
 
-type BenchmarkComparison {
-  percentileRank: Int
-  relativeToBenchmark: String
-  benchmarkScore: Float
-}
 
 # Custom scalar for JSON data
 scalar JSON
