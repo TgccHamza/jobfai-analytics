@@ -12,18 +12,9 @@ import (
 
 // PlayerPerformanceInput represents the input data for calculating player performance
 type PlayerPerformanceInput struct {
-	PlayerID        string                 `json:"playerId"`
-	PlayerName      string                 `json:"playerName"`
-	ProfileType     string                 `json:"profileType"`
-	GameID          string                 `json:"gameId"`
-	StageParameters []StageParametersInput `json:"stageParameters"`
-}
-
-// StageParametersInput represents the input parameters for a stage
-type StageParametersInput struct {
-	StageID    int                    `json:"stageId"`
-	Parameters map[string]interface{} `json:"parameters"`
-	TimeTaken  float64                `json:"timeTaken"`
+	PlayerID string `json:"playerId"`
+	GameID   string `json:"gameId"`
+	DbIndex  string `json:"dbIndex"`
 }
 
 // PlayerPerformanceOutput represents the output data for player performance
@@ -37,7 +28,7 @@ type PlayerPerformanceOutput struct {
 	TotalTimeTaken    float64                  `json:"totalTimeTaken"`
 	CompetenceDetails map[string]interface{}   `json:"competenceDetails"`
 	StagePerformance  []map[string]interface{} `json:"stagePerformance"`
-	GlobalMetrics     map[string]interface{}   `json:"globalMetrics"`
+	GlobalMetrics     []map[string]interface{} `json:"globalMetrics"`
 }
 
 // PlayerPerformanceService handles player performance calculation
@@ -45,7 +36,8 @@ type PlayerPerformanceService struct {
 	gameRepository              *repositories.GameRepository
 	stageRepository             *repositories.StageRepository
 	competenceRepository        *repositories.CompetenceRepository
-	competenceMetricRepository  *repositories.CompetenceMetricRepository
+	MetricRepository            *repositories.CompetenceMetricRepository
+	MetricParameterRepository   *repositories.MetricParameterRepository
 	gameMetricRepository        *repositories.GameMetricRepository
 	constantParameterRepository *repositories.ConstantParameterRepository
 	metricCalculator            *calculator.MetricCalculator
@@ -56,7 +48,8 @@ func NewPlayerPerformanceService(
 	gameRepository *repositories.GameRepository,
 	stageRepository *repositories.StageRepository,
 	competenceRepository *repositories.CompetenceRepository,
-	competenceMetricRepository *repositories.CompetenceMetricRepository,
+	MetricRepository *repositories.CompetenceMetricRepository,
+	MetricParameterRepository *repositories.MetricParameterRepository,
 	gameMetricRepository *repositories.GameMetricRepository,
 	constantParameterRepository *repositories.ConstantParameterRepository,
 	metricCalculator *calculator.MetricCalculator,
@@ -65,10 +58,11 @@ func NewPlayerPerformanceService(
 		gameRepository:              gameRepository,
 		stageRepository:             stageRepository,
 		competenceRepository:        competenceRepository,
-		competenceMetricRepository:  competenceMetricRepository,
+		MetricRepository:            MetricRepository,
 		gameMetricRepository:        gameMetricRepository,
 		constantParameterRepository: constantParameterRepository,
 		metricCalculator:            metricCalculator,
+		MetricParameterRepository:   MetricParameterRepository,
 	}
 }
 
@@ -79,14 +73,20 @@ func (s *PlayerPerformanceService) CalculatePlayerPerformance(input PlayerPerfor
 		return nil, err
 	}
 
-	// Get game configuration
-	game, err := s.gameRepository.FindWithFullConfiguration(input.GameID)
+	// // Get game configuration
+	game, err := s.gameRepository.FindByID(input.GameID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game: %w", err)
 	}
 
 	if game == nil {
 		return nil, errors.New("game not found")
+	}
+
+	playerData, err := GetPlayerData(input.DbIndex, input.PlayerID)
+
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving player data: %w", err)
 	}
 
 	// Get constants
@@ -96,21 +96,21 @@ func (s *PlayerPerformanceService) CalculatePlayerPerformance(input PlayerPerfor
 	}
 
 	// Calculate stage metrics
-	stagePerformance, err := s.calculateStagePerformance(game, input.StageParameters, constants)
+	stagePerformance, err := s.calculateStagePerformance(game, constants, playerData)
 	if err != nil {
 		return nil, fmt.Errorf("error calculating stage performance: %w", err)
 	}
 
-	// Calculate competence metrics
-	competenceDetails, err := s.calculateCompetenceDetails(game, stagePerformance)
-	if err != nil {
-		return nil, fmt.Errorf("error calculating competence details: %w", err)
-	}
-
 	// Calculate global metrics
-	globalMetrics, err := s.calculateGlobalMetrics(game, stagePerformance, competenceDetails)
+	globalMetrics, err := s.calculateGlobalMetrics(game, constants, playerData)
 	if err != nil {
 		return nil, fmt.Errorf("error calculating global metrics: %w", err)
+	}
+
+	// Calculate competence metrics
+	competenceDetails, err := s.calculateCompetenceDetails(game, stagePerformance, globalMetrics)
+	if err != nil {
+		return nil, fmt.Errorf("error calculating competence details: %w", err)
 	}
 
 	// Calculate total score
@@ -122,8 +122,8 @@ func (s *PlayerPerformanceService) CalculatePlayerPerformance(input PlayerPerfor
 	// Build and return the complete player performance data
 	return &PlayerPerformanceOutput{
 		PlayerID:          input.PlayerID,
-		PlayerName:        input.PlayerName,
-		ProfileType:       input.ProfileType,
+		PlayerName:        "",
+		ProfileType:       "",
 		GameDate:          time.Now(),
 		GameID:            input.GameID,
 		TotalScore:        totalScore,
@@ -136,12 +136,8 @@ func (s *PlayerPerformanceService) CalculatePlayerPerformance(input PlayerPerfor
 
 // validatePlayerData validates the player input data
 func (s *PlayerPerformanceService) validatePlayerData(input PlayerPerformanceInput) error {
-	if input.PlayerID == "" || input.PlayerName == "" || input.GameID == "" {
+	if input.PlayerID == "" || input.DbIndex == "" || input.GameID == "" {
 		return errors.New("missing required player data")
-	}
-
-	if len(input.StageParameters) == 0 {
-		return errors.New("missing stage parameters")
 	}
 
 	return nil
@@ -150,31 +146,27 @@ func (s *PlayerPerformanceService) validatePlayerData(input PlayerPerformanceInp
 // calculateStagePerformance calculates the performance for each stage
 func (s *PlayerPerformanceService) calculateStagePerformance(
 	game *models.Game,
-	stageParameters []StageParametersInput,
 	constants []models.ConstantParameter,
+	playerData map[string]interface{},
 ) ([]map[string]interface{}, error) {
 	stagePerformance := make([]map[string]interface{}, 0)
+	stages, err := s.stageRepository.FindByGame(game.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving stages: %w", err)
+	}
 
-	for _, stageData := range stageParameters {
-		stage, err := s.stageRepository.FindWithMetrics(stageData.StageID)
+	for _, stage := range stages {
+		stageMetrics, err := s.MetricRepository.FindByStage(stage.StageID)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving stage: %w", err)
 		}
 
-		if stage == nil {
-			continue
-		}
+		resultMetrics := make([]map[string]interface{}, 0)
 
-		stageMetrics := make([]map[string]interface{}, 0)
-
-		for _, stageMetric := range stage.Metrics {
-			metric, err := s.competenceMetricRepository.FindWithParameters(stageMetric.MetricID)
+		for _, stageMetric := range stageMetrics {
+			parameters, err := s.MetricParameterRepository.FindByMetric(stageMetric.MetricID)
 			if err != nil {
 				return nil, fmt.Errorf("error retrieving metric: %w", err)
-			}
-
-			if metric == nil {
-				continue
 			}
 
 			competence, err := s.competenceRepository.FindByID(stageMetric.CompetenceID)
@@ -186,44 +178,45 @@ func (s *PlayerPerformanceService) calculateStagePerformance(
 				continue
 			}
 
-			metricResult, err := s.metricCalculator.CalculateCompetenceMetric(
-				metric,
-				stageData.Parameters,
+			metricResult, err := s.metricCalculator.CalculateMetric(
+				&stageMetric,
+				parameters,
 				constants,
-			)
+				playerData)
+
 			if err != nil {
 				return nil, fmt.Errorf("error calculating metric: %w", err)
 			}
 
-			stageMetrics = append(stageMetrics, map[string]interface{}{
-				"kpiId":     metric.MetricKey,
-				"kpiName":   metric.MetricName,
+			resultMetrics = append(resultMetrics, map[string]interface{}{
+				"kpiId":     stageMetric.MetricKey,
+				"kpiName":   stageMetric.MetricName,
 				"category":  competence.CompetenceKey,
 				"value":     metricResult["value"],
-				"benchmark": metric.Benchmark,
-				"formula":   metric.Formula,
+				"benchmark": stageMetric.Benchmark,
+				"formula":   stageMetric.Formula,
 				"rawData":   metricResult["rawData"],
 			})
 		}
 
 		// Calculate stage score (simple average of metrics)
 		var stageScore float64
-		if len(stageMetrics) > 0 {
+		if len(resultMetrics) > 0 {
 			var totalScore float64
-			for _, metric := range stageMetrics {
+			for _, metric := range resultMetrics {
 				value, ok := metric["value"].(float64)
 				if ok {
 					totalScore += value
 				}
 			}
-			stageScore = totalScore / float64(len(stageMetrics))
+			stageScore = totalScore / float64(len(resultMetrics))
 		}
 
 		stagePerformance = append(stagePerformance, map[string]interface{}{
 			"stageId":          stage.StageID,
 			"stageName":        stage.StageName,
-			"metrics":          stageMetrics,
-			"timeTaken":        stageData.TimeTaken,
+			"metrics":          resultMetrics,
+			"timeTaken":        0,
 			"optimalTime":      stage.OptimalTime,
 			"score":            stageScore,
 			"benchmark":        stage.Benchmark,
@@ -238,9 +231,10 @@ func (s *PlayerPerformanceService) calculateStagePerformance(
 func (s *PlayerPerformanceService) calculateCompetenceDetails(
 	game *models.Game,
 	stagePerformance []map[string]interface{},
+	globalMetrics []map[string]interface{},
 ) (map[string]interface{}, error) {
 	competenceDetails := make(map[string]interface{})
-	competenceMetrics := make(map[string][]map[string]interface{})
+	Metrics := make(map[string][]map[string]interface{})
 
 	// Group metrics by competence
 	for _, stage := range stagePerformance {
@@ -255,18 +249,37 @@ func (s *PlayerPerformanceService) calculateCompetenceDetails(
 				continue
 			}
 
-			if _, exists := competenceMetrics[category]; !exists {
-				competenceMetrics[category] = make([]map[string]interface{}, 0)
+			if _, exists := Metrics[category]; !exists {
+				Metrics[category] = make([]map[string]interface{}, 0)
 			}
 
-			competenceMetrics[category] = append(competenceMetrics[category], metric)
+			Metrics[category] = append(Metrics[category], metric)
 		}
 	}
 
+	for _, metric := range globalMetrics {
+		category, ok := metric["category"].(string)
+		if !ok {
+			continue
+		}
+
+		if _, exists := Metrics[category]; !exists {
+			Metrics[category] = make([]map[string]interface{}, 0)
+		}
+
+		Metrics[category] = append(Metrics[category], metric)
+	}
+
+	competencies, err := s.competenceRepository.FindByGame(game.GameID)
+
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving competencies: %w", err)
+	}
+
 	// Calculate competence scores
-	for _, competence := range game.Competencies {
+	for _, competence := range competencies {
 		competenceKey := competence.CompetenceKey
-		metrics, exists := competenceMetrics[competenceKey]
+		metrics, exists := Metrics[competenceKey]
 		if !exists {
 			continue
 		}
@@ -309,41 +322,54 @@ func (s *PlayerPerformanceService) calculateCompetenceDetails(
 // calculateGlobalMetrics calculates the global metrics for the game
 func (s *PlayerPerformanceService) calculateGlobalMetrics(
 	game *models.Game,
-	stagePerformance []map[string]interface{},
-	competenceDetails map[string]interface{},
-) (map[string]interface{}, error) {
-	globalMetrics := make(map[string]interface{})
-
+	constants []models.ConstantParameter,
+	playerData map[string]interface{},
+) ([]map[string]interface{}, error) {
 	// Convert competenceDetails to the expected format
-	competenceMap := make(map[string]map[string]interface{})
-	for key, value := range competenceDetails {
-		if details, ok := value.(map[string]interface{}); ok {
-			competenceMap[key] = details
-		}
+	gameMetrics, err := s.gameRepository.FindByGame(game.GameID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving metrics: %w", err)
 	}
 
-	for _, gameMetric := range game.GameMetrics {
-		metricWithParams, err := s.gameMetricRepository.FindWithParameters(gameMetric.MetricID)
+	resultMetrics := make([]map[string]interface{}, 0)
+	for _, gameMetric := range gameMetrics {
+		parameters, err := s.MetricParameterRepository.FindByMetric(gameMetric.MetricID)
 		if err != nil {
-			return nil, fmt.Errorf("error retrieving game metric parameters: %w", err)
+			return nil, fmt.Errorf("error retrieving metric: %w", err)
 		}
 
-		metricResult, err := s.metricCalculator.CalculateGameMetric(
-			metricWithParams,
-			stagePerformance,
-			competenceMap,
-		)
+		competence, err := s.competenceRepository.FindByID(gameMetric.CompetenceID)
 		if err != nil {
-			return nil, fmt.Errorf("error calculating global metric: %w", err)
+			return nil, fmt.Errorf("error retrieving competence: %w", err)
 		}
 
-		globalMetrics[gameMetric.MetricKey] = map[string]interface{}{
-			"value":   metricResult["value"],
-			"formula": gameMetric.Formula,
+		// Safely handle the case where competence might be nil
+		var competenceKey string
+		if competence != nil {
+			competenceKey = competence.CompetenceKey
 		}
+
+		metricResult, err := s.metricCalculator.CalculateMetric(
+			&gameMetric,
+			parameters,
+			constants,
+			playerData)
+
+		if err != nil {
+			return nil, fmt.Errorf("error calculating metric: %w", err)
+		}
+		resultMetrics = append(resultMetrics, map[string]interface{}{
+			"kpiId":     gameMetric.MetricKey,
+			"kpiName":   gameMetric.MetricName,
+			"category":  competenceKey,
+			"value":     metricResult["value"],
+			"benchmark": gameMetric.Benchmark,
+			"formula":   gameMetric.Formula,
+			"rawData":   metricResult["rawData"],
+		})
 	}
 
-	return globalMetrics, nil
+	return resultMetrics, nil
 }
 
 // calculateTotalScore calculates the total score based on competence scores and weights

@@ -79,7 +79,7 @@ func (r *queryResolver) GetCompetenceByID(ctx context.Context, competenceID stri
 }
 
 // GetMetricsByCompetence is the resolver for the getMetricsByCompetence field.
-func (r *queryResolver) GetMetricsByCompetence(ctx context.Context, competenceID string) ([]*models.CompetenceMetric, error) {
+func (r *queryResolver) GetMetricsByCompetence(ctx context.Context, competenceID string) ([]*models.Metric, error) {
 	id, err := strconv.Atoi(competenceID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid competence ID format: %w", err)
@@ -90,8 +90,8 @@ func (r *queryResolver) GetMetricsByCompetence(ctx context.Context, competenceID
 		return nil, fmt.Errorf("error fetching metrics: %w", err)
 	}
 
-	// Convert []models.CompetenceMetric to []*models.CompetenceMetric
-	result := make([]*models.CompetenceMetric, len(metrics))
+	// Convert []models.Metric to []*models.Metric
+	result := make([]*models.Metric, len(metrics))
 	for i := range metrics {
 		result[i] = &metrics[i]
 	}
@@ -100,13 +100,13 @@ func (r *queryResolver) GetMetricsByCompetence(ctx context.Context, competenceID
 }
 
 // GetMetricByID is the resolver for the getMetricById field.
-func (r *queryResolver) GetMetricByID(ctx context.Context, metricID string) (*models.CompetenceMetric, error) {
+func (r *queryResolver) GetMetricByID(ctx context.Context, metricID string) (*models.Metric, error) {
 	id, err := strconv.Atoi(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid metric ID format: %w", err)
 	}
 
-	metric, err := r.MetricService.GetCompetenceMetricByID(id)
+	metric, err := r.MetricService.GetMetricByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching metric: %w", err)
 	}
@@ -119,31 +119,28 @@ func (r *queryResolver) GetMetricByID(ctx context.Context, metricID string) (*mo
 }
 
 // GetParametersByMetric is the resolver for the getParametersByMetric field.
-func (r *queryResolver) GetParametersByMetric(ctx context.Context, metricID string) ([]*model.MetricParameter, error) {
+func (r *queryResolver) GetParametersByMetric(ctx context.Context, metricID string) ([]*models.MetricParameter, error) {
 	id, err := strconv.Atoi(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid metric ID format: %w", err)
 	}
 
-	parameters, err := r.MetricService.GetCompetenceMetricParameters(id)
+	parameters, err := r.MetricService.GetMetricParameters(id)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching parameters: %w", err)
 	}
 
-	// Convert []models.CompetenceMetricParameter to []*model.MetricParameter
-	result := make([]*model.MetricParameter, len(parameters))
+	// Convert []models.MetricParameter to []*model.MetricParameter
+	result := make([]*models.MetricParameter, len(parameters))
 	for i, param := range parameters {
-		paramID := strconv.Itoa(param.ParamID)
-		metricIDStr := strconv.Itoa(param.MetricID)
-
-		result[i] = &model.MetricParameter{
-			ParamID:     paramID,
-			MetricID:    &metricIDStr,
-			ParamName:   &param.ParamName,
-			ParamKey:    &param.ParamKey,
-			Description: &param.Description,
-			ParamType:   &param.ParamType,
-			IsRequired:  &param.IsRequired,
+		result[i] = &models.MetricParameter{
+			ParamID:     param.ParamID,
+			MetricID:    param.MetricID,
+			ParamName:   param.ParamName,
+			ParamKey:    param.ParamKey,
+			Description: param.Description,
+			ParamType:   param.ParamType,
+			IsRequired:  param.IsRequired,
 		}
 	}
 
@@ -186,7 +183,7 @@ func (r *queryResolver) GetStageByID(ctx context.Context, stageID string) (*mode
 }
 
 // GetMetricsByStage is the resolver for the getMetricsByStage field.
-func (r *queryResolver) GetMetricsByStage(ctx context.Context, stageID string) ([]*models.CompetenceMetric, error) {
+func (r *queryResolver) GetMetricsByStage(ctx context.Context, stageID string) ([]*models.Metric, error) {
 	id, err := strconv.Atoi(stageID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid stage ID format: %w", err)
@@ -197,8 +194,8 @@ func (r *queryResolver) GetMetricsByStage(ctx context.Context, stageID string) (
 		return nil, fmt.Errorf("error fetching metrics: %w", err)
 	}
 
-	// Convert []models.CompetenceMetric to []*models.CompetenceMetric
-	result := make([]*models.CompetenceMetric, len(metrics))
+	// Convert []models.Metric to []*models.Metric
+	result := make([]*models.Metric, len(metrics))
 	for i := range metrics {
 		result[i] = &metrics[i]
 	}
@@ -207,23 +204,38 @@ func (r *queryResolver) GetMetricsByStage(ctx context.Context, stageID string) (
 }
 
 // GetGameMetricsByGame is the resolver for the getGameMetricsByGame field.
-func (r *queryResolver) GetGameMetricsByGame(ctx context.Context, gameID string) ([]*models.GameMetric, error) {
+func (r *queryResolver) GetGameMetricsByGame(ctx context.Context, gameID string) ([]*model.GameMetric, error) {
 	metrics, err := r.MetricService.GetGameMetricsByGame(gameID)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching game metrics: %w", err)
 	}
 
-	// Convert []models.GameMetric to []*models.GameMetric
-	result := make([]*models.GameMetric, len(metrics))
-	for i := range metrics {
-		result[i] = &metrics[i]
+	// Convert []models.Metric to []*model.GameMetric
+	result := make([]*model.GameMetric, len(metrics))
+	for i, metric := range metrics {
+		// Convert models.Metric to model.GameMetric
+		var benchmarkStr *string
+		str := strconv.FormatFloat(metric.Benchmark, 'f', -1, 64)
+		benchmarkStr = &str
+
+		result[i] = &model.GameMetric{
+			MetricID:          strconv.Itoa(metric.MetricID),
+			GameID:            &metric.GameID,
+			CompetenceID:      int32(metric.CompetenceID),
+			MetricKey:         &metric.MetricKey,
+			MetricName:        &metric.MetricName,
+			MetricDescription: &metric.MetricDescription,
+			Benchmark:         benchmarkStr,
+			Formula:           &metric.Formula,
+			Description:       &metric.MetricDescription,
+		}
 	}
 
 	return result, nil
 }
 
 // GetGameMetricByID is the resolver for the getGameMetricById field.
-func (r *queryResolver) GetGameMetricByID(ctx context.Context, metricID string) (*models.GameMetric, error) {
+func (r *queryResolver) GetGameMetricByID(ctx context.Context, metricID string) (*model.GameMetric, error) {
 	id, err := strconv.Atoi(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid game metric ID format: %w", err)
@@ -238,11 +250,27 @@ func (r *queryResolver) GetGameMetricByID(ctx context.Context, metricID string) 
 		return nil, fmt.Errorf("game metric not found with ID: %s", metricID)
 	}
 
-	return metric, nil
+	// Convert models.Metric to model.GameMetric
+	var benchmarkStr *string
+	str := strconv.FormatFloat(metric.Benchmark, 'f', -1, 64)
+	benchmarkStr = &str
+
+	result := &model.GameMetric{
+		MetricID:          metricID,
+		GameID:            &metric.GameID,
+		MetricKey:         &metric.MetricKey,
+		MetricName:        &metric.MetricName,
+		MetricDescription: &metric.MetricDescription,
+		Benchmark:         benchmarkStr,
+		Formula:           &metric.Formula,
+		Description:       &metric.MetricDescription, // Also fixed: was using MetricDescription instead of Description
+	}
+
+	return result, nil
 }
 
 // GetParametersByGameMetric is the resolver for the getParametersByGameMetric field.
-func (r *queryResolver) GetParametersByGameMetric(ctx context.Context, metricID string) ([]*models.GameMetricParameter, error) {
+func (r *queryResolver) GetParametersByGameMetric(ctx context.Context, metricID string) ([]*model.GameMetricParameter, error) {
 	id, err := strconv.Atoi(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid game metric ID format: %w", err)
@@ -253,10 +281,20 @@ func (r *queryResolver) GetParametersByGameMetric(ctx context.Context, metricID 
 		return nil, fmt.Errorf("error fetching game metric parameters: %w", err)
 	}
 
-	// Convert []models.GameMetricParameter to []*models.GameMetricParameter
-	result := make([]*models.GameMetricParameter, len(parameters))
-	for i := range parameters {
-		result[i] = &parameters[i]
+	// Convert []models.MetricParameter to []*model.GameMetricParameter
+	result := make([]*model.GameMetricParameter, len(parameters))
+	for i, param := range parameters {
+		result[i] = &model.GameMetricParameter{
+			ParamID:          strconv.Itoa(param.ParamID),
+			MetricID:         &metricID,
+			ParamKey:         &param.ParamKey,
+			ParamName:        &param.ParamName,
+			ParamDescription: &param.ParamDescription,
+			ParamType:        &param.ParamType,
+			IsRequired:       &param.IsRequired,
+			DefaultValue:     &param.DefaultValue,
+			Description:      &param.Description,
+		}
 	}
 
 	return result, nil
@@ -299,7 +337,7 @@ func (r *queryResolver) GetConstantByID(ctx context.Context, constID string) (*m
 
 // GetGameConfiguration is the resolver for the getGameConfiguration field.
 func (r *queryResolver) GetGameConfiguration(ctx context.Context, gameID string) (*models.Game, error) {
-	game, err := r.GameService.GetGameWithFullConfiguration(gameID)
+	game, err := r.GameService.GetGameByID(gameID)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching game configuration: %w", err)
 	}
@@ -313,22 +351,22 @@ func (r *queryResolver) GetGameConfiguration(ctx context.Context, gameID string)
 
 // GetRequiredParametersForGame is the resolver for the getRequiredParametersForGame field.
 func (r *queryResolver) GetRequiredParametersForGame(ctx context.Context, gameID string) ([]*models.Stage, error) {
-	stages, err := r.StageService.GetStagesWithRequiredParameters(gameID)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching required parameters: %w", err)
-	}
+	// stages, err := r.StageService.GetRequiredParametersForStage(gameID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error fetching required parameters: %w", err)
+	// }
 
-	// Convert []models.Stage to []*models.Stage
-	result := make([]*models.Stage, len(stages))
-	for i := range stages {
-		result[i] = &stages[i]
-	}
+	// // Convert []models.Stage to []*models.Stage
+	// result := make([]*models.Stage, len(stages))
+	// for i := range stages {
+	// 	result[i] = &stages[i]
+	// }
 
-	return result, nil
+	return nil, nil
 }
 
 // GetRequiredParametersForStage is the resolver for the getRequiredParametersForStage field.
-func (r *queryResolver) GetRequiredParametersForStage(ctx context.Context, stageID string) ([]*model.MetricParameter, error) {
+func (r *queryResolver) GetRequiredParametersForStage(ctx context.Context, stageID string) ([]*models.MetricParameter, error) {
 	id, err := strconv.Atoi(stageID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid stage ID format: %w", err)
@@ -339,20 +377,19 @@ func (r *queryResolver) GetRequiredParametersForStage(ctx context.Context, stage
 		return nil, fmt.Errorf("error fetching required parameters: %w", err)
 	}
 
-	// Convert []models.CompetenceMetricParameter to []*model.MetricParameter
-	result := make([]*model.MetricParameter, len(parameters))
-	for i, param := range parameters {
-		paramID := strconv.Itoa(param.ParamID)
-		metricIDStr := strconv.Itoa(param.MetricID)
+	// Convert []models.MetricParameter to []*model.MetricParameter
 
-		result[i] = &model.MetricParameter{
-			ParamID:     paramID,
-			MetricID:    &metricIDStr,
-			ParamName:   &param.ParamName,
-			ParamKey:    &param.ParamKey,
-			Description: &param.Description,
-			ParamType:   &param.ParamType,
-			IsRequired:  &param.IsRequired,
+	// Convert []models.MetricParameter to []*model.MetricParameter
+	result := make([]*models.MetricParameter, len(parameters))
+	for i, param := range parameters {
+		result[i] = &models.MetricParameter{
+			ParamID:     param.ParamID,
+			MetricID:    param.MetricID,
+			ParamName:   param.ParamName,
+			ParamKey:    param.ParamKey,
+			Description: param.Description,
+			ParamType:   param.ParamType,
+			IsRequired:  param.IsRequired,
 		}
 	}
 
@@ -362,7 +399,7 @@ func (r *queryResolver) GetRequiredParametersForStage(ctx context.Context, stage
 // GetGameFormulas is the resolver for the getGameFormulas field.
 func (r *queryResolver) GetGameFormulas(ctx context.Context, gameID string) (*models.Game, error) {
 	// This is similar to GetGameConfiguration but might focus on formula-related data
-	game, err := r.GameService.GetGameWithFullConfiguration(gameID)
+	game, err := r.GameService.GetGameByID(gameID)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching game formulas: %w", err)
 	}
@@ -377,7 +414,7 @@ func (r *queryResolver) GetGameFormulas(ctx context.Context, gameID string) (*mo
 // GetBenchmarkData is the resolver for the getBenchmarkData field.
 func (r *queryResolver) GetBenchmarkData(ctx context.Context, gameID string) (*models.Game, error) {
 	// This is similar to GetGameConfiguration but might focus on benchmark-related data
-	game, err := r.GameService.GetGameWithFullConfiguration(gameID)
+	game, err := r.GameService.GetGameByID(gameID)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching benchmark data: %w", err)
 	}

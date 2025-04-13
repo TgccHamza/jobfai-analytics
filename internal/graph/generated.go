@@ -41,11 +41,10 @@ type Config struct {
 
 type ResolverRoot interface {
 	Competence() CompetenceResolver
-	CompetenceMetric() CompetenceMetricResolver
 	ConstantParameter() ConstantParameterResolver
 	Game() GameResolver
-	GameMetric() GameMetricResolver
-	GameMetricParameter() GameMetricParameterResolver
+	Metric() MetricResolver
+	MetricParameter() MetricParameterResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Stage() StageResolver
@@ -56,49 +55,30 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	BenchmarkComparison struct {
-		BenchmarkScore      func(childComplexity int) int
-		PercentileRank      func(childComplexity int) int
-		RelativeToBenchmark func(childComplexity int) int
-	}
-
 	Competence struct {
-		Benchmark      func(childComplexity int) int
-		CompetenceID   func(childComplexity int) int
-		CompetenceKey  func(childComplexity int) int
-		CompetenceName func(childComplexity int) int
-		CreatedAt      func(childComplexity int) int
-		Description    func(childComplexity int) int
-		Game           func(childComplexity int) int
-		GameID         func(childComplexity int) int
-		Metrics        func(childComplexity int) int
-		UpdatedAt      func(childComplexity int) int
-		Weight         func(childComplexity int) int
+		Benchmark        func(childComplexity int) int
+		BenchmarkMargin  func(childComplexity int) int
+		CompetenceID     func(childComplexity int) int
+		CompetenceKey    func(childComplexity int) int
+		CompetenceName   func(childComplexity int) int
+		CreatedAt        func(childComplexity int) int
+		Description      func(childComplexity int) int
+		Game             func(childComplexity int) int
+		GameID           func(childComplexity int) int
+		Metrics          func(childComplexity int) int
+		ParentCompetence func(childComplexity int) int
+		UpdatedAt        func(childComplexity int) int
+		Weight           func(childComplexity int) int
 	}
 
 	CompetenceDetail struct {
-		Benchmark     func(childComplexity int) int
-		CompetenceKey func(childComplexity int) int
-		Metrics       func(childComplexity int) int
-		Name          func(childComplexity int) int
-		Score         func(childComplexity int) int
-		Weight        func(childComplexity int) int
-	}
-
-	CompetenceMetric struct {
-		Benchmark         func(childComplexity int) int
-		Competence        func(childComplexity int) int
-		CompetenceID      func(childComplexity int) int
-		CreatedAt         func(childComplexity int) int
-		Formula           func(childComplexity int) int
-		MetricDescription func(childComplexity int) int
-		MetricID          func(childComplexity int) int
-		MetricKey         func(childComplexity int) int
-		MetricName        func(childComplexity int) int
-		Parameters        func(childComplexity int) int
-		Stages            func(childComplexity int) int
-		UpdatedAt         func(childComplexity int) int
-		Weight            func(childComplexity int) int
+		Benchmark       func(childComplexity int) int
+		BenchmarkMargin func(childComplexity int) int
+		CompetenceKey   func(childComplexity int) int
+		Metrics         func(childComplexity int) int
+		Name            func(childComplexity int) int
+		Score           func(childComplexity int) int
+		Weight          func(childComplexity int) int
 	}
 
 	ConstantParameter struct {
@@ -129,6 +109,8 @@ type ComplexityRoot struct {
 
 	GameMetric struct {
 		Benchmark         func(childComplexity int) int
+		BenchmarkMargin   func(childComplexity int) int
+		CompetenceID      func(childComplexity int) int
 		CreatedAt         func(childComplexity int) int
 		Description       func(childComplexity int) int
 		Formula           func(childComplexity int) int
@@ -171,6 +153,26 @@ type ComplexityRoot struct {
 		TimeEfficiency    func(childComplexity int) int
 	}
 
+	Metric struct {
+		Benchmark         func(childComplexity int) int
+		BenchmarkMargin   func(childComplexity int) int
+		Competence        func(childComplexity int) int
+		CompetenceID      func(childComplexity int) int
+		CreatedAt         func(childComplexity int) int
+		Formula           func(childComplexity int) int
+		Game              func(childComplexity int) int
+		GameID            func(childComplexity int) int
+		MetricDescription func(childComplexity int) int
+		MetricID          func(childComplexity int) int
+		MetricKey         func(childComplexity int) int
+		MetricName        func(childComplexity int) int
+		Parameters        func(childComplexity int) int
+		Stage             func(childComplexity int) int
+		StageID           func(childComplexity int) int
+		UpdatedAt         func(childComplexity int) int
+		Weight            func(childComplexity int) int
+	}
+
 	MetricParameter struct {
 		CreatedAt        func(childComplexity int) int
 		DefaultValue     func(childComplexity int) int
@@ -187,54 +189,49 @@ type ComplexityRoot struct {
 	}
 
 	MetricResult struct {
-		Benchmark func(childComplexity int) int
-		KpiID     func(childComplexity int) int
-		KpiName   func(childComplexity int) int
-		Value     func(childComplexity int) int
+		Benchmark       func(childComplexity int) int
+		BenchmarkMargin func(childComplexity int) int
+		KpiID           func(childComplexity int) int
+		KpiName         func(childComplexity int) int
+		Value           func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AssignMetricToStage        func(childComplexity int, input model.StageMetricInput) int
 		CalculatePlayerPerformance func(childComplexity int, input model.PlayerPerformanceInput) int
 		CreateCompetence           func(childComplexity int, input model.CompetenceInput) int
-		CreateCompetenceMetric     func(childComplexity int, input model.CompetenceMetricInput) int
 		CreateConstantParameter    func(childComplexity int, input model.ConstantParameterInput) int
 		CreateGame                 func(childComplexity int, input model.GameInput) int
 		CreateGameMetric           func(childComplexity int, input model.GameMetricInput) int
-		CreateGameMetricParameter  func(childComplexity int, input model.GameMetricParameterInput) int
 		CreateMetricParameter      func(childComplexity int, input model.MetricParameterInput) int
 		CreateStage                func(childComplexity int, input model.StageInput) int
+		CreateStageMetric          func(childComplexity int, input model.StageMetricInput) int
 		DeleteCompetence           func(childComplexity int, competenceID string) int
-		DeleteCompetenceMetric     func(childComplexity int, metricID string) int
 		DeleteConstantParameter    func(childComplexity int, constID string) int
 		DeleteGame                 func(childComplexity int, gameID string) int
 		DeleteGameMetric           func(childComplexity int, metricID string) int
-		DeleteGameMetricParameter  func(childComplexity int, paramID string) int
 		DeleteMetricParameter      func(childComplexity int, paramID string) int
 		DeleteStage                func(childComplexity int, stageID string) int
-		RemoveMetricFromStage      func(childComplexity int, input model.StageMetricInput) int
+		DeleteStageMetric          func(childComplexity int, metricID string) int
 		UpdateCompetence           func(childComplexity int, input model.CompetenceUpdateInput) int
-		UpdateCompetenceMetric     func(childComplexity int, input model.CompetenceMetricUpdateInput) int
 		UpdateConstantParameter    func(childComplexity int, input model.ConstantParameterUpdateInput) int
 		UpdateGame                 func(childComplexity int, input model.GameUpdateInput) int
 		UpdateGameMetric           func(childComplexity int, input model.GameMetricUpdateInput) int
-		UpdateGameMetricParameter  func(childComplexity int, input model.GameMetricParameterUpdateInput) int
 		UpdateMetricParameter      func(childComplexity int, input model.MetricParameterUpdateInput) int
 		UpdateStage                func(childComplexity int, input model.StageUpdateInput) int
+		UpdateStageMetric          func(childComplexity int, input model.StageMetricUpdateInput) int
 	}
 
 	PlayerPerformance struct {
-		BenchmarkComparison func(childComplexity int) int
-		CompetenceDetails   func(childComplexity int) int
-		GameDate            func(childComplexity int) int
-		GameID              func(childComplexity int) int
-		GlobalMetrics       func(childComplexity int) int
-		PlayerID            func(childComplexity int) int
-		PlayerName          func(childComplexity int) int
-		ProfileType         func(childComplexity int) int
-		StagePerformance    func(childComplexity int) int
-		TotalScore          func(childComplexity int) int
-		TotalTimeTaken      func(childComplexity int) int
+		CompetenceDetails func(childComplexity int) int
+		GameDate          func(childComplexity int) int
+		GameID            func(childComplexity int) int
+		GlobalMetrics     func(childComplexity int) int
+		PlayerID          func(childComplexity int) int
+		PlayerName        func(childComplexity int) int
+		ProfileType       func(childComplexity int) int
+		StagePerformance  func(childComplexity int) int
+		TotalScore        func(childComplexity int) int
+		TotalTimeTaken    func(childComplexity int) int
 	}
 
 	Query struct {
@@ -261,32 +258,35 @@ type ComplexityRoot struct {
 	}
 
 	Stage struct {
-		Benchmark   func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		Description func(childComplexity int) int
-		Game        func(childComplexity int) int
-		GameID      func(childComplexity int) int
-		Metrics     func(childComplexity int) int
-		OptimalTime func(childComplexity int) int
-		StageID     func(childComplexity int) int
-		StageKey    func(childComplexity int) int
-		StageName   func(childComplexity int) int
-		StageOrder  func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
+		Benchmark       func(childComplexity int) int
+		BenchmarkMargin func(childComplexity int) int
+		CreatedAt       func(childComplexity int) int
+		Description     func(childComplexity int) int
+		Game            func(childComplexity int) int
+		GameID          func(childComplexity int) int
+		Metrics         func(childComplexity int) int
+		OptimalTime     func(childComplexity int) int
+		StageID         func(childComplexity int) int
+		StageKey        func(childComplexity int) int
+		StageName       func(childComplexity int) int
+		StageOrder      func(childComplexity int) int
+		UpdatedAt       func(childComplexity int) int
 	}
 
 	StageMetricResult struct {
-		Benchmark func(childComplexity int) int
-		Category  func(childComplexity int) int
-		Formula   func(childComplexity int) int
-		KpiID     func(childComplexity int) int
-		KpiName   func(childComplexity int) int
-		RawData   func(childComplexity int) int
-		Value     func(childComplexity int) int
+		Benchmark       func(childComplexity int) int
+		BenchmarkMargin func(childComplexity int) int
+		Category        func(childComplexity int) int
+		Formula         func(childComplexity int) int
+		KpiID           func(childComplexity int) int
+		KpiName         func(childComplexity int) int
+		RawData         func(childComplexity int) int
+		Value           func(childComplexity int) int
 	}
 
 	StagePerformance struct {
 		Benchmark        func(childComplexity int) int
+		BenchmarkMargin  func(childComplexity int) int
 		CompletionStatus func(childComplexity int) int
 		Metrics          func(childComplexity int) int
 		OptimalTime      func(childComplexity int) int
@@ -310,9 +310,6 @@ type ComplexityRoot struct {
 		GameDeleted                 func(childComplexity int, gameID *string) int
 		GameMetricCreated           func(childComplexity int, gameID *string) int
 		GameMetricDeleted           func(childComplexity int, metricID *string) int
-		GameMetricParameterCreated  func(childComplexity int, metricID *string) int
-		GameMetricParameterDeleted  func(childComplexity int, paramID *string) int
-		GameMetricParameterUpdated  func(childComplexity int, paramID *string) int
 		GameMetricUpdated           func(childComplexity int, metricID *string) int
 		GameUpdated                 func(childComplexity int, gameID *string) int
 		MetricAssignedToStage       func(childComplexity int, stageID *string, metricID *string) int
@@ -330,27 +327,35 @@ type ComplexityRoot struct {
 type CompetenceResolver interface {
 	CreatedAt(ctx context.Context, obj *models.Competence) (*string, error)
 	UpdatedAt(ctx context.Context, obj *models.Competence) (*string, error)
-}
-type CompetenceMetricResolver interface {
-	CreatedAt(ctx context.Context, obj *models.CompetenceMetric) (*string, error)
-	UpdatedAt(ctx context.Context, obj *models.CompetenceMetric) (*string, error)
-	Parameters(ctx context.Context, obj *models.CompetenceMetric) ([]*model.MetricParameter, error)
+	Metrics(ctx context.Context, obj *models.Competence) ([]*models.Metric, error)
+	Game(ctx context.Context, obj *models.Competence) (*models.Game, error)
+	ParentCompetence(ctx context.Context, obj *models.Competence) (*models.Competence, error)
 }
 type ConstantParameterResolver interface {
 	CreatedAt(ctx context.Context, obj *models.ConstantParameter) (*string, error)
 	UpdatedAt(ctx context.Context, obj *models.ConstantParameter) (*string, error)
+	Game(ctx context.Context, obj *models.ConstantParameter) (*models.Game, error)
 }
 type GameResolver interface {
 	CreatedAt(ctx context.Context, obj *models.Game) (*string, error)
 	UpdatedAt(ctx context.Context, obj *models.Game) (*string, error)
+	Competencies(ctx context.Context, obj *models.Game) ([]*models.Competence, error)
+	Stages(ctx context.Context, obj *models.Game) ([]*models.Stage, error)
+	GameMetrics(ctx context.Context, obj *models.Game) ([]*models.Metric, error)
+	ConstantParameters(ctx context.Context, obj *models.Game) ([]*models.ConstantParameter, error)
 }
-type GameMetricResolver interface {
-	CreatedAt(ctx context.Context, obj *models.GameMetric) (*string, error)
-	UpdatedAt(ctx context.Context, obj *models.GameMetric) (*string, error)
+type MetricResolver interface {
+	CreatedAt(ctx context.Context, obj *models.Metric) (*string, error)
+	UpdatedAt(ctx context.Context, obj *models.Metric) (*string, error)
+	Parameters(ctx context.Context, obj *models.Metric) ([]*models.MetricParameter, error)
+	Competence(ctx context.Context, obj *models.Metric) (*models.Competence, error)
+	Stage(ctx context.Context, obj *models.Metric) (*models.Stage, error)
+	Game(ctx context.Context, obj *models.Metric) (*models.Game, error)
 }
-type GameMetricParameterResolver interface {
-	CreatedAt(ctx context.Context, obj *models.GameMetricParameter) (*string, error)
-	UpdatedAt(ctx context.Context, obj *models.GameMetricParameter) (*string, error)
+type MetricParameterResolver interface {
+	CreatedAt(ctx context.Context, obj *models.MetricParameter) (*string, error)
+	UpdatedAt(ctx context.Context, obj *models.MetricParameter) (*string, error)
+	Metric(ctx context.Context, obj *models.MetricParameter) (*models.Metric, error)
 }
 type MutationResolver interface {
 	CreateGame(ctx context.Context, input model.GameInput) (*models.Game, error)
@@ -359,23 +364,18 @@ type MutationResolver interface {
 	CreateCompetence(ctx context.Context, input model.CompetenceInput) (*models.Competence, error)
 	UpdateCompetence(ctx context.Context, input model.CompetenceUpdateInput) (*models.Competence, error)
 	DeleteCompetence(ctx context.Context, competenceID string) (*bool, error)
-	CreateCompetenceMetric(ctx context.Context, input model.CompetenceMetricInput) (*models.CompetenceMetric, error)
-	UpdateCompetenceMetric(ctx context.Context, input model.CompetenceMetricUpdateInput) (*models.CompetenceMetric, error)
-	DeleteCompetenceMetric(ctx context.Context, metricID string) (*bool, error)
-	CreateMetricParameter(ctx context.Context, input model.MetricParameterInput) (*model.MetricParameter, error)
-	UpdateMetricParameter(ctx context.Context, input model.MetricParameterUpdateInput) (*model.MetricParameter, error)
+	CreateStageMetric(ctx context.Context, input model.StageMetricInput) (*models.Metric, error)
+	UpdateStageMetric(ctx context.Context, input model.StageMetricUpdateInput) (*models.Metric, error)
+	DeleteStageMetric(ctx context.Context, metricID string) (*bool, error)
+	CreateMetricParameter(ctx context.Context, input model.MetricParameterInput) (*models.MetricParameter, error)
+	UpdateMetricParameter(ctx context.Context, input model.MetricParameterUpdateInput) (*models.MetricParameter, error)
 	DeleteMetricParameter(ctx context.Context, paramID string) (*bool, error)
 	CreateStage(ctx context.Context, input model.StageInput) (*models.Stage, error)
 	UpdateStage(ctx context.Context, input model.StageUpdateInput) (*models.Stage, error)
 	DeleteStage(ctx context.Context, stageID string) (*bool, error)
-	AssignMetricToStage(ctx context.Context, input model.StageMetricInput) (*bool, error)
-	RemoveMetricFromStage(ctx context.Context, input model.StageMetricInput) (*bool, error)
-	CreateGameMetric(ctx context.Context, input model.GameMetricInput) (*models.GameMetric, error)
-	UpdateGameMetric(ctx context.Context, input model.GameMetricUpdateInput) (*models.GameMetric, error)
+	CreateGameMetric(ctx context.Context, input model.GameMetricInput) (*model.GameMetric, error)
+	UpdateGameMetric(ctx context.Context, input model.GameMetricUpdateInput) (*model.GameMetric, error)
 	DeleteGameMetric(ctx context.Context, metricID string) (*bool, error)
-	CreateGameMetricParameter(ctx context.Context, input model.GameMetricParameterInput) (*models.GameMetricParameter, error)
-	UpdateGameMetricParameter(ctx context.Context, input model.GameMetricParameterUpdateInput) (*models.GameMetricParameter, error)
-	DeleteGameMetricParameter(ctx context.Context, paramID string) (*bool, error)
 	CreateConstantParameter(ctx context.Context, input model.ConstantParameterInput) (*models.ConstantParameter, error)
 	UpdateConstantParameter(ctx context.Context, input model.ConstantParameterUpdateInput) (*models.ConstantParameter, error)
 	DeleteConstantParameter(ctx context.Context, constID string) (*bool, error)
@@ -386,20 +386,20 @@ type QueryResolver interface {
 	GetGameByID(ctx context.Context, gameID string) (*models.Game, error)
 	GetCompetenciesByGame(ctx context.Context, gameID string) ([]*models.Competence, error)
 	GetCompetenceByID(ctx context.Context, competenceID string) (*models.Competence, error)
-	GetMetricsByCompetence(ctx context.Context, competenceID string) ([]*models.CompetenceMetric, error)
-	GetMetricByID(ctx context.Context, metricID string) (*models.CompetenceMetric, error)
-	GetParametersByMetric(ctx context.Context, metricID string) ([]*model.MetricParameter, error)
+	GetMetricsByCompetence(ctx context.Context, competenceID string) ([]*models.Metric, error)
+	GetMetricByID(ctx context.Context, metricID string) (*models.Metric, error)
+	GetParametersByMetric(ctx context.Context, metricID string) ([]*models.MetricParameter, error)
 	GetStagesByGame(ctx context.Context, gameID string) ([]*models.Stage, error)
 	GetStageByID(ctx context.Context, stageID string) (*models.Stage, error)
-	GetMetricsByStage(ctx context.Context, stageID string) ([]*models.CompetenceMetric, error)
-	GetGameMetricsByGame(ctx context.Context, gameID string) ([]*models.GameMetric, error)
-	GetGameMetricByID(ctx context.Context, metricID string) (*models.GameMetric, error)
-	GetParametersByGameMetric(ctx context.Context, metricID string) ([]*models.GameMetricParameter, error)
+	GetMetricsByStage(ctx context.Context, stageID string) ([]*models.Metric, error)
+	GetGameMetricsByGame(ctx context.Context, gameID string) ([]*model.GameMetric, error)
+	GetGameMetricByID(ctx context.Context, metricID string) (*model.GameMetric, error)
+	GetParametersByGameMetric(ctx context.Context, metricID string) ([]*model.GameMetricParameter, error)
 	GetConstantsByGame(ctx context.Context, gameID string) ([]*models.ConstantParameter, error)
 	GetConstantByID(ctx context.Context, constID string) (*models.ConstantParameter, error)
 	GetGameConfiguration(ctx context.Context, gameID string) (*models.Game, error)
 	GetRequiredParametersForGame(ctx context.Context, gameID string) ([]*models.Stage, error)
-	GetRequiredParametersForStage(ctx context.Context, stageID string) ([]*model.MetricParameter, error)
+	GetRequiredParametersForStage(ctx context.Context, stageID string) ([]*models.MetricParameter, error)
 	GetGameFormulas(ctx context.Context, gameID string) (*models.Game, error)
 	GetBenchmarkData(ctx context.Context, gameID string) (*models.Game, error)
 }
@@ -409,6 +409,8 @@ type StageResolver interface {
 	OptimalTime(ctx context.Context, obj *models.Stage) (*int32, error)
 	CreatedAt(ctx context.Context, obj *models.Stage) (*string, error)
 	UpdatedAt(ctx context.Context, obj *models.Stage) (*string, error)
+	Metrics(ctx context.Context, obj *models.Stage) ([]*models.Metric, error)
+	Game(ctx context.Context, obj *models.Stage) (*models.Game, error)
 }
 type SubscriptionResolver interface {
 	GameCreated(ctx context.Context) (<-chan *models.Game, error)
@@ -417,23 +419,20 @@ type SubscriptionResolver interface {
 	CompetenceCreated(ctx context.Context, gameID *string) (<-chan *models.Competence, error)
 	CompetenceUpdated(ctx context.Context, competenceID *string) (<-chan *models.Competence, error)
 	CompetenceDeleted(ctx context.Context, competenceID *string) (<-chan *string, error)
-	CompetenceMetricCreated(ctx context.Context, competenceID *string) (<-chan *models.CompetenceMetric, error)
-	CompetenceMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.CompetenceMetric, error)
+	CompetenceMetricCreated(ctx context.Context, competenceID *string) (<-chan *models.Metric, error)
+	CompetenceMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.Metric, error)
 	CompetenceMetricDeleted(ctx context.Context, metricID *string) (<-chan *string, error)
-	MetricParameterCreated(ctx context.Context, metricID *string) (<-chan *model.MetricParameter, error)
-	MetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *model.MetricParameter, error)
+	MetricParameterCreated(ctx context.Context, metricID *string) (<-chan *models.MetricParameter, error)
+	MetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *models.MetricParameter, error)
 	MetricParameterDeleted(ctx context.Context, paramID *string) (<-chan *string, error)
 	StageCreated(ctx context.Context, gameID *string) (<-chan *models.Stage, error)
 	StageUpdated(ctx context.Context, stageID *string) (<-chan *models.Stage, error)
 	StageDeleted(ctx context.Context, stageID *string) (<-chan *string, error)
 	MetricAssignedToStage(ctx context.Context, stageID *string, metricID *string) (<-chan *bool, error)
 	MetricRemovedFromStage(ctx context.Context, stageID *string, metricID *string) (<-chan *bool, error)
-	GameMetricCreated(ctx context.Context, gameID *string) (<-chan *models.GameMetric, error)
-	GameMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.GameMetric, error)
+	GameMetricCreated(ctx context.Context, gameID *string) (<-chan *model.GameMetric, error)
+	GameMetricUpdated(ctx context.Context, metricID *string) (<-chan *model.GameMetric, error)
 	GameMetricDeleted(ctx context.Context, metricID *string) (<-chan *string, error)
-	GameMetricParameterCreated(ctx context.Context, metricID *string) (<-chan *models.GameMetricParameter, error)
-	GameMetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *models.GameMetricParameter, error)
-	GameMetricParameterDeleted(ctx context.Context, paramID *string) (<-chan *string, error)
 	ConstantParameterCreated(ctx context.Context, gameID *string) (<-chan *models.ConstantParameter, error)
 	ConstantParameterUpdated(ctx context.Context, constID *string) (<-chan *models.ConstantParameter, error)
 	ConstantParameterDeleted(ctx context.Context, constID *string) (<-chan *string, error)
@@ -459,33 +458,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "BenchmarkComparison.benchmarkScore":
-		if e.complexity.BenchmarkComparison.BenchmarkScore == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.BenchmarkScore(childComplexity), true
-
-	case "BenchmarkComparison.percentileRank":
-		if e.complexity.BenchmarkComparison.PercentileRank == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.PercentileRank(childComplexity), true
-
-	case "BenchmarkComparison.relativeToBenchmark":
-		if e.complexity.BenchmarkComparison.RelativeToBenchmark == nil {
-			break
-		}
-
-		return e.complexity.BenchmarkComparison.RelativeToBenchmark(childComplexity), true
-
 	case "Competence.benchmark":
 		if e.complexity.Competence.Benchmark == nil {
 			break
 		}
 
 		return e.complexity.Competence.Benchmark(childComplexity), true
+
+	case "Competence.benchmarkMargin":
+		if e.complexity.Competence.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.Competence.BenchmarkMargin(childComplexity), true
 
 	case "Competence.competenceId":
 		if e.complexity.Competence.CompetenceID == nil {
@@ -543,6 +528,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Competence.Metrics(childComplexity), true
 
+	case "Competence.parentCompetence":
+		if e.complexity.Competence.ParentCompetence == nil {
+			break
+		}
+
+		return e.complexity.Competence.ParentCompetence(childComplexity), true
+
 	case "Competence.updatedAt":
 		if e.complexity.Competence.UpdatedAt == nil {
 			break
@@ -563,6 +555,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CompetenceDetail.Benchmark(childComplexity), true
+
+	case "CompetenceDetail.benchmarkMargin":
+		if e.complexity.CompetenceDetail.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.CompetenceDetail.BenchmarkMargin(childComplexity), true
 
 	case "CompetenceDetail.competenceKey":
 		if e.complexity.CompetenceDetail.CompetenceKey == nil {
@@ -598,97 +597,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CompetenceDetail.Weight(childComplexity), true
-
-	case "CompetenceMetric.benchmark":
-		if e.complexity.CompetenceMetric.Benchmark == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Benchmark(childComplexity), true
-
-	case "CompetenceMetric.competence":
-		if e.complexity.CompetenceMetric.Competence == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Competence(childComplexity), true
-
-	case "CompetenceMetric.competenceId":
-		if e.complexity.CompetenceMetric.CompetenceID == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.CompetenceID(childComplexity), true
-
-	case "CompetenceMetric.createdAt":
-		if e.complexity.CompetenceMetric.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.CreatedAt(childComplexity), true
-
-	case "CompetenceMetric.formula":
-		if e.complexity.CompetenceMetric.Formula == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Formula(childComplexity), true
-
-	case "CompetenceMetric.metricDescription":
-		if e.complexity.CompetenceMetric.MetricDescription == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.MetricDescription(childComplexity), true
-
-	case "CompetenceMetric.metricId":
-		if e.complexity.CompetenceMetric.MetricID == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.MetricID(childComplexity), true
-
-	case "CompetenceMetric.metricKey":
-		if e.complexity.CompetenceMetric.MetricKey == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.MetricKey(childComplexity), true
-
-	case "CompetenceMetric.metricName":
-		if e.complexity.CompetenceMetric.MetricName == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.MetricName(childComplexity), true
-
-	case "CompetenceMetric.parameters":
-		if e.complexity.CompetenceMetric.Parameters == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Parameters(childComplexity), true
-
-	case "CompetenceMetric.stages":
-		if e.complexity.CompetenceMetric.Stages == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Stages(childComplexity), true
-
-	case "CompetenceMetric.updatedAt":
-		if e.complexity.CompetenceMetric.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.UpdatedAt(childComplexity), true
-
-	case "CompetenceMetric.weight":
-		if e.complexity.CompetenceMetric.Weight == nil {
-			break
-		}
-
-		return e.complexity.CompetenceMetric.Weight(childComplexity), true
 
 	case "ConstantParameter.constDescription":
 		if e.complexity.ConstantParameter.ConstDescription == nil {
@@ -836,6 +744,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GameMetric.Benchmark(childComplexity), true
+
+	case "GameMetric.benchmarkMargin":
+		if e.complexity.GameMetric.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.GameMetric.BenchmarkMargin(childComplexity), true
+
+	case "GameMetric.competenceId":
+		if e.complexity.GameMetric.CompetenceID == nil {
+			break
+		}
+
+		return e.complexity.GameMetric.CompetenceID(childComplexity), true
 
 	case "GameMetric.createdAt":
 		if e.complexity.GameMetric.CreatedAt == nil {
@@ -1054,6 +976,125 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GlobalMetrics.TimeEfficiency(childComplexity), true
 
+	case "Metric.benchmark":
+		if e.complexity.Metric.Benchmark == nil {
+			break
+		}
+
+		return e.complexity.Metric.Benchmark(childComplexity), true
+
+	case "Metric.benchmarkMargin":
+		if e.complexity.Metric.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.Metric.BenchmarkMargin(childComplexity), true
+
+	case "Metric.competence":
+		if e.complexity.Metric.Competence == nil {
+			break
+		}
+
+		return e.complexity.Metric.Competence(childComplexity), true
+
+	case "Metric.competenceId":
+		if e.complexity.Metric.CompetenceID == nil {
+			break
+		}
+
+		return e.complexity.Metric.CompetenceID(childComplexity), true
+
+	case "Metric.createdAt":
+		if e.complexity.Metric.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Metric.CreatedAt(childComplexity), true
+
+	case "Metric.formula":
+		if e.complexity.Metric.Formula == nil {
+			break
+		}
+
+		return e.complexity.Metric.Formula(childComplexity), true
+
+	case "Metric.game":
+		if e.complexity.Metric.Game == nil {
+			break
+		}
+
+		return e.complexity.Metric.Game(childComplexity), true
+
+	case "Metric.gameId":
+		if e.complexity.Metric.GameID == nil {
+			break
+		}
+
+		return e.complexity.Metric.GameID(childComplexity), true
+
+	case "Metric.metricDescription":
+		if e.complexity.Metric.MetricDescription == nil {
+			break
+		}
+
+		return e.complexity.Metric.MetricDescription(childComplexity), true
+
+	case "Metric.metricId":
+		if e.complexity.Metric.MetricID == nil {
+			break
+		}
+
+		return e.complexity.Metric.MetricID(childComplexity), true
+
+	case "Metric.metricKey":
+		if e.complexity.Metric.MetricKey == nil {
+			break
+		}
+
+		return e.complexity.Metric.MetricKey(childComplexity), true
+
+	case "Metric.metricName":
+		if e.complexity.Metric.MetricName == nil {
+			break
+		}
+
+		return e.complexity.Metric.MetricName(childComplexity), true
+
+	case "Metric.parameters":
+		if e.complexity.Metric.Parameters == nil {
+			break
+		}
+
+		return e.complexity.Metric.Parameters(childComplexity), true
+
+	case "Metric.stage":
+		if e.complexity.Metric.Stage == nil {
+			break
+		}
+
+		return e.complexity.Metric.Stage(childComplexity), true
+
+	case "Metric.stageId":
+		if e.complexity.Metric.StageID == nil {
+			break
+		}
+
+		return e.complexity.Metric.StageID(childComplexity), true
+
+	case "Metric.updatedAt":
+		if e.complexity.Metric.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Metric.UpdatedAt(childComplexity), true
+
+	case "Metric.weight":
+		if e.complexity.Metric.Weight == nil {
+			break
+		}
+
+		return e.complexity.Metric.Weight(childComplexity), true
+
 	case "MetricParameter.createdAt":
 		if e.complexity.MetricParameter.CreatedAt == nil {
 			break
@@ -1145,6 +1186,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MetricResult.Benchmark(childComplexity), true
 
+	case "MetricResult.benchmarkMargin":
+		if e.complexity.MetricResult.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.MetricResult.BenchmarkMargin(childComplexity), true
+
 	case "MetricResult.kpiId":
 		if e.complexity.MetricResult.KpiID == nil {
 			break
@@ -1165,18 +1213,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MetricResult.Value(childComplexity), true
-
-	case "Mutation.assignMetricToStage":
-		if e.complexity.Mutation.AssignMetricToStage == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_assignMetricToStage_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.AssignMetricToStage(childComplexity, args["input"].(model.StageMetricInput)), true
 
 	case "Mutation.calculatePlayerPerformance":
 		if e.complexity.Mutation.CalculatePlayerPerformance == nil {
@@ -1201,18 +1237,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateCompetence(childComplexity, args["input"].(model.CompetenceInput)), true
-
-	case "Mutation.createCompetenceMetric":
-		if e.complexity.Mutation.CreateCompetenceMetric == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createCompetenceMetric_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateCompetenceMetric(childComplexity, args["input"].(model.CompetenceMetricInput)), true
 
 	case "Mutation.createConstantParameter":
 		if e.complexity.Mutation.CreateConstantParameter == nil {
@@ -1250,18 +1274,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateGameMetric(childComplexity, args["input"].(model.GameMetricInput)), true
 
-	case "Mutation.createGameMetricParameter":
-		if e.complexity.Mutation.CreateGameMetricParameter == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createGameMetricParameter_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateGameMetricParameter(childComplexity, args["input"].(model.GameMetricParameterInput)), true
-
 	case "Mutation.createMetricParameter":
 		if e.complexity.Mutation.CreateMetricParameter == nil {
 			break
@@ -1286,6 +1298,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateStage(childComplexity, args["input"].(model.StageInput)), true
 
+	case "Mutation.createStageMetric":
+		if e.complexity.Mutation.CreateStageMetric == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createStageMetric_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateStageMetric(childComplexity, args["input"].(model.StageMetricInput)), true
+
 	case "Mutation.deleteCompetence":
 		if e.complexity.Mutation.DeleteCompetence == nil {
 			break
@@ -1297,18 +1321,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteCompetence(childComplexity, args["competenceId"].(string)), true
-
-	case "Mutation.deleteCompetenceMetric":
-		if e.complexity.Mutation.DeleteCompetenceMetric == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteCompetenceMetric_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteCompetenceMetric(childComplexity, args["metricId"].(string)), true
 
 	case "Mutation.deleteConstantParameter":
 		if e.complexity.Mutation.DeleteConstantParameter == nil {
@@ -1346,18 +1358,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteGameMetric(childComplexity, args["metricId"].(string)), true
 
-	case "Mutation.deleteGameMetricParameter":
-		if e.complexity.Mutation.DeleteGameMetricParameter == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteGameMetricParameter_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteGameMetricParameter(childComplexity, args["paramId"].(string)), true
-
 	case "Mutation.deleteMetricParameter":
 		if e.complexity.Mutation.DeleteMetricParameter == nil {
 			break
@@ -1382,17 +1382,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteStage(childComplexity, args["stageId"].(string)), true
 
-	case "Mutation.removeMetricFromStage":
-		if e.complexity.Mutation.RemoveMetricFromStage == nil {
+	case "Mutation.deleteStageMetric":
+		if e.complexity.Mutation.DeleteStageMetric == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_removeMetricFromStage_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_deleteStageMetric_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RemoveMetricFromStage(childComplexity, args["input"].(model.StageMetricInput)), true
+		return e.complexity.Mutation.DeleteStageMetric(childComplexity, args["metricId"].(string)), true
 
 	case "Mutation.updateCompetence":
 		if e.complexity.Mutation.UpdateCompetence == nil {
@@ -1405,18 +1405,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateCompetence(childComplexity, args["input"].(model.CompetenceUpdateInput)), true
-
-	case "Mutation.updateCompetenceMetric":
-		if e.complexity.Mutation.UpdateCompetenceMetric == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateCompetenceMetric_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateCompetenceMetric(childComplexity, args["input"].(model.CompetenceMetricUpdateInput)), true
 
 	case "Mutation.updateConstantParameter":
 		if e.complexity.Mutation.UpdateConstantParameter == nil {
@@ -1454,18 +1442,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateGameMetric(childComplexity, args["input"].(model.GameMetricUpdateInput)), true
 
-	case "Mutation.updateGameMetricParameter":
-		if e.complexity.Mutation.UpdateGameMetricParameter == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateGameMetricParameter_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateGameMetricParameter(childComplexity, args["input"].(model.GameMetricParameterUpdateInput)), true
-
 	case "Mutation.updateMetricParameter":
 		if e.complexity.Mutation.UpdateMetricParameter == nil {
 			break
@@ -1490,12 +1466,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateStage(childComplexity, args["input"].(model.StageUpdateInput)), true
 
-	case "PlayerPerformance.benchmarkComparison":
-		if e.complexity.PlayerPerformance.BenchmarkComparison == nil {
+	case "Mutation.updateStageMetric":
+		if e.complexity.Mutation.UpdateStageMetric == nil {
 			break
 		}
 
-		return e.complexity.PlayerPerformance.BenchmarkComparison(childComplexity), true
+		args, err := ec.field_Mutation_updateStageMetric_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateStageMetric(childComplexity, args["input"].(model.StageMetricUpdateInput)), true
 
 	case "PlayerPerformance.competenceDetails":
 		if e.complexity.PlayerPerformance.CompetenceDetails == nil {
@@ -1809,6 +1790,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Stage.Benchmark(childComplexity), true
 
+	case "Stage.benchmarkMargin":
+		if e.complexity.Stage.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.Stage.BenchmarkMargin(childComplexity), true
+
 	case "Stage.createdAt":
 		if e.complexity.Stage.CreatedAt == nil {
 			break
@@ -1893,6 +1881,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StageMetricResult.Benchmark(childComplexity), true
 
+	case "StageMetricResult.benchmarkMargin":
+		if e.complexity.StageMetricResult.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.StageMetricResult.BenchmarkMargin(childComplexity), true
+
 	case "StageMetricResult.category":
 		if e.complexity.StageMetricResult.Category == nil {
 			break
@@ -1941,6 +1936,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StagePerformance.Benchmark(childComplexity), true
+
+	case "StagePerformance.benchmarkMargin":
+		if e.complexity.StagePerformance.BenchmarkMargin == nil {
+			break
+		}
+
+		return e.complexity.StagePerformance.BenchmarkMargin(childComplexity), true
 
 	case "StagePerformance.completionStatus":
 		if e.complexity.StagePerformance.CompletionStatus == nil {
@@ -2142,42 +2144,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.GameMetricDeleted(childComplexity, args["metricId"].(*string)), true
 
-	case "Subscription.gameMetricParameterCreated":
-		if e.complexity.Subscription.GameMetricParameterCreated == nil {
-			break
-		}
-
-		args, err := ec.field_Subscription_gameMetricParameterCreated_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Subscription.GameMetricParameterCreated(childComplexity, args["metricId"].(*string)), true
-
-	case "Subscription.gameMetricParameterDeleted":
-		if e.complexity.Subscription.GameMetricParameterDeleted == nil {
-			break
-		}
-
-		args, err := ec.field_Subscription_gameMetricParameterDeleted_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Subscription.GameMetricParameterDeleted(childComplexity, args["paramId"].(*string)), true
-
-	case "Subscription.gameMetricParameterUpdated":
-		if e.complexity.Subscription.GameMetricParameterUpdated == nil {
-			break
-		}
-
-		args, err := ec.field_Subscription_gameMetricParameterUpdated_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Subscription.GameMetricParameterUpdated(childComplexity, args["paramId"].(*string)), true
-
 	case "Subscription.gameMetricUpdated":
 		if e.complexity.Subscription.GameMetricUpdated == nil {
 			break
@@ -2319,8 +2285,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCompetenceInput,
-		ec.unmarshalInputCompetenceMetricInput,
-		ec.unmarshalInputCompetenceMetricUpdateInput,
 		ec.unmarshalInputCompetenceUpdateInput,
 		ec.unmarshalInputConstantParameterInput,
 		ec.unmarshalInputConstantParameterUpdateInput,
@@ -2336,6 +2300,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPlayerPerformanceInput,
 		ec.unmarshalInputStageInput,
 		ec.unmarshalInputStageMetricInput,
+		ec.unmarshalInputStageMetricUpdateInput,
 		ec.unmarshalInputStageParametersInput,
 		ec.unmarshalInputStageUpdateInput,
 	)
@@ -2468,38 +2433,46 @@ input GameUpdateInput {
 
 input CompetenceInput {
   gameId: ID!
+  parentId: Int
   competenceKey: String!
   competenceName: String!
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
 }
 
 input CompetenceUpdateInput {
   competenceId: ID!
+  parentId: Int
   competenceKey: String
   competenceName: String
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
 }
 
-input CompetenceMetricInput {
-  competenceId: ID!
+input StageMetricInput {
+  stageId: ID!
+  competenceId: ID
   metricKey: String!
   metricName: String!
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String!
   weight: Float
 }
 
-input CompetenceMetricUpdateInput {
+input StageMetricUpdateInput {
   metricId: ID!
+  competenceId: ID
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   weight: Float
 }
@@ -2532,6 +2505,7 @@ input StageInput {
   stageName: String!
   stageOrder: Int!
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
 }
@@ -2542,31 +2516,31 @@ input StageUpdateInput {
   stageName: String
   stageOrder: Int
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
 }
 
-input StageMetricInput {
-  stageId: ID!
-  metricId: ID!
-}
-
 input GameMetricInput {
   gameId: ID!
+  competenceId: ID
   metricKey: String!
   metricName: String!
   metricDescription: String
-  benchmark: String
+  benchmark: Float
+  benchmarkMargin: Float
   formula: String!
   description: String
 }
 
 input GameMetricUpdateInput {
   metricId: ID!
+  competenceId: ID
   metricKey: String
   metricName: String
   metricDescription: String
-  benchmark: String
+  benchmark: Float
+  benchmarkMargin: Float
   formula: String
   description: String
 }
@@ -2614,10 +2588,8 @@ input ConstantParameterUpdateInput {
 # Player Performance Input
 input PlayerPerformanceInput {
   playerId: ID!
-  playerName: String!
-  profileType: String
   gameId: ID!
-  stageParameters: [StageParametersInput!]!
+  dbIndex: ID!
 }
 
 input StageParametersInput {
@@ -2642,9 +2614,9 @@ type Mutation {
   updateCompetence(input: CompetenceUpdateInput!): Competence
   deleteCompetence(competenceId: ID!): Boolean
 
-  createCompetenceMetric(input: CompetenceMetricInput!): CompetenceMetric
-  updateCompetenceMetric(input: CompetenceMetricUpdateInput!): CompetenceMetric
-  deleteCompetenceMetric(metricId: ID!): Boolean
+  createStageMetric(input: StageMetricInput!): Metric
+  updateStageMetric(input: StageMetricUpdateInput!): Metric
+  deleteStageMetric(metricId: ID!): Boolean
 
   createMetricParameter(input: MetricParameterInput!): MetricParameter
   updateMetricParameter(input: MetricParameterUpdateInput!): MetricParameter
@@ -2654,16 +2626,9 @@ type Mutation {
   updateStage(input: StageUpdateInput!): Stage
   deleteStage(stageId: ID!): Boolean
 
-  assignMetricToStage(input: StageMetricInput!): Boolean
-  removeMetricFromStage(input: StageMetricInput!): Boolean
-
   createGameMetric(input: GameMetricInput!): GameMetric
   updateGameMetric(input: GameMetricUpdateInput!): GameMetric
   deleteGameMetric(metricId: ID!): Boolean
-
-  createGameMetricParameter(input: GameMetricParameterInput!): GameMetricParameter
-  updateGameMetricParameter(input: GameMetricParameterUpdateInput!): GameMetricParameter
-  deleteGameMetricParameter(paramId: ID!): Boolean
 
   createConstantParameter(input: ConstantParameterInput!): ConstantParameter
   updateConstantParameter(input: ConstantParameterUpdateInput!): ConstantParameter
@@ -2675,16 +2640,16 @@ type Mutation {
 	{Name: "../../schema-ql/query.graphqls", Input: `# Queries
 type Query {
   # Admin Queries
-  getGames: [Game]
+  getGames: [Game!]
   getGameById(gameId: ID!): Game
   getCompetenciesByGame(gameId: ID!): [Competence]
   getCompetenceById(competenceId: ID!): Competence
-  getMetricsByCompetence(competenceId: ID!): [CompetenceMetric]
-  getMetricById(metricId: ID!): CompetenceMetric
+  getMetricsByCompetence(competenceId: ID!): [Metric]
+  getMetricById(metricId: ID!): Metric
   getParametersByMetric(metricId: ID!): [MetricParameter]
   getStagesByGame(gameId: ID!): [Stage]
   getStageById(stageId: ID!): Stage
-  getMetricsByStage(stageId: ID!): [CompetenceMetric]
+  getMetricsByStage(stageId: ID!): [Metric]
   getGameMetricsByGame(gameId: ID!): [GameMetric]
   getGameMetricById(metricId: ID!): GameMetric
   getParametersByGameMetric(metricId: ID!): [GameMetricParameter]
@@ -2709,7 +2674,7 @@ type Game {
   updatedAt: DateTime
   competencies: [Competence]
   stages: [Stage]
-  gameMetrics: [GameMetric]
+  gameMetrics: [Metric]
   constantParameters: [ConstantParameter]
 }
 
@@ -2719,28 +2684,34 @@ type Competence {
   competenceKey: String
   competenceName: String
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
   createdAt: DateTime
   updatedAt: DateTime
-  metrics: [CompetenceMetric]
+  metrics: [Metric]
   game: Game
+  parentCompetence: Competence
 }
 
-type CompetenceMetric {
+type Metric {
   metricId: ID!
   competenceId: ID
+  stageId: ID
+  gameId: ID
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   weight: Float
   createdAt: DateTime
   updatedAt: DateTime
   parameters: [MetricParameter]
   competence: Competence
-  stages: [Stage]
+  stage: Stage
+  game: Game
 }
 
 type MetricParameter {
@@ -2755,7 +2726,7 @@ type MetricParameter {
   description: String
   createdAt: DateTime
   updatedAt: DateTime
-  metric: CompetenceMetric
+  metric: Metric
 }
 
 type Stage {
@@ -2765,21 +2736,24 @@ type Stage {
   stageName: String
   stageOrder: Int
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
   createdAt: DateTime
   updatedAt: DateTime
-  metrics: [CompetenceMetric]
+  metrics: [Metric]
   game: Game
 }
 
 type GameMetric {
   metricId: ID!
   gameId: ID
+  competenceId: Int!
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: String
+  benchmarkMargin: Float
   formula: String
   description: String
   createdAt: DateTime
@@ -2836,8 +2810,7 @@ type PlayerPerformance {
   totalTimeTaken: Float
   competenceDetails: [CompetenceDetail]
   stagePerformance: [StagePerformance]
-  globalMetrics: GlobalMetrics
-  benchmarkComparison: BenchmarkComparison
+  globalMetrics: [StageMetricResult]
 }
 
 type CompetenceDetail {
@@ -2845,6 +2818,7 @@ type CompetenceDetail {
   name: String
   score: Float
   benchmark: Float
+  benchmarkMargin: Float
   weight: Float
   metrics: [MetricResult]
 }
@@ -2854,6 +2828,7 @@ type MetricResult {
   kpiName: String
   value: Float
   benchmark: Float
+  benchmarkMargin: Float
 }
 
 type StagePerformance {
@@ -2864,6 +2839,7 @@ type StagePerformance {
   optimalTime: Float
   score: Float
   benchmark: Float
+  benchmarkMargin: Float
   completionStatus: String
 }
 
@@ -2873,6 +2849,7 @@ type StageMetricResult {
   category: String
   value: Float
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   rawData: JSON
 }
@@ -2891,11 +2868,6 @@ type GlobalMetricResult {
   formula: String
 }
 
-type BenchmarkComparison {
-  percentileRank: Int
-  relativeToBenchmark: String
-  benchmarkScore: Float
-}
 
 # Custom scalar for JSON data
 scalar JSON
@@ -2912,9 +2884,9 @@ type Subscription {
   competenceUpdated(competenceId: ID): Competence
   competenceDeleted(competenceId: ID): ID
   
-  # CompetenceMetric Subscriptions
-  competenceMetricCreated(competenceId: ID): CompetenceMetric
-  competenceMetricUpdated(metricId: ID): CompetenceMetric
+  # Metric Subscriptions
+  competenceMetricCreated(competenceId: ID): Metric
+  competenceMetricUpdated(metricId: ID): Metric
   competenceMetricDeleted(metricId: ID): ID
   
   # MetricParameter Subscriptions
@@ -2935,12 +2907,8 @@ type Subscription {
   gameMetricCreated(gameId: ID): GameMetric
   gameMetricUpdated(metricId: ID): GameMetric
   gameMetricDeleted(metricId: ID): ID
-  
-  # GameMetricParameter Subscriptions
-  gameMetricParameterCreated(metricId: ID): GameMetricParameter
-  gameMetricParameterUpdated(paramId: ID): GameMetricParameter
-  gameMetricParameterDeleted(paramId: ID): ID
-  
+
+
   # ConstantParameter Subscriptions
   constantParameterCreated(gameId: ID): ConstantParameter
   constantParameterUpdated(constId: ID): ConstantParameter
@@ -2955,29 +2923,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_assignMetricToStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_assignMetricToStage_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_assignMetricToStage_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.StageMetricInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricInput(ctx, tmp)
-	}
-
-	var zeroVal model.StageMetricInput
-	return zeroVal, nil
-}
 
 func (ec *executionContext) field_Mutation_calculatePlayerPerformance_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -2999,29 +2944,6 @@ func (ec *executionContext) field_Mutation_calculatePlayerPerformance_argsInput(
 	}
 
 	var zeroVal model.PlayerPerformanceInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_createCompetenceMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_createCompetenceMetric_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_createCompetenceMetric_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.CompetenceMetricInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNCompetenceMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐCompetenceMetricInput(ctx, tmp)
-	}
-
-	var zeroVal model.CompetenceMetricInput
 	return zeroVal, nil
 }
 
@@ -3068,29 +2990,6 @@ func (ec *executionContext) field_Mutation_createConstantParameter_argsInput(
 	}
 
 	var zeroVal model.ConstantParameterInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_createGameMetricParameter_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_createGameMetricParameter_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_createGameMetricParameter_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.GameMetricParameterInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNGameMetricParameterInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameterInput(ctx, tmp)
-	}
-
-	var zeroVal model.GameMetricParameterInput
 	return zeroVal, nil
 }
 
@@ -3163,6 +3062,29 @@ func (ec *executionContext) field_Mutation_createMetricParameter_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_createStageMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_createStageMetric_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createStageMetric_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.StageMetricInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricInput(ctx, tmp)
+	}
+
+	var zeroVal model.StageMetricInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_createStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3183,29 +3105,6 @@ func (ec *executionContext) field_Mutation_createStage_argsInput(
 	}
 
 	var zeroVal model.StageInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteCompetenceMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_deleteCompetenceMetric_argsMetricID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["metricId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_deleteCompetenceMetric_argsMetricID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
-	if tmp, ok := rawArgs["metricId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -3248,29 +3147,6 @@ func (ec *executionContext) field_Mutation_deleteConstantParameter_argsConstID(
 ) (string, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("constId"))
 	if tmp, ok := rawArgs["constId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteGameMetricParameter_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_deleteGameMetricParameter_argsParamID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["paramId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_deleteGameMetricParameter_argsParamID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
-	if tmp, ok := rawArgs["paramId"]; ok {
 		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
@@ -3347,6 +3223,29 @@ func (ec *executionContext) field_Mutation_deleteMetricParameter_argsParamID(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteStageMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteStageMetric_argsMetricID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["metricId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteStageMetric_argsMetricID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
+	if tmp, ok := rawArgs["metricId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3367,52 +3266,6 @@ func (ec *executionContext) field_Mutation_deleteStage_argsStageID(
 	}
 
 	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_removeMetricFromStage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_removeMetricFromStage_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_removeMetricFromStage_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.StageMetricInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricInput(ctx, tmp)
-	}
-
-	var zeroVal model.StageMetricInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_updateCompetenceMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_updateCompetenceMetric_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_updateCompetenceMetric_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.CompetenceMetricUpdateInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNCompetenceMetricUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐCompetenceMetricUpdateInput(ctx, tmp)
-	}
-
-	var zeroVal model.CompetenceMetricUpdateInput
 	return zeroVal, nil
 }
 
@@ -3459,29 +3312,6 @@ func (ec *executionContext) field_Mutation_updateConstantParameter_argsInput(
 	}
 
 	var zeroVal model.ConstantParameterUpdateInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_updateGameMetricParameter_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_updateGameMetricParameter_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_updateGameMetricParameter_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (model.GameMetricParameterUpdateInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNGameMetricParameterUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameterUpdateInput(ctx, tmp)
-	}
-
-	var zeroVal model.GameMetricParameterUpdateInput
 	return zeroVal, nil
 }
 
@@ -3551,6 +3381,29 @@ func (ec *executionContext) field_Mutation_updateMetricParameter_argsInput(
 	}
 
 	var zeroVal model.MetricParameterUpdateInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStageMetric_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateStageMetric_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateStageMetric_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.StageMetricUpdateInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNStageMetricUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricUpdateInput(ctx, tmp)
+	}
+
+	var zeroVal model.StageMetricUpdateInput
 	return zeroVal, nil
 }
 
@@ -4313,75 +4166,6 @@ func (ec *executionContext) field_Subscription_gameMetricDeleted_argsMetricID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Subscription_gameMetricParameterCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Subscription_gameMetricParameterCreated_argsMetricID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["metricId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Subscription_gameMetricParameterCreated_argsMetricID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (*string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
-	if tmp, ok := rawArgs["metricId"]; ok {
-		return ec.unmarshalOID2ᚖstring(ctx, tmp)
-	}
-
-	var zeroVal *string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Subscription_gameMetricParameterDeleted_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Subscription_gameMetricParameterDeleted_argsParamID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["paramId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Subscription_gameMetricParameterDeleted_argsParamID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (*string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
-	if tmp, ok := rawArgs["paramId"]; ok {
-		return ec.unmarshalOID2ᚖstring(ctx, tmp)
-	}
-
-	var zeroVal *string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Subscription_gameMetricParameterUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Subscription_gameMetricParameterUpdated_argsParamID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["paramId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Subscription_gameMetricParameterUpdated_argsParamID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (*string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("paramId"))
-	if tmp, ok := rawArgs["paramId"]; ok {
-		return ec.unmarshalOID2ᚖstring(ctx, tmp)
-	}
-
-	var zeroVal *string
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Subscription_gameMetricUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -4789,129 +4573,6 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _BenchmarkComparison_percentileRank(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_percentileRank(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PercentileRank, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int32)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_percentileRank(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _BenchmarkComparison_relativeToBenchmark(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_relativeToBenchmark(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.RelativeToBenchmark, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_relativeToBenchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _BenchmarkComparison_benchmarkScore(ctx context.Context, field graphql.CollectedField, obj *model.BenchmarkComparison) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_BenchmarkComparison_benchmarkScore(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BenchmarkScore, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_BenchmarkComparison_benchmarkScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "BenchmarkComparison",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Competence_competenceId(ctx context.Context, field graphql.CollectedField, obj *models.Competence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Competence_competenceId(ctx, field)
 	if err != nil {
@@ -5120,6 +4781,47 @@ func (ec *executionContext) fieldContext_Competence_benchmark(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Competence_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *models.Competence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Competence_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Competence_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Competence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Competence_description(ctx context.Context, field graphql.CollectedField, obj *models.Competence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Competence_description(ctx, field)
 	if err != nil {
@@ -5298,7 +5000,7 @@ func (ec *executionContext) _Competence_metrics(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Metrics, nil
+		return ec.resolvers.Competence().Metrics(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5307,47 +5009,55 @@ func (ec *executionContext) _Competence_metrics(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.CompetenceMetric)
+	res := resTmp.([]*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Competence_metrics(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Competence",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	return fc, nil
@@ -5367,7 +5077,7 @@ func (ec *executionContext) _Competence_game(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Game, nil
+		return ec.resolvers.Competence().Game(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5376,17 +5086,17 @@ func (ec *executionContext) _Competence_game(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.Game)
+	res := resTmp.(*models.Game)
 	fc.Result = res
-	return ec.marshalOGame2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Competence_game(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Competence",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "gameId":
@@ -5411,6 +5121,75 @@ func (ec *executionContext) fieldContext_Competence_game(_ context.Context, fiel
 				return ec.fieldContext_Game_constantParameters(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Competence_parentCompetence(ctx context.Context, field graphql.CollectedField, obj *models.Competence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Competence_parentCompetence(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Competence().ParentCompetence(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Competence)
+	fc.Result = res
+	return ec.marshalOCompetence2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Competence_parentCompetence(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Competence",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "competenceId":
+				return ec.fieldContext_Competence_competenceId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Competence_gameId(ctx, field)
+			case "competenceKey":
+				return ec.fieldContext_Competence_competenceKey(ctx, field)
+			case "competenceName":
+				return ec.fieldContext_Competence_competenceName(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
+			case "description":
+				return ec.fieldContext_Competence_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Competence_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Competence_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Competence_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Competence_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
 	}
 	return fc, nil
@@ -5583,6 +5362,47 @@ func (ec *executionContext) fieldContext_CompetenceDetail_benchmark(_ context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _CompetenceDetail_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *model.CompetenceDetail) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CompetenceDetail_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CompetenceDetail_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CompetenceDetail",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CompetenceDetail_weight(ctx context.Context, field graphql.CollectedField, obj *model.CompetenceDetail) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CompetenceDetail_weight(ctx, field)
 	if err != nil {
@@ -5668,620 +5488,10 @@ func (ec *executionContext) fieldContext_CompetenceDetail_metrics(_ context.Cont
 				return ec.fieldContext_MetricResult_value(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_MetricResult_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_MetricResult_benchmarkMargin(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MetricResult", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_metricId(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_metricId(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MetricID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_metricId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_competenceId(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CompetenceID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalOID2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_competenceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_metricKey(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MetricKey, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_metricKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_metricName(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_metricName(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MetricName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_metricName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_metricDescription(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MetricDescription, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_metricDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_benchmark(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Benchmark, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalOFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_benchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_formula(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_formula(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Formula, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_formula(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_weight(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_weight(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Weight, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalOFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_weight(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CompetenceMetric().CreatedAt(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type DateTime does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CompetenceMetric().UpdatedAt(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type DateTime does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_parameters(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_parameters(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CompetenceMetric().Parameters(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.MetricParameter)
-	fc.Result = res
-	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_parameters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "paramId":
-				return ec.fieldContext_MetricParameter_paramId(ctx, field)
-			case "metricId":
-				return ec.fieldContext_MetricParameter_metricId(ctx, field)
-			case "paramKey":
-				return ec.fieldContext_MetricParameter_paramKey(ctx, field)
-			case "paramName":
-				return ec.fieldContext_MetricParameter_paramName(ctx, field)
-			case "paramDescription":
-				return ec.fieldContext_MetricParameter_paramDescription(ctx, field)
-			case "paramType":
-				return ec.fieldContext_MetricParameter_paramType(ctx, field)
-			case "isRequired":
-				return ec.fieldContext_MetricParameter_isRequired(ctx, field)
-			case "defaultValue":
-				return ec.fieldContext_MetricParameter_defaultValue(ctx, field)
-			case "description":
-				return ec.fieldContext_MetricParameter_description(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_MetricParameter_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_MetricParameter_updatedAt(ctx, field)
-			case "metric":
-				return ec.fieldContext_MetricParameter_metric(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MetricParameter", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_competence(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_competence(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Competence, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(models.Competence)
-	fc.Result = res
-	return ec.marshalOCompetence2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_competence(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "competenceId":
-				return ec.fieldContext_Competence_competenceId(ctx, field)
-			case "gameId":
-				return ec.fieldContext_Competence_gameId(ctx, field)
-			case "competenceKey":
-				return ec.fieldContext_Competence_competenceKey(ctx, field)
-			case "competenceName":
-				return ec.fieldContext_Competence_competenceName(ctx, field)
-			case "benchmark":
-				return ec.fieldContext_Competence_benchmark(ctx, field)
-			case "description":
-				return ec.fieldContext_Competence_description(ctx, field)
-			case "weight":
-				return ec.fieldContext_Competence_weight(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Competence_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Competence_updatedAt(ctx, field)
-			case "metrics":
-				return ec.fieldContext_Competence_metrics(ctx, field)
-			case "game":
-				return ec.fieldContext_Competence_game(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CompetenceMetric_stages(ctx context.Context, field graphql.CollectedField, obj *models.CompetenceMetric) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CompetenceMetric_stages(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Stages, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]models.Stage)
-	fc.Result = res
-	return ec.marshalOStage2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CompetenceMetric_stages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CompetenceMetric",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "stageId":
-				return ec.fieldContext_Stage_stageId(ctx, field)
-			case "gameId":
-				return ec.fieldContext_Stage_gameId(ctx, field)
-			case "stageKey":
-				return ec.fieldContext_Stage_stageKey(ctx, field)
-			case "stageName":
-				return ec.fieldContext_Stage_stageName(ctx, field)
-			case "stageOrder":
-				return ec.fieldContext_Stage_stageOrder(ctx, field)
-			case "benchmark":
-				return ec.fieldContext_Stage_benchmark(ctx, field)
-			case "description":
-				return ec.fieldContext_Stage_description(ctx, field)
-			case "optimalTime":
-				return ec.fieldContext_Stage_optimalTime(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Stage_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Stage_updatedAt(ctx, field)
-			case "metrics":
-				return ec.fieldContext_Stage_metrics(ctx, field)
-			case "game":
-				return ec.fieldContext_Stage_game(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Stage", field.Name)
 		},
 	}
 	return fc, nil
@@ -6673,7 +5883,7 @@ func (ec *executionContext) _ConstantParameter_game(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Game, nil
+		return ec.resolvers.ConstantParameter().Game(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6682,17 +5892,17 @@ func (ec *executionContext) _ConstantParameter_game(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.Game)
+	res := resTmp.(*models.Game)
 	fc.Result = res
-	return ec.marshalOGame2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConstantParameter_game(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ConstantParameter",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "gameId":
@@ -6985,7 +6195,7 @@ func (ec *executionContext) _Game_competencies(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Competencies, nil
+		return ec.resolvers.Game().Competencies(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6994,17 +6204,17 @@ func (ec *executionContext) _Game_competencies(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.Competence)
+	res := resTmp.([]*models.Competence)
 	fc.Result = res
-	return ec.marshalOCompetence2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res)
+	return ec.marshalOCompetence2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Game_competencies(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Game",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "competenceId":
@@ -7017,6 +6227,8 @@ func (ec *executionContext) fieldContext_Game_competencies(_ context.Context, fi
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -7029,6 +6241,8 @@ func (ec *executionContext) fieldContext_Game_competencies(_ context.Context, fi
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -7050,7 +6264,7 @@ func (ec *executionContext) _Game_stages(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Stages, nil
+		return ec.resolvers.Game().Stages(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7059,17 +6273,17 @@ func (ec *executionContext) _Game_stages(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.Stage)
+	res := resTmp.([]*models.Stage)
 	fc.Result = res
-	return ec.marshalOStage2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res)
+	return ec.marshalOStage2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Game_stages(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Game",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "stageId":
@@ -7084,6 +6298,8 @@ func (ec *executionContext) fieldContext_Game_stages(_ context.Context, field gr
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -7117,7 +6333,7 @@ func (ec *executionContext) _Game_gameMetrics(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.GameMetrics, nil
+		return ec.resolvers.Game().GameMetrics(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7126,45 +6342,55 @@ func (ec *executionContext) _Game_gameMetrics(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.GameMetric)
+	res := resTmp.([]*models.Metric)
 	fc.Result = res
-	return ec.marshalOGameMetric2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Game_gameMetrics(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Game",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_GameMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
 			case "gameId":
-				return ec.fieldContext_GameMetric_gameId(ctx, field)
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_GameMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_GameMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_GameMetric_formula(ctx, field)
-			case "description":
-				return ec.fieldContext_GameMetric_description(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
+			case "weight":
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_GameMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_GameMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_GameMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
+			case "competence":
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
 			case "game":
-				return ec.fieldContext_GameMetric_game(ctx, field)
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type GameMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	return fc, nil
@@ -7184,7 +6410,7 @@ func (ec *executionContext) _Game_constantParameters(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ConstantParameters, nil
+		return ec.resolvers.Game().ConstantParameters(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7193,17 +6419,17 @@ func (ec *executionContext) _Game_constantParameters(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.ConstantParameter)
+	res := resTmp.([]*models.ConstantParameter)
 	fc.Result = res
-	return ec.marshalOConstantParameter2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx, field.Selections, res)
+	return ec.marshalOConstantParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Game_constantParameters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Game",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "constId":
@@ -7233,7 +6459,7 @@ func (ec *executionContext) fieldContext_Game_constantParameters(_ context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_metricId(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_metricId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_metricId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7259,9 +6485,9 @@ func (ec *executionContext) _GameMetric_metricId(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_metricId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7277,7 +6503,7 @@ func (ec *executionContext) fieldContext_GameMetric_metricId(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_gameId(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_gameId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_gameId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7300,9 +6526,9 @@ func (ec *executionContext) _GameMetric_gameId(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_gameId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7318,7 +6544,51 @@ func (ec *executionContext) fieldContext_GameMetric_gameId(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_metricKey(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_competenceId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GameMetric_competenceId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompetenceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GameMetric_competenceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GameMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GameMetric_metricKey(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_metricKey(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7341,9 +6611,9 @@ func (ec *executionContext) _GameMetric_metricKey(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_metricKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7359,7 +6629,7 @@ func (ec *executionContext) fieldContext_GameMetric_metricKey(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_metricName(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_metricName(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_metricName(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7382,9 +6652,9 @@ func (ec *executionContext) _GameMetric_metricName(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_metricName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7400,7 +6670,7 @@ func (ec *executionContext) fieldContext_GameMetric_metricName(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_metricDescription(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_metricDescription(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_metricDescription(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7423,9 +6693,9 @@ func (ec *executionContext) _GameMetric_metricDescription(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_metricDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7441,7 +6711,7 @@ func (ec *executionContext) fieldContext_GameMetric_metricDescription(_ context.
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_benchmark(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_benchmark(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_benchmark(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7464,9 +6734,9 @@ func (ec *executionContext) _GameMetric_benchmark(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_benchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7482,7 +6752,48 @@ func (ec *executionContext) fieldContext_GameMetric_benchmark(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_formula(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GameMetric_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GameMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GameMetric_formula(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_formula(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7505,9 +6816,9 @@ func (ec *executionContext) _GameMetric_formula(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_formula(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7523,7 +6834,7 @@ func (ec *executionContext) fieldContext_GameMetric_formula(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_description(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_description(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_description(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7546,9 +6857,9 @@ func (ec *executionContext) _GameMetric_description(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7564,7 +6875,7 @@ func (ec *executionContext) fieldContext_GameMetric_description(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7578,7 +6889,7 @@ func (ec *executionContext) _GameMetric_createdAt(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.GameMetric().CreatedAt(rctx, obj)
+		return obj.CreatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7596,8 +6907,8 @@ func (ec *executionContext) fieldContext_GameMetric_createdAt(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "GameMetric",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -7605,7 +6916,7 @@ func (ec *executionContext) fieldContext_GameMetric_createdAt(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7619,7 +6930,7 @@ func (ec *executionContext) _GameMetric_updatedAt(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.GameMetric().UpdatedAt(rctx, obj)
+		return obj.UpdatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7637,8 +6948,8 @@ func (ec *executionContext) fieldContext_GameMetric_updatedAt(_ context.Context,
 	fc = &graphql.FieldContext{
 		Object:     "GameMetric",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -7646,7 +6957,7 @@ func (ec *executionContext) fieldContext_GameMetric_updatedAt(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_parameters(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_parameters(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_parameters(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7669,9 +6980,9 @@ func (ec *executionContext) _GameMetric_parameters(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.GameMetricParameter)
+	res := resTmp.([]*model.GameMetricParameter)
 	fc.Result = res
-	return ec.marshalOGameMetricParameter2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOGameMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_parameters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7713,7 +7024,7 @@ func (ec *executionContext) fieldContext_GameMetric_parameters(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetric_game(ctx context.Context, field graphql.CollectedField, obj *models.GameMetric) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetric_game(ctx context.Context, field graphql.CollectedField, obj *model.GameMetric) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetric_game(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7736,9 +7047,9 @@ func (ec *executionContext) _GameMetric_game(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.Game)
+	res := resTmp.(*models.Game)
 	fc.Result = res
-	return ec.marshalOGame2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetric_game(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7776,7 +7087,7 @@ func (ec *executionContext) fieldContext_GameMetric_game(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_paramId(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_paramId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_paramId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7802,9 +7113,9 @@ func (ec *executionContext) _GameMetricParameter_paramId(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_paramId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7820,7 +7131,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_paramId(_ context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_metricId(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_metricId(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_metricId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7843,9 +7154,9 @@ func (ec *executionContext) _GameMetricParameter_metricId(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOID2int(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_metricId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7861,7 +7172,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_metricId(_ context.
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_paramKey(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_paramKey(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7884,9 +7195,9 @@ func (ec *executionContext) _GameMetricParameter_paramKey(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_paramKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7902,7 +7213,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_paramKey(_ context.
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_paramName(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_paramName(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_paramName(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7925,9 +7236,9 @@ func (ec *executionContext) _GameMetricParameter_paramName(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_paramName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7943,7 +7254,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_paramName(_ context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_paramDescription(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_paramDescription(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7966,9 +7277,9 @@ func (ec *executionContext) _GameMetricParameter_paramDescription(ctx context.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_paramDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7984,7 +7295,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_paramDescription(_ 
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_paramType(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_paramType(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_paramType(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8007,9 +7318,9 @@ func (ec *executionContext) _GameMetricParameter_paramType(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.ParameterType)
+	res := resTmp.(*models.ParameterType)
 	fc.Result = res
-	return ec.marshalOParameterType2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐParameterType(ctx, field.Selections, res)
+	return ec.marshalOParameterType2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐParameterType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_paramType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8025,7 +7336,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_paramType(_ context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_isRequired(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_isRequired(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8048,9 +7359,9 @@ func (ec *executionContext) _GameMetricParameter_isRequired(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_isRequired(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8066,7 +7377,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_isRequired(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_defaultValue(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_defaultValue(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8089,9 +7400,9 @@ func (ec *executionContext) _GameMetricParameter_defaultValue(ctx context.Contex
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_defaultValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8107,7 +7418,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_defaultValue(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_description(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_description(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_description(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8130,9 +7441,9 @@ func (ec *executionContext) _GameMetricParameter_description(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8148,7 +7459,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_description(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8162,7 +7473,7 @@ func (ec *executionContext) _GameMetricParameter_createdAt(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.GameMetricParameter().CreatedAt(rctx, obj)
+		return obj.CreatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8180,8 +7491,8 @@ func (ec *executionContext) fieldContext_GameMetricParameter_createdAt(_ context
 	fc = &graphql.FieldContext{
 		Object:     "GameMetricParameter",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -8189,7 +7500,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_createdAt(_ context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8203,7 +7514,7 @@ func (ec *executionContext) _GameMetricParameter_updatedAt(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.GameMetricParameter().UpdatedAt(rctx, obj)
+		return obj.UpdatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8221,8 +7532,8 @@ func (ec *executionContext) fieldContext_GameMetricParameter_updatedAt(_ context
 	fc = &graphql.FieldContext{
 		Object:     "GameMetricParameter",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -8230,7 +7541,7 @@ func (ec *executionContext) fieldContext_GameMetricParameter_updatedAt(_ context
 	return fc, nil
 }
 
-func (ec *executionContext) _GameMetricParameter_metric(ctx context.Context, field graphql.CollectedField, obj *models.GameMetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _GameMetricParameter_metric(ctx context.Context, field graphql.CollectedField, obj *model.GameMetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GameMetricParameter_metric(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8253,9 +7564,9 @@ func (ec *executionContext) _GameMetricParameter_metric(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.GameMetric)
+	res := resTmp.(*model.GameMetric)
 	fc.Result = res
-	return ec.marshalOGameMetric2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_GameMetricParameter_metric(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8270,6 +7581,8 @@ func (ec *executionContext) fieldContext_GameMetricParameter_metric(_ context.Co
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -8278,6 +7591,8 @@ func (ec *executionContext) fieldContext_GameMetricParameter_metric(_ context.Co
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -8661,7 +7976,811 @@ func (ec *executionContext) fieldContext_GlobalMetrics_adaptability(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_paramId(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _Metric_metricId(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_metricId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MetricID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_metricId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_competenceId(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_competenceId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompetenceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_competenceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_stageId(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_stageId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_stageId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_gameId(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_gameId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GameID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_gameId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_metricKey(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_metricKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MetricKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_metricKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_metricName(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_metricName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MetricName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_metricName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_metricDescription(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_metricDescription(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MetricDescription, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_metricDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_benchmark(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_benchmark(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Benchmark, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_benchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_formula(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_formula(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Formula, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_formula(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_weight(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_weight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Weight, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_weight(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().CreatedAt(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_updatedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().UpdatedAt(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_parameters(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_parameters(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().Parameters(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.MetricParameter)
+	fc.Result = res
+	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_parameters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "paramId":
+				return ec.fieldContext_MetricParameter_paramId(ctx, field)
+			case "metricId":
+				return ec.fieldContext_MetricParameter_metricId(ctx, field)
+			case "paramKey":
+				return ec.fieldContext_MetricParameter_paramKey(ctx, field)
+			case "paramName":
+				return ec.fieldContext_MetricParameter_paramName(ctx, field)
+			case "paramDescription":
+				return ec.fieldContext_MetricParameter_paramDescription(ctx, field)
+			case "paramType":
+				return ec.fieldContext_MetricParameter_paramType(ctx, field)
+			case "isRequired":
+				return ec.fieldContext_MetricParameter_isRequired(ctx, field)
+			case "defaultValue":
+				return ec.fieldContext_MetricParameter_defaultValue(ctx, field)
+			case "description":
+				return ec.fieldContext_MetricParameter_description(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_MetricParameter_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_MetricParameter_updatedAt(ctx, field)
+			case "metric":
+				return ec.fieldContext_MetricParameter_metric(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MetricParameter", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_competence(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_competence(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().Competence(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Competence)
+	fc.Result = res
+	return ec.marshalOCompetence2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_competence(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "competenceId":
+				return ec.fieldContext_Competence_competenceId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Competence_gameId(ctx, field)
+			case "competenceKey":
+				return ec.fieldContext_Competence_competenceKey(ctx, field)
+			case "competenceName":
+				return ec.fieldContext_Competence_competenceName(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
+			case "description":
+				return ec.fieldContext_Competence_description(ctx, field)
+			case "weight":
+				return ec.fieldContext_Competence_weight(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Competence_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Competence_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Competence_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_stage(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_stage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().Stage(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Stage)
+	fc.Result = res
+	return ec.marshalOStage2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_stage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "stageId":
+				return ec.fieldContext_Stage_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Stage_gameId(ctx, field)
+			case "stageKey":
+				return ec.fieldContext_Stage_stageKey(ctx, field)
+			case "stageName":
+				return ec.fieldContext_Stage_stageName(ctx, field)
+			case "stageOrder":
+				return ec.fieldContext_Stage_stageOrder(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
+			case "description":
+				return ec.fieldContext_Stage_description(ctx, field)
+			case "optimalTime":
+				return ec.fieldContext_Stage_optimalTime(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Stage_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Stage_updatedAt(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Stage_metrics(ctx, field)
+			case "game":
+				return ec.fieldContext_Stage_game(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Stage", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metric_game(ctx context.Context, field graphql.CollectedField, obj *models.Metric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metric_game(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Metric().Game(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Game)
+	fc.Result = res
+	return ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metric_game(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metric",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "gameId":
+				return ec.fieldContext_Game_gameId(ctx, field)
+			case "gameName":
+				return ec.fieldContext_Game_gameName(ctx, field)
+			case "description":
+				return ec.fieldContext_Game_description(ctx, field)
+			case "active":
+				return ec.fieldContext_Game_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Game_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Game_updatedAt(ctx, field)
+			case "competencies":
+				return ec.fieldContext_Game_competencies(ctx, field)
+			case "stages":
+				return ec.fieldContext_Game_stages(ctx, field)
+			case "gameMetrics":
+				return ec.fieldContext_Game_gameMetrics(ctx, field)
+			case "constantParameters":
+				return ec.fieldContext_Game_constantParameters(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Game", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricParameter_paramId(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_paramId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8687,9 +8806,9 @@ func (ec *executionContext) _MetricParameter_paramId(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_paramId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8705,7 +8824,7 @@ func (ec *executionContext) fieldContext_MetricParameter_paramId(_ context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_metricId(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_metricId(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_metricId(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8728,9 +8847,9 @@ func (ec *executionContext) _MetricParameter_metricId(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_metricId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8746,7 +8865,7 @@ func (ec *executionContext) fieldContext_MetricParameter_metricId(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_paramKey(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_paramKey(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_paramKey(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8769,9 +8888,9 @@ func (ec *executionContext) _MetricParameter_paramKey(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_paramKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8787,7 +8906,7 @@ func (ec *executionContext) fieldContext_MetricParameter_paramKey(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_paramName(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_paramName(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_paramName(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8810,9 +8929,9 @@ func (ec *executionContext) _MetricParameter_paramName(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_paramName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8828,7 +8947,7 @@ func (ec *executionContext) fieldContext_MetricParameter_paramName(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_paramDescription(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_paramDescription(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_paramDescription(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8851,9 +8970,9 @@ func (ec *executionContext) _MetricParameter_paramDescription(ctx context.Contex
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_paramDescription(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8869,7 +8988,7 @@ func (ec *executionContext) fieldContext_MetricParameter_paramDescription(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_paramType(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_paramType(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_paramType(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8892,9 +9011,9 @@ func (ec *executionContext) _MetricParameter_paramType(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.ParameterType)
+	res := resTmp.(models.ParameterType)
 	fc.Result = res
-	return ec.marshalOParameterType2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐParameterType(ctx, field.Selections, res)
+	return ec.marshalOParameterType2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐParameterType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_paramType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8910,7 +9029,7 @@ func (ec *executionContext) fieldContext_MetricParameter_paramType(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_isRequired(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_isRequired(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_isRequired(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8933,9 +9052,9 @@ func (ec *executionContext) _MetricParameter_isRequired(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_isRequired(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8951,7 +9070,7 @@ func (ec *executionContext) fieldContext_MetricParameter_isRequired(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_defaultValue(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_defaultValue(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_defaultValue(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -8974,9 +9093,9 @@ func (ec *executionContext) _MetricParameter_defaultValue(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_defaultValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8992,7 +9111,7 @@ func (ec *executionContext) fieldContext_MetricParameter_defaultValue(_ context.
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_description(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_description(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_description(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -9015,9 +9134,9 @@ func (ec *executionContext) _MetricParameter_description(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9033,7 +9152,7 @@ func (ec *executionContext) fieldContext_MetricParameter_description(_ context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -9047,7 +9166,7 @@ func (ec *executionContext) _MetricParameter_createdAt(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
+		return ec.resolvers.MetricParameter().CreatedAt(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9065,8 +9184,8 @@ func (ec *executionContext) fieldContext_MetricParameter_createdAt(_ context.Con
 	fc = &graphql.FieldContext{
 		Object:     "MetricParameter",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -9074,7 +9193,7 @@ func (ec *executionContext) fieldContext_MetricParameter_createdAt(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -9088,7 +9207,7 @@ func (ec *executionContext) _MetricParameter_updatedAt(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
+		return ec.resolvers.MetricParameter().UpdatedAt(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9106,8 +9225,8 @@ func (ec *executionContext) fieldContext_MetricParameter_updatedAt(_ context.Con
 	fc = &graphql.FieldContext{
 		Object:     "MetricParameter",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
 		},
@@ -9115,7 +9234,7 @@ func (ec *executionContext) fieldContext_MetricParameter_updatedAt(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MetricParameter_metric(ctx context.Context, field graphql.CollectedField, obj *model.MetricParameter) (ret graphql.Marshaler) {
+func (ec *executionContext) _MetricParameter_metric(ctx context.Context, field graphql.CollectedField, obj *models.MetricParameter) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MetricParameter_metric(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -9129,7 +9248,7 @@ func (ec *executionContext) _MetricParameter_metric(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Metric, nil
+		return ec.resolvers.MetricParameter().Metric(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9138,47 +9257,55 @@ func (ec *executionContext) _MetricParameter_metric(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.CompetenceMetric)
+	res := resTmp.(*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MetricParameter_metric(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MetricParameter",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	return fc, nil
@@ -9339,6 +9466,47 @@ func (ec *executionContext) _MetricResult_benchmark(ctx context.Context, field g
 }
 
 func (ec *executionContext) fieldContext_MetricResult_benchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricResult_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *model.MetricResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricResult_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricResult_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MetricResult",
 		Field:      field,
@@ -9597,6 +9765,8 @@ func (ec *executionContext) fieldContext_Mutation_createCompetence(ctx context.C
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -9609,6 +9779,8 @@ func (ec *executionContext) fieldContext_Mutation_createCompetence(ctx context.C
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -9673,6 +9845,8 @@ func (ec *executionContext) fieldContext_Mutation_updateCompetence(ctx context.C
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -9685,6 +9859,8 @@ func (ec *executionContext) fieldContext_Mutation_updateCompetence(ctx context.C
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -9755,8 +9931,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteCompetence(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createCompetenceMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createCompetenceMetric(ctx, field)
+func (ec *executionContext) _Mutation_createStageMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createStageMetric(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9769,7 +9945,7 @@ func (ec *executionContext) _Mutation_createCompetenceMetric(ctx context.Context
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateCompetenceMetric(rctx, fc.Args["input"].(model.CompetenceMetricInput))
+		return ec.resolvers.Mutation().CreateStageMetric(rctx, fc.Args["input"].(model.StageMetricInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9778,12 +9954,12 @@ func (ec *executionContext) _Mutation_createCompetenceMetric(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.CompetenceMetric)
+	res := resTmp.(*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createCompetenceMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createStageMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -9792,33 +9968,41 @@ func (ec *executionContext) fieldContext_Mutation_createCompetenceMetric(ctx con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -9828,15 +10012,15 @@ func (ec *executionContext) fieldContext_Mutation_createCompetenceMetric(ctx con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createCompetenceMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createStageMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateCompetenceMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateCompetenceMetric(ctx, field)
+func (ec *executionContext) _Mutation_updateStageMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateStageMetric(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9849,7 +10033,7 @@ func (ec *executionContext) _Mutation_updateCompetenceMetric(ctx context.Context
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateCompetenceMetric(rctx, fc.Args["input"].(model.CompetenceMetricUpdateInput))
+		return ec.resolvers.Mutation().UpdateStageMetric(rctx, fc.Args["input"].(model.StageMetricUpdateInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9858,12 +10042,12 @@ func (ec *executionContext) _Mutation_updateCompetenceMetric(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.CompetenceMetric)
+	res := resTmp.(*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updateCompetenceMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateStageMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -9872,33 +10056,41 @@ func (ec *executionContext) fieldContext_Mutation_updateCompetenceMetric(ctx con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -9908,15 +10100,15 @@ func (ec *executionContext) fieldContext_Mutation_updateCompetenceMetric(ctx con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateCompetenceMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateStageMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_deleteCompetenceMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteCompetenceMetric(ctx, field)
+func (ec *executionContext) _Mutation_deleteStageMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteStageMetric(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9929,7 +10121,7 @@ func (ec *executionContext) _Mutation_deleteCompetenceMetric(ctx context.Context
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteCompetenceMetric(rctx, fc.Args["metricId"].(string))
+		return ec.resolvers.Mutation().DeleteStageMetric(rctx, fc.Args["metricId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9943,7 +10135,7 @@ func (ec *executionContext) _Mutation_deleteCompetenceMetric(ctx context.Context
 	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_deleteCompetenceMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_deleteStageMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -9960,7 +10152,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteCompetenceMetric(ctx con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteCompetenceMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_deleteStageMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -9990,9 +10182,9 @@ func (ec *executionContext) _Mutation_createMetricParameter(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.MetricParameter)
+	res := resTmp.(*models.MetricParameter)
 	fc.Result = res
-	return ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createMetricParameter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10068,9 +10260,9 @@ func (ec *executionContext) _Mutation_updateMetricParameter(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.MetricParameter)
+	res := resTmp.(*models.MetricParameter)
 	fc.Result = res
-	return ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateMetricParameter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10223,6 +10415,8 @@ func (ec *executionContext) fieldContext_Mutation_createStage(ctx context.Contex
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -10301,6 +10495,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStage(ctx context.Contex
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -10383,110 +10579,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteStage(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_assignMetricToStage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_assignMetricToStage(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AssignMetricToStage(rctx, fc.Args["input"].(model.StageMetricInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_assignMetricToStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_assignMetricToStage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_removeMetricFromStage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_removeMetricFromStage(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveMetricFromStage(rctx, fc.Args["input"].(model.StageMetricInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_removeMetricFromStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_removeMetricFromStage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createGameMetric(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createGameMetric(ctx, field)
 	if err != nil {
@@ -10510,9 +10602,9 @@ func (ec *executionContext) _Mutation_createGameMetric(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.GameMetric)
+	res := resTmp.(*model.GameMetric)
 	fc.Result = res
-	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createGameMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10527,6 +10619,8 @@ func (ec *executionContext) fieldContext_Mutation_createGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -10535,6 +10629,8 @@ func (ec *executionContext) fieldContext_Mutation_createGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -10588,9 +10684,9 @@ func (ec *executionContext) _Mutation_updateGameMetric(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.GameMetric)
+	res := resTmp.(*model.GameMetric)
 	fc.Result = res
-	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateGameMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10605,6 +10701,8 @@ func (ec *executionContext) fieldContext_Mutation_updateGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -10613,6 +10711,8 @@ func (ec *executionContext) fieldContext_Mutation_updateGameMetric(ctx context.C
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -10689,214 +10789,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteGameMetric(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteGameMetric_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createGameMetricParameter(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createGameMetricParameter(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateGameMetricParameter(rctx, fc.Args["input"].(model.GameMetricParameterInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.GameMetricParameter)
-	fc.Result = res
-	return ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createGameMetricParameter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "paramId":
-				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
-			case "metricId":
-				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
-			case "paramKey":
-				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
-			case "paramName":
-				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
-			case "paramDescription":
-				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
-			case "paramType":
-				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
-			case "isRequired":
-				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
-			case "defaultValue":
-				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
-			case "description":
-				return ec.fieldContext_GameMetricParameter_description(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
-			case "metric":
-				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createGameMetricParameter_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateGameMetricParameter(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateGameMetricParameter(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateGameMetricParameter(rctx, fc.Args["input"].(model.GameMetricParameterUpdateInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.GameMetricParameter)
-	fc.Result = res
-	return ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateGameMetricParameter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "paramId":
-				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
-			case "metricId":
-				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
-			case "paramKey":
-				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
-			case "paramName":
-				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
-			case "paramDescription":
-				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
-			case "paramType":
-				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
-			case "isRequired":
-				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
-			case "defaultValue":
-				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
-			case "description":
-				return ec.fieldContext_GameMetricParameter_description(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
-			case "metric":
-				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateGameMetricParameter_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteGameMetricParameter(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteGameMetricParameter(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteGameMetricParameter(rctx, fc.Args["paramId"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteGameMetricParameter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteGameMetricParameter_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -11159,8 +11051,6 @@ func (ec *executionContext) fieldContext_Mutation_calculatePlayerPerformance(ctx
 				return ec.fieldContext_PlayerPerformance_stagePerformance(ctx, field)
 			case "globalMetrics":
 				return ec.fieldContext_PlayerPerformance_globalMetrics(ctx, field)
-			case "benchmarkComparison":
-				return ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerPerformance", field.Name)
 		},
@@ -11516,6 +11406,8 @@ func (ec *executionContext) fieldContext_PlayerPerformance_competenceDetails(_ c
 				return ec.fieldContext_CompetenceDetail_score(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_CompetenceDetail_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_CompetenceDetail_benchmarkMargin(ctx, field)
 			case "weight":
 				return ec.fieldContext_CompetenceDetail_weight(ctx, field)
 			case "metrics":
@@ -11577,6 +11469,8 @@ func (ec *executionContext) fieldContext_PlayerPerformance_stagePerformance(_ co
 				return ec.fieldContext_StagePerformance_score(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_StagePerformance_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_StagePerformance_benchmarkMargin(ctx, field)
 			case "completionStatus":
 				return ec.fieldContext_StagePerformance_completionStatus(ctx, field)
 			}
@@ -11609,9 +11503,9 @@ func (ec *executionContext) _PlayerPerformance_globalMetrics(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.GlobalMetrics)
+	res := resTmp.([]*model.StageMetricResult)
 	fc.Result = res
-	return ec.marshalOGlobalMetrics2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGlobalMetrics(ctx, field.Selections, res)
+	return ec.marshalOStageMetricResult2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PlayerPerformance_globalMetrics(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11622,69 +11516,24 @@ func (ec *executionContext) fieldContext_PlayerPerformance_globalMetrics(_ conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "timeEfficiency":
-				return ec.fieldContext_GlobalMetrics_timeEfficiency(ctx, field)
-			case "autonomy":
-				return ec.fieldContext_GlobalMetrics_autonomy(ctx, field)
-			case "errorRecovery":
-				return ec.fieldContext_GlobalMetrics_errorRecovery(ctx, field)
-			case "stressPerformance":
-				return ec.fieldContext_GlobalMetrics_stressPerformance(ctx, field)
-			case "consistency":
-				return ec.fieldContext_GlobalMetrics_consistency(ctx, field)
-			case "adaptability":
-				return ec.fieldContext_GlobalMetrics_adaptability(ctx, field)
+			case "kpiId":
+				return ec.fieldContext_StageMetricResult_kpiId(ctx, field)
+			case "kpiName":
+				return ec.fieldContext_StageMetricResult_kpiName(ctx, field)
+			case "category":
+				return ec.fieldContext_StageMetricResult_category(ctx, field)
+			case "value":
+				return ec.fieldContext_StageMetricResult_value(ctx, field)
+			case "benchmark":
+				return ec.fieldContext_StageMetricResult_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_StageMetricResult_benchmarkMargin(ctx, field)
+			case "formula":
+				return ec.fieldContext_StageMetricResult_formula(ctx, field)
+			case "rawData":
+				return ec.fieldContext_StageMetricResult_rawData(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type GlobalMetrics", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PlayerPerformance_benchmarkComparison(ctx context.Context, field graphql.CollectedField, obj *model.PlayerPerformance) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BenchmarkComparison, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.BenchmarkComparison)
-	fc.Result = res
-	return ec.marshalOBenchmarkComparison2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐBenchmarkComparison(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PlayerPerformance_benchmarkComparison(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PlayerPerformance",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "percentileRank":
-				return ec.fieldContext_BenchmarkComparison_percentileRank(ctx, field)
-			case "relativeToBenchmark":
-				return ec.fieldContext_BenchmarkComparison_relativeToBenchmark(ctx, field)
-			case "benchmarkScore":
-				return ec.fieldContext_BenchmarkComparison_benchmarkScore(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type BenchmarkComparison", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type StageMetricResult", field.Name)
 		},
 	}
 	return fc, nil
@@ -11715,7 +11564,7 @@ func (ec *executionContext) _Query_getGames(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*models.Game)
 	fc.Result = res
-	return ec.marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getGames(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11873,6 +11722,8 @@ func (ec *executionContext) fieldContext_Query_getCompetenciesByGame(ctx context
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -11885,6 +11736,8 @@ func (ec *executionContext) fieldContext_Query_getCompetenciesByGame(ctx context
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -11949,6 +11802,8 @@ func (ec *executionContext) fieldContext_Query_getCompetenceById(ctx context.Con
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -11961,6 +11816,8 @@ func (ec *executionContext) fieldContext_Query_getCompetenceById(ctx context.Con
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -12002,9 +11859,9 @@ func (ec *executionContext) _Query_getMetricsByCompetence(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*models.CompetenceMetric)
+	res := resTmp.([]*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getMetricsByCompetence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12016,33 +11873,41 @@ func (ec *executionContext) fieldContext_Query_getMetricsByCompetence(ctx contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -12082,9 +11947,9 @@ func (ec *executionContext) _Query_getMetricById(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.CompetenceMetric)
+	res := resTmp.(*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getMetricById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12096,33 +11961,41 @@ func (ec *executionContext) fieldContext_Query_getMetricById(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -12162,9 +12035,9 @@ func (ec *executionContext) _Query_getParametersByMetric(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.MetricParameter)
+	res := resTmp.([]*models.MetricParameter)
 	fc.Result = res
-	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getParametersByMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12265,6 +12138,8 @@ func (ec *executionContext) fieldContext_Query_getStagesByGame(ctx context.Conte
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -12343,6 +12218,8 @@ func (ec *executionContext) fieldContext_Query_getStageById(ctx context.Context,
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -12396,9 +12273,9 @@ func (ec *executionContext) _Query_getMetricsByStage(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*models.CompetenceMetric)
+	res := resTmp.([]*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getMetricsByStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12410,33 +12287,41 @@ func (ec *executionContext) fieldContext_Query_getMetricsByStage(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -12476,9 +12361,9 @@ func (ec *executionContext) _Query_getGameMetricsByGame(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*models.GameMetric)
+	res := resTmp.([]*model.GameMetric)
 	fc.Result = res
-	return ec.marshalOGameMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOGameMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getGameMetricsByGame(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12493,6 +12378,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricsByGame(ctx context.
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -12501,6 +12388,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricsByGame(ctx context.
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -12554,9 +12443,9 @@ func (ec *executionContext) _Query_getGameMetricById(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.GameMetric)
+	res := resTmp.(*model.GameMetric)
 	fc.Result = res
-	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res)
+	return ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getGameMetricById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12571,6 +12460,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricById(ctx context.Con
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -12579,6 +12470,8 @@ func (ec *executionContext) fieldContext_Query_getGameMetricById(ctx context.Con
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -12632,9 +12525,9 @@ func (ec *executionContext) _Query_getParametersByGameMetric(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*models.GameMetricParameter)
+	res := resTmp.([]*model.GameMetricParameter)
 	fc.Result = res
-	return ec.marshalOGameMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOGameMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getParametersByGameMetric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12957,6 +12850,8 @@ func (ec *executionContext) fieldContext_Query_getRequiredParametersForGame(ctx 
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -13010,9 +12905,9 @@ func (ec *executionContext) _Query_getRequiredParametersForStage(ctx context.Con
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.MetricParameter)
+	res := resTmp.([]*models.MetricParameter)
 	fc.Result = res
-	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res)
+	return ec.marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getRequiredParametersForStage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -13593,6 +13488,47 @@ func (ec *executionContext) fieldContext_Stage_benchmark(_ context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Stage_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *models.Stage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Stage_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Stage_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Stage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Stage_description(ctx context.Context, field graphql.CollectedField, obj *models.Stage) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Stage_description(ctx, field)
 	if err != nil {
@@ -13771,7 +13707,7 @@ func (ec *executionContext) _Stage_metrics(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Metrics, nil
+		return ec.resolvers.Stage().Metrics(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13780,47 +13716,55 @@ func (ec *executionContext) _Stage_metrics(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]models.CompetenceMetric)
+	res := resTmp.([]*models.Metric)
 	fc.Result = res
-	return ec.marshalOCompetenceMetric2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res)
+	return ec.marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Stage_metrics(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Stage",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	return fc, nil
@@ -13840,7 +13784,7 @@ func (ec *executionContext) _Stage_game(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Game, nil
+		return ec.resolvers.Stage().Game(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13849,17 +13793,17 @@ func (ec *executionContext) _Stage_game(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.Game)
+	res := resTmp.(*models.Game)
 	fc.Result = res
-	return ec.marshalOGame2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
+	return ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Stage_game(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Stage",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "gameId":
@@ -14097,6 +14041,47 @@ func (ec *executionContext) fieldContext_StageMetricResult_benchmark(_ context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _StageMetricResult_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *model.StageMetricResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StageMetricResult_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StageMetricResult_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StageMetricResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _StageMetricResult_formula(ctx context.Context, field graphql.CollectedField, obj *model.StageMetricResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StageMetricResult_formula(ctx, field)
 	if err != nil {
@@ -14161,9 +14146,9 @@ func (ec *executionContext) _StageMetricResult_rawData(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(map[string]any)
 	fc.Result = res
-	return ec.marshalOJSON2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOJSON2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StageMetricResult_rawData(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -14310,6 +14295,8 @@ func (ec *executionContext) fieldContext_StagePerformance_metrics(_ context.Cont
 				return ec.fieldContext_StageMetricResult_value(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_StageMetricResult_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_StageMetricResult_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_StageMetricResult_formula(ctx, field)
 			case "rawData":
@@ -14473,6 +14460,47 @@ func (ec *executionContext) _StagePerformance_benchmark(ctx context.Context, fie
 }
 
 func (ec *executionContext) fieldContext_StagePerformance_benchmark(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StagePerformance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StagePerformance_benchmarkMargin(ctx context.Context, field graphql.CollectedField, obj *model.StagePerformance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StagePerformance_benchmarkMargin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BenchmarkMargin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StagePerformance_benchmarkMargin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StagePerformance",
 		Field:      field,
@@ -14817,6 +14845,8 @@ func (ec *executionContext) fieldContext_Subscription_competenceCreated(ctx cont
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -14829,6 +14859,8 @@ func (ec *executionContext) fieldContext_Subscription_competenceCreated(ctx cont
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -14907,6 +14939,8 @@ func (ec *executionContext) fieldContext_Subscription_competenceUpdated(ctx cont
 				return ec.fieldContext_Competence_competenceName(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Competence_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Competence_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Competence_description(ctx, field)
 			case "weight":
@@ -14919,6 +14953,8 @@ func (ec *executionContext) fieldContext_Subscription_competenceUpdated(ctx cont
 				return ec.fieldContext_Competence_metrics(ctx, field)
 			case "game":
 				return ec.fieldContext_Competence_game(ctx, field)
+			case "parentCompetence":
+				return ec.fieldContext_Competence_parentCompetence(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Competence", field.Name)
 		},
@@ -15028,7 +15064,7 @@ func (ec *executionContext) _Subscription_competenceMetricCreated(ctx context.Co
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *models.CompetenceMetric):
+		case res, ok := <-resTmp.(<-chan *models.Metric):
 			if !ok {
 				return nil
 			}
@@ -15036,7 +15072,7 @@ func (ec *executionContext) _Subscription_competenceMetricCreated(ctx context.Co
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15054,33 +15090,41 @@ func (ec *executionContext) fieldContext_Subscription_competenceMetricCreated(ct
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -15122,7 +15166,7 @@ func (ec *executionContext) _Subscription_competenceMetricUpdated(ctx context.Co
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *models.CompetenceMetric):
+		case res, ok := <-resTmp.(<-chan *models.Metric):
 			if !ok {
 				return nil
 			}
@@ -15130,7 +15174,7 @@ func (ec *executionContext) _Subscription_competenceMetricUpdated(ctx context.Co
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15148,33 +15192,41 @@ func (ec *executionContext) fieldContext_Subscription_competenceMetricUpdated(ct
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metricId":
-				return ec.fieldContext_CompetenceMetric_metricId(ctx, field)
+				return ec.fieldContext_Metric_metricId(ctx, field)
 			case "competenceId":
-				return ec.fieldContext_CompetenceMetric_competenceId(ctx, field)
+				return ec.fieldContext_Metric_competenceId(ctx, field)
+			case "stageId":
+				return ec.fieldContext_Metric_stageId(ctx, field)
+			case "gameId":
+				return ec.fieldContext_Metric_gameId(ctx, field)
 			case "metricKey":
-				return ec.fieldContext_CompetenceMetric_metricKey(ctx, field)
+				return ec.fieldContext_Metric_metricKey(ctx, field)
 			case "metricName":
-				return ec.fieldContext_CompetenceMetric_metricName(ctx, field)
+				return ec.fieldContext_Metric_metricName(ctx, field)
 			case "metricDescription":
-				return ec.fieldContext_CompetenceMetric_metricDescription(ctx, field)
+				return ec.fieldContext_Metric_metricDescription(ctx, field)
 			case "benchmark":
-				return ec.fieldContext_CompetenceMetric_benchmark(ctx, field)
+				return ec.fieldContext_Metric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Metric_benchmarkMargin(ctx, field)
 			case "formula":
-				return ec.fieldContext_CompetenceMetric_formula(ctx, field)
+				return ec.fieldContext_Metric_formula(ctx, field)
 			case "weight":
-				return ec.fieldContext_CompetenceMetric_weight(ctx, field)
+				return ec.fieldContext_Metric_weight(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_CompetenceMetric_createdAt(ctx, field)
+				return ec.fieldContext_Metric_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_CompetenceMetric_updatedAt(ctx, field)
+				return ec.fieldContext_Metric_updatedAt(ctx, field)
 			case "parameters":
-				return ec.fieldContext_CompetenceMetric_parameters(ctx, field)
+				return ec.fieldContext_Metric_parameters(ctx, field)
 			case "competence":
-				return ec.fieldContext_CompetenceMetric_competence(ctx, field)
-			case "stages":
-				return ec.fieldContext_CompetenceMetric_stages(ctx, field)
+				return ec.fieldContext_Metric_competence(ctx, field)
+			case "stage":
+				return ec.fieldContext_Metric_stage(ctx, field)
+			case "game":
+				return ec.fieldContext_Metric_game(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CompetenceMetric", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Metric", field.Name)
 		},
 	}
 	defer func() {
@@ -15282,7 +15334,7 @@ func (ec *executionContext) _Subscription_metricParameterCreated(ctx context.Con
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *model.MetricParameter):
+		case res, ok := <-resTmp.(<-chan *models.MetricParameter):
 			if !ok {
 				return nil
 			}
@@ -15290,7 +15342,7 @@ func (ec *executionContext) _Subscription_metricParameterCreated(ctx context.Con
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15374,7 +15426,7 @@ func (ec *executionContext) _Subscription_metricParameterUpdated(ctx context.Con
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *model.MetricParameter):
+		case res, ok := <-resTmp.(<-chan *models.MetricParameter):
 			if !ok {
 				return nil
 			}
@@ -15382,7 +15434,7 @@ func (ec *executionContext) _Subscription_metricParameterUpdated(ctx context.Con
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15569,6 +15621,8 @@ func (ec *executionContext) fieldContext_Subscription_stageCreated(ctx context.C
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -15661,6 +15715,8 @@ func (ec *executionContext) fieldContext_Subscription_stageUpdated(ctx context.C
 				return ec.fieldContext_Stage_stageOrder(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_Stage_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_Stage_benchmarkMargin(ctx, field)
 			case "description":
 				return ec.fieldContext_Stage_description(ctx, field)
 			case "optimalTime":
@@ -15914,7 +15970,7 @@ func (ec *executionContext) _Subscription_gameMetricCreated(ctx context.Context,
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *models.GameMetric):
+		case res, ok := <-resTmp.(<-chan *model.GameMetric):
 			if !ok {
 				return nil
 			}
@@ -15922,7 +15978,7 @@ func (ec *executionContext) _Subscription_gameMetricCreated(ctx context.Context,
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15943,6 +15999,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricCreated(ctx cont
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -15951,6 +16009,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricCreated(ctx cont
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -16006,7 +16066,7 @@ func (ec *executionContext) _Subscription_gameMetricUpdated(ctx context.Context,
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *models.GameMetric):
+		case res, ok := <-resTmp.(<-chan *model.GameMetric):
 			if !ok {
 				return nil
 			}
@@ -16014,7 +16074,7 @@ func (ec *executionContext) _Subscription_gameMetricUpdated(ctx context.Context,
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -16035,6 +16095,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricUpdated(ctx cont
 				return ec.fieldContext_GameMetric_metricId(ctx, field)
 			case "gameId":
 				return ec.fieldContext_GameMetric_gameId(ctx, field)
+			case "competenceId":
+				return ec.fieldContext_GameMetric_competenceId(ctx, field)
 			case "metricKey":
 				return ec.fieldContext_GameMetric_metricKey(ctx, field)
 			case "metricName":
@@ -16043,6 +16105,8 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricUpdated(ctx cont
 				return ec.fieldContext_GameMetric_metricDescription(ctx, field)
 			case "benchmark":
 				return ec.fieldContext_GameMetric_benchmark(ctx, field)
+			case "benchmarkMargin":
+				return ec.fieldContext_GameMetric_benchmarkMargin(ctx, field)
 			case "formula":
 				return ec.fieldContext_GameMetric_formula(ctx, field)
 			case "description":
@@ -16133,256 +16197,6 @@ func (ec *executionContext) fieldContext_Subscription_gameMetricDeleted(ctx cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Subscription_gameMetricDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_gameMetricParameterCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	fc, err := ec.fieldContext_Subscription_gameMetricParameterCreated(ctx, field)
-	if err != nil {
-		return nil
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = nil
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().GameMetricParameterCreated(rctx, fc.Args["metricId"].(*string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return nil
-	}
-	if resTmp == nil {
-		return nil
-	}
-	return func(ctx context.Context) graphql.Marshaler {
-		select {
-		case res, ok := <-resTmp.(<-chan *models.GameMetricParameter):
-			if !ok {
-				return nil
-			}
-			return graphql.WriterFunc(func(w io.Writer) {
-				w.Write([]byte{'{'})
-				graphql.MarshalString(field.Alias).MarshalGQL(w)
-				w.Write([]byte{':'})
-				ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
-				w.Write([]byte{'}'})
-			})
-		case <-ctx.Done():
-			return nil
-		}
-	}
-}
-
-func (ec *executionContext) fieldContext_Subscription_gameMetricParameterCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "paramId":
-				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
-			case "metricId":
-				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
-			case "paramKey":
-				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
-			case "paramName":
-				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
-			case "paramDescription":
-				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
-			case "paramType":
-				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
-			case "isRequired":
-				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
-			case "defaultValue":
-				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
-			case "description":
-				return ec.fieldContext_GameMetricParameter_description(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
-			case "metric":
-				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_gameMetricParameterCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_gameMetricParameterUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	fc, err := ec.fieldContext_Subscription_gameMetricParameterUpdated(ctx, field)
-	if err != nil {
-		return nil
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = nil
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().GameMetricParameterUpdated(rctx, fc.Args["paramId"].(*string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return nil
-	}
-	if resTmp == nil {
-		return nil
-	}
-	return func(ctx context.Context) graphql.Marshaler {
-		select {
-		case res, ok := <-resTmp.(<-chan *models.GameMetricParameter):
-			if !ok {
-				return nil
-			}
-			return graphql.WriterFunc(func(w io.Writer) {
-				w.Write([]byte{'{'})
-				graphql.MarshalString(field.Alias).MarshalGQL(w)
-				w.Write([]byte{':'})
-				ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, field.Selections, res).MarshalGQL(w)
-				w.Write([]byte{'}'})
-			})
-		case <-ctx.Done():
-			return nil
-		}
-	}
-}
-
-func (ec *executionContext) fieldContext_Subscription_gameMetricParameterUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "paramId":
-				return ec.fieldContext_GameMetricParameter_paramId(ctx, field)
-			case "metricId":
-				return ec.fieldContext_GameMetricParameter_metricId(ctx, field)
-			case "paramKey":
-				return ec.fieldContext_GameMetricParameter_paramKey(ctx, field)
-			case "paramName":
-				return ec.fieldContext_GameMetricParameter_paramName(ctx, field)
-			case "paramDescription":
-				return ec.fieldContext_GameMetricParameter_paramDescription(ctx, field)
-			case "paramType":
-				return ec.fieldContext_GameMetricParameter_paramType(ctx, field)
-			case "isRequired":
-				return ec.fieldContext_GameMetricParameter_isRequired(ctx, field)
-			case "defaultValue":
-				return ec.fieldContext_GameMetricParameter_defaultValue(ctx, field)
-			case "description":
-				return ec.fieldContext_GameMetricParameter_description(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_GameMetricParameter_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_GameMetricParameter_updatedAt(ctx, field)
-			case "metric":
-				return ec.fieldContext_GameMetricParameter_metric(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GameMetricParameter", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_gameMetricParameterUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_gameMetricParameterDeleted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	fc, err := ec.fieldContext_Subscription_gameMetricParameterDeleted(ctx, field)
-	if err != nil {
-		return nil
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = nil
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().GameMetricParameterDeleted(rctx, fc.Args["paramId"].(*string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return nil
-	}
-	if resTmp == nil {
-		return nil
-	}
-	return func(ctx context.Context) graphql.Marshaler {
-		select {
-		case res, ok := <-resTmp.(<-chan *string):
-			if !ok {
-				return nil
-			}
-			return graphql.WriterFunc(func(w io.Writer) {
-				w.Write([]byte{'{'})
-				graphql.MarshalString(field.Alias).MarshalGQL(w)
-				w.Write([]byte{':'})
-				ec.marshalOID2ᚖstring(ctx, field.Selections, res).MarshalGQL(w)
-				w.Write([]byte{'}'})
-			})
-		case <-ctx.Done():
-			return nil
-		}
-	}
-}
-
-func (ec *executionContext) fieldContext_Subscription_gameMetricParameterDeleted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_gameMetricParameterDeleted_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16701,8 +16515,6 @@ func (ec *executionContext) fieldContext_Subscription_playerPerformanceCalculate
 				return ec.fieldContext_PlayerPerformance_stagePerformance(ctx, field)
 			case "globalMetrics":
 				return ec.fieldContext_PlayerPerformance_globalMetrics(ctx, field)
-			case "benchmarkComparison":
-				return ec.fieldContext_PlayerPerformance_benchmarkComparison(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PlayerPerformance", field.Name)
 		},
@@ -18679,7 +18491,7 @@ func (ec *executionContext) unmarshalInputCompetenceInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"gameId", "competenceKey", "competenceName", "benchmark", "description", "weight"}
+	fieldsInOrder := [...]string{"gameId", "parentId", "competenceKey", "competenceName", "benchmark", "benchmarkMargin", "description", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18693,6 +18505,13 @@ func (ec *executionContext) unmarshalInputCompetenceInput(ctx context.Context, o
 				return it, err
 			}
 			it.GameID = data
+		case "parentId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
 		case "competenceKey":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceKey"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -18714,6 +18533,13 @@ func (ec *executionContext) unmarshalInputCompetenceInput(ctx context.Context, o
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18734,144 +18560,6 @@ func (ec *executionContext) unmarshalInputCompetenceInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCompetenceMetricInput(ctx context.Context, obj any) (model.CompetenceMetricInput, error) {
-	var it model.CompetenceMetricInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"competenceId", "metricKey", "metricName", "metricDescription", "benchmark", "formula", "weight"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "competenceId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CompetenceID = data
-		case "metricKey":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricKey = data
-		case "metricName":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricName"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricName = data
-		case "metricDescription":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricDescription"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricDescription = data
-		case "benchmark":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Benchmark = data
-		case "formula":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Formula = data
-		case "weight":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Weight = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputCompetenceMetricUpdateInput(ctx context.Context, obj any) (model.CompetenceMetricUpdateInput, error) {
-	var it model.CompetenceMetricUpdateInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"metricId", "metricKey", "metricName", "metricDescription", "benchmark", "formula", "weight"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "metricId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricID = data
-		case "metricKey":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricKey = data
-		case "metricName":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricName"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricName = data
-		case "metricDescription":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricDescription"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MetricDescription = data
-		case "benchmark":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Benchmark = data
-		case "formula":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Formula = data
-		case "weight":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Weight = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputCompetenceUpdateInput(ctx context.Context, obj any) (model.CompetenceUpdateInput, error) {
 	var it model.CompetenceUpdateInput
 	asMap := map[string]any{}
@@ -18879,7 +18567,7 @@ func (ec *executionContext) unmarshalInputCompetenceUpdateInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"competenceId", "competenceKey", "competenceName", "benchmark", "description", "weight"}
+	fieldsInOrder := [...]string{"competenceId", "parentId", "competenceKey", "competenceName", "benchmark", "benchmarkMargin", "description", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18893,6 +18581,13 @@ func (ec *executionContext) unmarshalInputCompetenceUpdateInput(ctx context.Cont
 				return it, err
 			}
 			it.CompetenceID = data
+		case "parentId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
 		case "competenceKey":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceKey"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18914,6 +18609,13 @@ func (ec *executionContext) unmarshalInputCompetenceUpdateInput(ctx context.Cont
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19106,7 +18808,7 @@ func (ec *executionContext) unmarshalInputGameMetricInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"gameId", "metricKey", "metricName", "metricDescription", "benchmark", "formula", "description"}
+	fieldsInOrder := [...]string{"gameId", "competenceId", "metricKey", "metricName", "metricDescription", "benchmark", "benchmarkMargin", "formula", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19120,6 +18822,13 @@ func (ec *executionContext) unmarshalInputGameMetricInput(ctx context.Context, o
 				return it, err
 			}
 			it.GameID = data
+		case "competenceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CompetenceID = data
 		case "metricKey":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -19143,11 +18852,18 @@ func (ec *executionContext) unmarshalInputGameMetricInput(ctx context.Context, o
 			it.MetricDescription = data
 		case "benchmark":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "formula":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -19327,7 +19043,7 @@ func (ec *executionContext) unmarshalInputGameMetricUpdateInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"metricId", "metricKey", "metricName", "metricDescription", "benchmark", "formula", "description"}
+	fieldsInOrder := [...]string{"metricId", "competenceId", "metricKey", "metricName", "metricDescription", "benchmark", "benchmarkMargin", "formula", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19341,6 +19057,13 @@ func (ec *executionContext) unmarshalInputGameMetricUpdateInput(ctx context.Cont
 				return it, err
 			}
 			it.MetricID = data
+		case "competenceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CompetenceID = data
 		case "metricKey":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19364,11 +19087,18 @@ func (ec *executionContext) unmarshalInputGameMetricUpdateInput(ctx context.Cont
 			it.MetricDescription = data
 		case "benchmark":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "formula":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19612,7 +19342,7 @@ func (ec *executionContext) unmarshalInputParameterValueInput(ctx context.Contex
 			it.ParamID = data
 		case "value":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
-			data, err := ec.unmarshalNJSON2string(ctx, v)
+			data, err := ec.unmarshalNJSON2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19630,7 +19360,7 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"playerId", "playerName", "profileType", "gameId", "stageParameters"}
+	fieldsInOrder := [...]string{"playerId", "gameId", "dbIndex"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19644,20 +19374,6 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 				return it, err
 			}
 			it.PlayerID = data
-		case "playerName":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerName"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PlayerName = data
-		case "profileType":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("profileType"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ProfileType = data
 		case "gameId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
@@ -19665,13 +19381,13 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 				return it, err
 			}
 			it.GameID = data
-		case "stageParameters":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageParameters"))
-			data, err := ec.unmarshalNStageParametersInput2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInputᚄ(ctx, v)
+		case "dbIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbIndex"))
+			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.StageParameters = data
+			it.DbIndex = data
 		}
 	}
 
@@ -19685,7 +19401,7 @@ func (ec *executionContext) unmarshalInputStageInput(ctx context.Context, obj an
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"gameId", "stageKey", "stageName", "stageOrder", "benchmark", "description", "optimalTime"}
+	fieldsInOrder := [...]string{"gameId", "stageKey", "stageName", "stageOrder", "benchmark", "benchmarkMargin", "description", "optimalTime"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19727,6 +19443,13 @@ func (ec *executionContext) unmarshalInputStageInput(ctx context.Context, obj an
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19754,7 +19477,7 @@ func (ec *executionContext) unmarshalInputStageMetricInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"stageId", "metricId"}
+	fieldsInOrder := [...]string{"stageId", "competenceId", "metricKey", "metricName", "metricDescription", "benchmark", "benchmarkMargin", "formula", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19768,6 +19491,82 @@ func (ec *executionContext) unmarshalInputStageMetricInput(ctx context.Context, 
 				return it, err
 			}
 			it.StageID = data
+		case "competenceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CompetenceID = data
+		case "metricKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricKey = data
+		case "metricName":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricName"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricName = data
+		case "metricDescription":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricDescription"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricDescription = data
+		case "benchmark":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
+		case "formula":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Formula = data
+		case "weight":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Weight = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputStageMetricUpdateInput(ctx context.Context, obj any) (model.StageMetricUpdateInput, error) {
+	var it model.StageMetricUpdateInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"metricId", "competenceId", "metricKey", "metricName", "metricDescription", "benchmark", "benchmarkMargin", "formula", "weight"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
 		case "metricId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
@@ -19775,6 +19574,62 @@ func (ec *executionContext) unmarshalInputStageMetricInput(ctx context.Context, 
 				return it, err
 			}
 			it.MetricID = data
+		case "competenceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("competenceId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CompetenceID = data
+		case "metricKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricKey"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricKey = data
+		case "metricName":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricName"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricName = data
+		case "metricDescription":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricDescription"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricDescription = data
+		case "benchmark":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmark"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
+		case "formula":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formula"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Formula = data
+		case "weight":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Weight = data
 		}
 	}
 
@@ -19829,7 +19684,7 @@ func (ec *executionContext) unmarshalInputStageUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"stageId", "stageKey", "stageName", "stageOrder", "benchmark", "description", "optimalTime"}
+	fieldsInOrder := [...]string{"stageId", "stageKey", "stageName", "stageOrder", "benchmark", "benchmarkMargin", "description", "optimalTime"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19871,6 +19726,13 @@ func (ec *executionContext) unmarshalInputStageUpdateInput(ctx context.Context, 
 				return it, err
 			}
 			it.Benchmark = data
+		case "benchmarkMargin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benchmarkMargin"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BenchmarkMargin = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19899,46 +19761,6 @@ func (ec *executionContext) unmarshalInputStageUpdateInput(ctx context.Context, 
 
 // region    **************************** object.gotpl ****************************
 
-var benchmarkComparisonImplementors = []string{"BenchmarkComparison"}
-
-func (ec *executionContext) _BenchmarkComparison(ctx context.Context, sel ast.SelectionSet, obj *model.BenchmarkComparison) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, benchmarkComparisonImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("BenchmarkComparison")
-		case "percentileRank":
-			out.Values[i] = ec._BenchmarkComparison_percentileRank(ctx, field, obj)
-		case "relativeToBenchmark":
-			out.Values[i] = ec._BenchmarkComparison_relativeToBenchmark(ctx, field, obj)
-		case "benchmarkScore":
-			out.Values[i] = ec._BenchmarkComparison_benchmarkScore(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var competenceImplementors = []string{"Competence"}
 
 func (ec *executionContext) _Competence(ctx context.Context, sel ast.SelectionSet, obj *models.Competence) graphql.Marshaler {
@@ -19963,6 +19785,8 @@ func (ec *executionContext) _Competence(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._Competence_competenceName(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._Competence_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._Competence_benchmarkMargin(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Competence_description(ctx, field, obj)
 		case "weight":
@@ -20034,9 +19858,104 @@ func (ec *executionContext) _Competence(ctx context.Context, sel ast.SelectionSe
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "metrics":
-			out.Values[i] = ec._Competence_metrics(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Competence_metrics(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "game":
-			out.Values[i] = ec._Competence_game(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Competence_game(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "parentCompetence":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Competence_parentCompetence(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20082,166 +20001,12 @@ func (ec *executionContext) _CompetenceDetail(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._CompetenceDetail_score(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._CompetenceDetail_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._CompetenceDetail_benchmarkMargin(ctx, field, obj)
 		case "weight":
 			out.Values[i] = ec._CompetenceDetail_weight(ctx, field, obj)
 		case "metrics":
 			out.Values[i] = ec._CompetenceDetail_metrics(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var competenceMetricImplementors = []string{"CompetenceMetric"}
-
-func (ec *executionContext) _CompetenceMetric(ctx context.Context, sel ast.SelectionSet, obj *models.CompetenceMetric) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, competenceMetricImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("CompetenceMetric")
-		case "metricId":
-			out.Values[i] = ec._CompetenceMetric_metricId(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "competenceId":
-			out.Values[i] = ec._CompetenceMetric_competenceId(ctx, field, obj)
-		case "metricKey":
-			out.Values[i] = ec._CompetenceMetric_metricKey(ctx, field, obj)
-		case "metricName":
-			out.Values[i] = ec._CompetenceMetric_metricName(ctx, field, obj)
-		case "metricDescription":
-			out.Values[i] = ec._CompetenceMetric_metricDescription(ctx, field, obj)
-		case "benchmark":
-			out.Values[i] = ec._CompetenceMetric_benchmark(ctx, field, obj)
-		case "formula":
-			out.Values[i] = ec._CompetenceMetric_formula(ctx, field, obj)
-		case "weight":
-			out.Values[i] = ec._CompetenceMetric_weight(ctx, field, obj)
-		case "createdAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CompetenceMetric_createdAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "updatedAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CompetenceMetric_updatedAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "parameters":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CompetenceMetric_parameters(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "competence":
-			out.Values[i] = ec._CompetenceMetric_competence(ctx, field, obj)
-		case "stages":
-			out.Values[i] = ec._CompetenceMetric_stages(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20360,7 +20125,38 @@ func (ec *executionContext) _ConstantParameter(ctx context.Context, sel ast.Sele
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "game":
-			out.Values[i] = ec._ConstantParameter_game(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ConstantParameter_game(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20473,13 +20269,137 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "competencies":
-			out.Values[i] = ec._Game_competencies(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Game_competencies(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "stages":
-			out.Values[i] = ec._Game_stages(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Game_stages(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "gameMetrics":
-			out.Values[i] = ec._Game_gameMetrics(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Game_gameMetrics(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "constantParameters":
-			out.Values[i] = ec._Game_constantParameters(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Game_constantParameters(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20505,7 +20425,7 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 
 var gameMetricImplementors = []string{"GameMetric"}
 
-func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSet, obj *models.GameMetric) graphql.Marshaler {
+func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSet, obj *model.GameMetric) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, gameMetricImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20517,10 +20437,15 @@ func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSe
 		case "metricId":
 			out.Values[i] = ec._GameMetric_metricId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "gameId":
 			out.Values[i] = ec._GameMetric_gameId(ctx, field, obj)
+		case "competenceId":
+			out.Values[i] = ec._GameMetric_competenceId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "metricKey":
 			out.Values[i] = ec._GameMetric_metricKey(ctx, field, obj)
 		case "metricName":
@@ -20529,76 +20454,16 @@ func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._GameMetric_metricDescription(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._GameMetric_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._GameMetric_benchmarkMargin(ctx, field, obj)
 		case "formula":
 			out.Values[i] = ec._GameMetric_formula(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._GameMetric_description(ctx, field, obj)
 		case "createdAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._GameMetric_createdAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._GameMetric_createdAt(ctx, field, obj)
 		case "updatedAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._GameMetric_updatedAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._GameMetric_updatedAt(ctx, field, obj)
 		case "parameters":
 			out.Values[i] = ec._GameMetric_parameters(ctx, field, obj)
 		case "game":
@@ -20628,7 +20493,7 @@ func (ec *executionContext) _GameMetric(ctx context.Context, sel ast.SelectionSe
 
 var gameMetricParameterImplementors = []string{"GameMetricParameter"}
 
-func (ec *executionContext) _GameMetricParameter(ctx context.Context, sel ast.SelectionSet, obj *models.GameMetricParameter) graphql.Marshaler {
+func (ec *executionContext) _GameMetricParameter(ctx context.Context, sel ast.SelectionSet, obj *model.GameMetricParameter) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, gameMetricParameterImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20640,7 +20505,7 @@ func (ec *executionContext) _GameMetricParameter(ctx context.Context, sel ast.Se
 		case "paramId":
 			out.Values[i] = ec._GameMetricParameter_paramId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "metricId":
 			out.Values[i] = ec._GameMetricParameter_metricId(ctx, field, obj)
@@ -20659,71 +20524,9 @@ func (ec *executionContext) _GameMetricParameter(ctx context.Context, sel ast.Se
 		case "description":
 			out.Values[i] = ec._GameMetricParameter_description(ctx, field, obj)
 		case "createdAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._GameMetricParameter_createdAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._GameMetricParameter_createdAt(ctx, field, obj)
 		case "updatedAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._GameMetricParameter_updatedAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._GameMetricParameter_updatedAt(ctx, field, obj)
 		case "metric":
 			out.Values[i] = ec._GameMetricParameter_metric(ctx, field, obj)
 		default:
@@ -20833,9 +20636,266 @@ func (ec *executionContext) _GlobalMetrics(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var metricImplementors = []string{"Metric"}
+
+func (ec *executionContext) _Metric(ctx context.Context, sel ast.SelectionSet, obj *models.Metric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, metricImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Metric")
+		case "metricId":
+			out.Values[i] = ec._Metric_metricId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "competenceId":
+			out.Values[i] = ec._Metric_competenceId(ctx, field, obj)
+		case "stageId":
+			out.Values[i] = ec._Metric_stageId(ctx, field, obj)
+		case "gameId":
+			out.Values[i] = ec._Metric_gameId(ctx, field, obj)
+		case "metricKey":
+			out.Values[i] = ec._Metric_metricKey(ctx, field, obj)
+		case "metricName":
+			out.Values[i] = ec._Metric_metricName(ctx, field, obj)
+		case "metricDescription":
+			out.Values[i] = ec._Metric_metricDescription(ctx, field, obj)
+		case "benchmark":
+			out.Values[i] = ec._Metric_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._Metric_benchmarkMargin(ctx, field, obj)
+		case "formula":
+			out.Values[i] = ec._Metric_formula(ctx, field, obj)
+		case "weight":
+			out.Values[i] = ec._Metric_weight(ctx, field, obj)
+		case "createdAt":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_createdAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updatedAt":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_updatedAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "parameters":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_parameters(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "competence":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_competence(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "stage":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_stage(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "game":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Metric_game(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var metricParameterImplementors = []string{"MetricParameter"}
 
-func (ec *executionContext) _MetricParameter(ctx context.Context, sel ast.SelectionSet, obj *model.MetricParameter) graphql.Marshaler {
+func (ec *executionContext) _MetricParameter(ctx context.Context, sel ast.SelectionSet, obj *models.MetricParameter) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, metricParameterImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20847,7 +20907,7 @@ func (ec *executionContext) _MetricParameter(ctx context.Context, sel ast.Select
 		case "paramId":
 			out.Values[i] = ec._MetricParameter_paramId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "metricId":
 			out.Values[i] = ec._MetricParameter_metricId(ctx, field, obj)
@@ -20866,11 +20926,104 @@ func (ec *executionContext) _MetricParameter(ctx context.Context, sel ast.Select
 		case "description":
 			out.Values[i] = ec._MetricParameter_description(ctx, field, obj)
 		case "createdAt":
-			out.Values[i] = ec._MetricParameter_createdAt(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MetricParameter_createdAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "updatedAt":
-			out.Values[i] = ec._MetricParameter_updatedAt(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MetricParameter_updatedAt(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "metric":
-			out.Values[i] = ec._MetricParameter_metric(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MetricParameter_metric(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20916,6 +21069,8 @@ func (ec *executionContext) _MetricResult(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._MetricResult_value(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._MetricResult_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._MetricResult_benchmarkMargin(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20982,17 +21137,17 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteCompetence(ctx, field)
 			})
-		case "createCompetenceMetric":
+		case "createStageMetric":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createCompetenceMetric(ctx, field)
+				return ec._Mutation_createStageMetric(ctx, field)
 			})
-		case "updateCompetenceMetric":
+		case "updateStageMetric":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateCompetenceMetric(ctx, field)
+				return ec._Mutation_updateStageMetric(ctx, field)
 			})
-		case "deleteCompetenceMetric":
+		case "deleteStageMetric":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteCompetenceMetric(ctx, field)
+				return ec._Mutation_deleteStageMetric(ctx, field)
 			})
 		case "createMetricParameter":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -21018,14 +21173,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteStage(ctx, field)
 			})
-		case "assignMetricToStage":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_assignMetricToStage(ctx, field)
-			})
-		case "removeMetricFromStage":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_removeMetricFromStage(ctx, field)
-			})
 		case "createGameMetric":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createGameMetric(ctx, field)
@@ -21037,18 +21184,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteGameMetric":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteGameMetric(ctx, field)
-			})
-		case "createGameMetricParameter":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createGameMetricParameter(ctx, field)
-			})
-		case "updateGameMetricParameter":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateGameMetricParameter(ctx, field)
-			})
-		case "deleteGameMetricParameter":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteGameMetricParameter(ctx, field)
 			})
 		case "createConstantParameter":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -21126,8 +21261,6 @@ func (ec *executionContext) _PlayerPerformance(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._PlayerPerformance_stagePerformance(ctx, field, obj)
 		case "globalMetrics":
 			out.Values[i] = ec._PlayerPerformance_globalMetrics(ctx, field, obj)
-		case "benchmarkComparison":
-			out.Values[i] = ec._PlayerPerformance_benchmarkComparison(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21638,6 +21771,8 @@ func (ec *executionContext) _Stage(ctx context.Context, sel ast.SelectionSet, ob
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "benchmark":
 			out.Values[i] = ec._Stage_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._Stage_benchmarkMargin(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Stage_description(ctx, field, obj)
 		case "optimalTime":
@@ -21740,9 +21875,71 @@ func (ec *executionContext) _Stage(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "metrics":
-			out.Values[i] = ec._Stage_metrics(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stage_metrics(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "game":
-			out.Values[i] = ec._Stage_game(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stage_game(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21790,6 +21987,8 @@ func (ec *executionContext) _StageMetricResult(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._StageMetricResult_value(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._StageMetricResult_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._StageMetricResult_benchmarkMargin(ctx, field, obj)
 		case "formula":
 			out.Values[i] = ec._StageMetricResult_formula(ctx, field, obj)
 		case "rawData":
@@ -21845,6 +22044,8 @@ func (ec *executionContext) _StagePerformance(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._StagePerformance_score(ctx, field, obj)
 		case "benchmark":
 			out.Values[i] = ec._StagePerformance_benchmark(ctx, field, obj)
+		case "benchmarkMargin":
+			out.Values[i] = ec._StagePerformance_benchmarkMargin(ctx, field, obj)
 		case "completionStatus":
 			out.Values[i] = ec._StagePerformance_completionStatus(ctx, field, obj)
 		default:
@@ -21923,12 +22124,6 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_gameMetricUpdated(ctx, fields[0])
 	case "gameMetricDeleted":
 		return ec._Subscription_gameMetricDeleted(ctx, fields[0])
-	case "gameMetricParameterCreated":
-		return ec._Subscription_gameMetricParameterCreated(ctx, fields[0])
-	case "gameMetricParameterUpdated":
-		return ec._Subscription_gameMetricParameterUpdated(ctx, fields[0])
-	case "gameMetricParameterDeleted":
-		return ec._Subscription_gameMetricParameterDeleted(ctx, fields[0])
 	case "constantParameterCreated":
 		return ec._Subscription_constantParameterCreated(ctx, fields[0])
 	case "constantParameterUpdated":
@@ -22297,16 +22492,6 @@ func (ec *executionContext) unmarshalNCompetenceInput2jobfaiᚑanalyticsᚋinter
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCompetenceMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐCompetenceMetricInput(ctx context.Context, v any) (model.CompetenceMetricInput, error) {
-	res, err := ec.unmarshalInputCompetenceMetricInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNCompetenceMetricUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐCompetenceMetricUpdateInput(ctx context.Context, v any) (model.CompetenceMetricUpdateInput, error) {
-	res, err := ec.unmarshalInputCompetenceMetricUpdateInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNCompetenceUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐCompetenceUpdateInput(ctx context.Context, v any) (model.CompetenceUpdateInput, error) {
 	res, err := ec.unmarshalInputCompetenceUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22337,6 +22522,16 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) marshalNGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx context.Context, sel ast.SelectionSet, v *models.Game) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Game(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNGameInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameInput(ctx context.Context, v any) (model.GameInput, error) {
 	res, err := ec.unmarshalInputGameInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22344,16 +22539,6 @@ func (ec *executionContext) unmarshalNGameInput2jobfaiᚑanalyticsᚋinternalᚋ
 
 func (ec *executionContext) unmarshalNGameMetricInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricInput(ctx context.Context, v any) (model.GameMetricInput, error) {
 	res, err := ec.unmarshalInputGameMetricInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNGameMetricParameterInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameterInput(ctx context.Context, v any) (model.GameMetricParameterInput, error) {
-	res, err := ec.unmarshalInputGameMetricParameterInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNGameMetricParameterUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameterUpdateInput(ctx context.Context, v any) (model.GameMetricParameterUpdateInput, error) {
-	res, err := ec.unmarshalInputGameMetricParameterUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -22412,13 +22597,19 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNJSON2string(ctx context.Context, v any) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNJSON2map(ctx context.Context, v any) (map[string]any, error) {
+	res, err := graphql.UnmarshalMap(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNJSON2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
+func (ec *executionContext) marshalNJSON2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalMap(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -22488,24 +22679,9 @@ func (ec *executionContext) unmarshalNStageMetricInput2jobfaiᚑanalyticsᚋinte
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNStageParametersInput2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInputᚄ(ctx context.Context, v any) ([]*model.StageParametersInput, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*model.StageParametersInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNStageParametersInput2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNStageParametersInput2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageParametersInput(ctx context.Context, v any) (*model.StageParametersInput, error) {
-	res, err := ec.unmarshalInputStageParametersInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) unmarshalNStageMetricUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageMetricUpdateInput(ctx context.Context, v any) (model.StageMetricUpdateInput, error) {
+	res, err := ec.unmarshalInputStageMetricUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNStageUpdateInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐStageUpdateInput(ctx context.Context, v any) (model.StageUpdateInput, error) {
@@ -22779,13 +22955,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOBenchmarkComparison2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐBenchmarkComparison(ctx context.Context, sel ast.SelectionSet, v *model.BenchmarkComparison) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._BenchmarkComparison(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22810,51 +22979,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOCompetence2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx context.Context, sel ast.SelectionSet, v models.Competence) graphql.Marshaler {
-	return ec._Competence(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOCompetence2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx context.Context, sel ast.SelectionSet, v []models.Competence) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOCompetence2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
 }
 
 func (ec *executionContext) marshalOCompetence2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetence(ctx context.Context, sel ast.SelectionSet, v []*models.Competence) graphql.Marshaler {
@@ -22953,144 +23077,6 @@ func (ec *executionContext) marshalOCompetenceDetail2ᚖjobfaiᚑanalyticsᚋint
 	return ec._CompetenceDetail(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCompetenceMetric2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx context.Context, sel ast.SelectionSet, v models.CompetenceMetric) graphql.Marshaler {
-	return ec._CompetenceMetric(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOCompetenceMetric2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx context.Context, sel ast.SelectionSet, v []models.CompetenceMetric) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOCompetenceMetric2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOCompetenceMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx context.Context, sel ast.SelectionSet, v []*models.CompetenceMetric) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOCompetenceMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐCompetenceMetric(ctx context.Context, sel ast.SelectionSet, v *models.CompetenceMetric) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CompetenceMetric(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOConstantParameter2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx context.Context, sel ast.SelectionSet, v models.ConstantParameter) graphql.Marshaler {
-	return ec._ConstantParameter(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOConstantParameter2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx context.Context, sel ast.SelectionSet, v []models.ConstantParameter) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOConstantParameter2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalOConstantParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐConstantParameter(ctx context.Context, sel ast.SelectionSet, v []*models.ConstantParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -23181,11 +23167,7 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) marshalOGame2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx context.Context, sel ast.SelectionSet, v models.Game) graphql.Marshaler {
-	return ec._Game(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx context.Context, sel ast.SelectionSet, v []*models.Game) graphql.Marshaler {
+func (ec *executionContext) marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Game) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23212,7 +23194,7 @@ func (ec *executionContext) marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋm
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, sel, v[i])
+			ret[i] = ec.marshalNGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGame(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -23222,6 +23204,12 @@ func (ec *executionContext) marshalOGame2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋm
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
 
 	return ret
 }
@@ -23233,11 +23221,7 @@ func (ec *executionContext) marshalOGame2ᚖjobfaiᚑanalyticsᚋinternalᚋmode
 	return ec._Game(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOGameMetric2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v models.GameMetric) graphql.Marshaler {
-	return ec._GameMetric(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOGameMetric2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v []models.GameMetric) graphql.Marshaler {
+func (ec *executionContext) marshalOGameMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v []*model.GameMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23264,7 +23248,7 @@ func (ec *executionContext) marshalOGameMetric2ᚕjobfaiᚑanalyticsᚋinternal�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOGameMetric2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, sel, v[i])
+			ret[i] = ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -23278,59 +23262,14 @@ func (ec *executionContext) marshalOGameMetric2ᚕjobfaiᚑanalyticsᚋinternal�
 	return ret
 }
 
-func (ec *executionContext) marshalOGameMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v []*models.GameMetric) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v *models.GameMetric) graphql.Marshaler {
+func (ec *executionContext) marshalOGameMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetric(ctx context.Context, sel ast.SelectionSet, v *model.GameMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._GameMetric(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOGameMetricParameter2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v models.GameMetricParameter) graphql.Marshaler {
-	return ec._GameMetricParameter(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOGameMetricParameter2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v []models.GameMetricParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOGameMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v []*model.GameMetricParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23357,7 +23296,7 @@ func (ec *executionContext) marshalOGameMetricParameter2ᚕjobfaiᚑanalyticsᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOGameMetricParameter2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, sel, v[i])
+			ret[i] = ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameter(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -23371,48 +23310,7 @@ func (ec *executionContext) marshalOGameMetricParameter2ᚕjobfaiᚑanalyticsᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalOGameMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v []*models.GameMetricParameter) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v *models.GameMetricParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOGameMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGameMetricParameter(ctx context.Context, sel ast.SelectionSet, v *model.GameMetricParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23424,13 +23322,6 @@ func (ec *executionContext) marshalOGlobalMetricResult2ᚖjobfaiᚑanalyticsᚋi
 		return graphql.Null
 	}
 	return ec._GlobalMetricResult(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOGlobalMetrics2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐGlobalMetrics(ctx context.Context, sel ast.SelectionSet, v *model.GlobalMetrics) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._GlobalMetrics(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOID2int(ctx context.Context, v any) (int, error) {
@@ -23485,23 +23376,23 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalOJSON2ᚖstring(ctx context.Context, v any) (*string, error) {
+func (ec *executionContext) unmarshalOJSON2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOJSON2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOJSON2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	res := graphql.MarshalString(*v)
+	res := graphql.MarshalMap(v)
 	return res
 }
 
-func (ec *executionContext) marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx context.Context, sel ast.SelectionSet, v []*model.MetricParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOMetric2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx context.Context, sel ast.SelectionSet, v []*models.Metric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23528,7 +23419,7 @@ func (ec *executionContext) marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋi
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx, sel, v[i])
+			ret[i] = ec.marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -23542,7 +23433,55 @@ func (ec *executionContext) marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋi
 	return ret
 }
 
-func (ec *executionContext) marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐMetricParameter(ctx context.Context, sel ast.SelectionSet, v *model.MetricParameter) graphql.Marshaler {
+func (ec *executionContext) marshalOMetric2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetric(ctx context.Context, sel ast.SelectionSet, v *models.Metric) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Metric(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMetricParameter2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx context.Context, sel ast.SelectionSet, v []*models.MetricParameter) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMetricParameter2ᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐMetricParameter(ctx context.Context, sel ast.SelectionSet, v *models.MetricParameter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -23630,51 +23569,6 @@ func (ec *executionContext) marshalOPlayerPerformance2ᚖjobfaiᚑanalyticsᚋin
 		return graphql.Null
 	}
 	return ec._PlayerPerformance(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOStage2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx context.Context, sel ast.SelectionSet, v models.Stage) graphql.Marshaler {
-	return ec._Stage(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOStage2ᚕjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx context.Context, sel ast.SelectionSet, v []models.Stage) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOStage2jobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
 }
 
 func (ec *executionContext) marshalOStage2ᚕᚖjobfaiᚑanalyticsᚋinternalᚋmodelsᚐStage(ctx context.Context, sel ast.SelectionSet, v []*models.Stage) graphql.Marshaler {

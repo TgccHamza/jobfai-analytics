@@ -42,20 +42,6 @@ func (s *GameService) GetGameByID(gameID string) (*models.Game, error) {
 	return game, nil
 }
 
-// GetGameWithFullConfiguration retrieves a game with all its configuration
-func (s *GameService) GetGameWithFullConfiguration(gameID string) (*models.Game, error) {
-	game, err := s.gameRepository.FindWithFullConfiguration(gameID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving game configuration: %w", err)
-	}
-
-	if game == nil {
-		return nil, errors.New("game not found")
-	}
-
-	return game, nil
-}
-
 // CreateGame creates a new game
 func (s *GameService) CreateGame(game *models.Game) error {
 	if game.GameID == "" || game.GameName == "" {
@@ -115,4 +101,20 @@ func (s *GameService) GetGameStages(gameID string) ([]models.Stage, error) {
 // GetGameCompetencies retrieves all competencies for a game
 func (s *GameService) GetGameCompetencies(gameID string) ([]models.Competence, error) {
 	return s.competenceRepository.FindByGame(gameID)
+}
+
+// GetGameMetrics retrieves all metrics associated with a stage
+func (s *GameService) GetGameMetrics(gameID string) ([]models.Metric, error) {
+	// First get all stage-metric associations
+	gameMetrics, err := s.gameRepository.FindByGame(gameID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving stage metrics: %w", err)
+	}
+
+	// If no metrics are associated, return empty slice
+	if len(gameMetrics) == 0 {
+		return []models.Metric{}, nil
+	}
+
+	return gameMetrics, nil
 }

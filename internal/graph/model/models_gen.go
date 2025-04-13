@@ -6,57 +6,36 @@ import (
 	"jobfai-analytics/internal/models"
 )
 
-type BenchmarkComparison struct {
-	PercentileRank      *int32   `json:"percentileRank,omitempty"`
-	RelativeToBenchmark *string  `json:"relativeToBenchmark,omitempty"`
-	BenchmarkScore      *float64 `json:"benchmarkScore,omitempty"`
-}
-
 type CompetenceDetail struct {
-	CompetenceKey string          `json:"competenceKey"`
-	Name          *string         `json:"name,omitempty"`
-	Score         *float64        `json:"score,omitempty"`
-	Benchmark     *float64        `json:"benchmark,omitempty"`
-	Weight        *float64        `json:"weight,omitempty"`
-	Metrics       []*MetricResult `json:"metrics,omitempty"`
+	CompetenceKey   string          `json:"competenceKey"`
+	Name            *string         `json:"name,omitempty"`
+	Score           *float64        `json:"score,omitempty"`
+	Benchmark       *float64        `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64        `json:"benchmarkMargin,omitempty"`
+	Weight          *float64        `json:"weight,omitempty"`
+	Metrics         []*MetricResult `json:"metrics,omitempty"`
 }
 
 type CompetenceInput struct {
-	GameID         string   `json:"gameId"`
-	CompetenceKey  string   `json:"competenceKey"`
-	CompetenceName string   `json:"competenceName"`
-	Benchmark      *float64 `json:"benchmark,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	Weight         *float64 `json:"weight,omitempty"`
-}
-
-type CompetenceMetricInput struct {
-	CompetenceID      string   `json:"competenceId"`
-	MetricKey         string   `json:"metricKey"`
-	MetricName        string   `json:"metricName"`
-	MetricDescription *string  `json:"metricDescription,omitempty"`
-	Benchmark         *float64 `json:"benchmark,omitempty"`
-	Formula           string   `json:"formula"`
-	Weight            *float64 `json:"weight,omitempty"`
-}
-
-type CompetenceMetricUpdateInput struct {
-	MetricID          string   `json:"metricId"`
-	MetricKey         *string  `json:"metricKey,omitempty"`
-	MetricName        *string  `json:"metricName,omitempty"`
-	MetricDescription *string  `json:"metricDescription,omitempty"`
-	Benchmark         *float64 `json:"benchmark,omitempty"`
-	Formula           *string  `json:"formula,omitempty"`
-	Weight            *float64 `json:"weight,omitempty"`
+	GameID          string   `json:"gameId"`
+	ParentID        *int32   `json:"parentId,omitempty"`
+	CompetenceKey   string   `json:"competenceKey"`
+	CompetenceName  string   `json:"competenceName"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Weight          *float64 `json:"weight,omitempty"`
 }
 
 type CompetenceUpdateInput struct {
-	CompetenceID   string   `json:"competenceId"`
-	CompetenceKey  *string  `json:"competenceKey,omitempty"`
-	CompetenceName *string  `json:"competenceName,omitempty"`
-	Benchmark      *float64 `json:"benchmark,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	Weight         *float64 `json:"weight,omitempty"`
+	CompetenceID    string   `json:"competenceId"`
+	ParentID        *int32   `json:"parentId,omitempty"`
+	CompetenceKey   *string  `json:"competenceKey,omitempty"`
+	CompetenceName  *string  `json:"competenceName,omitempty"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Weight          *float64 `json:"weight,omitempty"`
 }
 
 type ConstantParameterInput struct {
@@ -83,14 +62,48 @@ type GameInput struct {
 	Active      *bool   `json:"active,omitempty"`
 }
 
+type GameMetric struct {
+	MetricID          string                 `json:"metricId"`
+	GameID            *string                `json:"gameId,omitempty"`
+	CompetenceID      int32                  `json:"competenceId"`
+	MetricKey         *string                `json:"metricKey,omitempty"`
+	MetricName        *string                `json:"metricName,omitempty"`
+	MetricDescription *string                `json:"metricDescription,omitempty"`
+	Benchmark         *string                `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64               `json:"benchmarkMargin,omitempty"`
+	Formula           *string                `json:"formula,omitempty"`
+	Description       *string                `json:"description,omitempty"`
+	CreatedAt         *string                `json:"createdAt,omitempty"`
+	UpdatedAt         *string                `json:"updatedAt,omitempty"`
+	Parameters        []*GameMetricParameter `json:"parameters,omitempty"`
+	Game              *models.Game           `json:"game,omitempty"`
+}
+
 type GameMetricInput struct {
-	GameID            string  `json:"gameId"`
-	MetricKey         string  `json:"metricKey"`
-	MetricName        string  `json:"metricName"`
-	MetricDescription *string `json:"metricDescription,omitempty"`
-	Benchmark         *string `json:"benchmark,omitempty"`
-	Formula           string  `json:"formula"`
-	Description       *string `json:"description,omitempty"`
+	GameID            string   `json:"gameId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         string   `json:"metricKey"`
+	MetricName        string   `json:"metricName"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           string   `json:"formula"`
+	Description       *string  `json:"description,omitempty"`
+}
+
+type GameMetricParameter struct {
+	ParamID          string                `json:"paramId"`
+	MetricID         *string               `json:"metricId,omitempty"`
+	ParamKey         *string               `json:"paramKey,omitempty"`
+	ParamName        *string               `json:"paramName,omitempty"`
+	ParamDescription *string               `json:"paramDescription,omitempty"`
+	ParamType        *models.ParameterType `json:"paramType,omitempty"`
+	IsRequired       *bool                 `json:"isRequired,omitempty"`
+	DefaultValue     *string               `json:"defaultValue,omitempty"`
+	Description      *string               `json:"description,omitempty"`
+	CreatedAt        *string               `json:"createdAt,omitempty"`
+	UpdatedAt        *string               `json:"updatedAt,omitempty"`
+	Metric           *GameMetric           `json:"metric,omitempty"`
 }
 
 type GameMetricParameterInput struct {
@@ -116,13 +129,15 @@ type GameMetricParameterUpdateInput struct {
 }
 
 type GameMetricUpdateInput struct {
-	MetricID          string  `json:"metricId"`
-	MetricKey         *string `json:"metricKey,omitempty"`
-	MetricName        *string `json:"metricName,omitempty"`
-	MetricDescription *string `json:"metricDescription,omitempty"`
-	Benchmark         *string `json:"benchmark,omitempty"`
-	Formula           *string `json:"formula,omitempty"`
-	Description       *string `json:"description,omitempty"`
+	MetricID          string   `json:"metricId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         *string  `json:"metricKey,omitempty"`
+	MetricName        *string  `json:"metricName,omitempty"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           *string  `json:"formula,omitempty"`
+	Description       *string  `json:"description,omitempty"`
 }
 
 type GameUpdateInput struct {
@@ -144,21 +159,6 @@ type GlobalMetrics struct {
 	StressPerformance *GlobalMetricResult `json:"stressPerformance,omitempty"`
 	Consistency       *GlobalMetricResult `json:"consistency,omitempty"`
 	Adaptability      *GlobalMetricResult `json:"adaptability,omitempty"`
-}
-
-type MetricParameter struct {
-	ParamID          string                   `json:"paramId"`
-	MetricID         *string                  `json:"metricId,omitempty"`
-	ParamKey         *string                  `json:"paramKey,omitempty"`
-	ParamName        *string                  `json:"paramName,omitempty"`
-	ParamDescription *string                  `json:"paramDescription,omitempty"`
-	ParamType        *models.ParameterType    `json:"paramType,omitempty"`
-	IsRequired       *bool                    `json:"isRequired,omitempty"`
-	DefaultValue     *string                  `json:"defaultValue,omitempty"`
-	Description      *string                  `json:"description,omitempty"`
-	CreatedAt        *string                  `json:"createdAt,omitempty"`
-	UpdatedAt        *string                  `json:"updatedAt,omitempty"`
-	Metric           *models.CompetenceMetric `json:"metric,omitempty"`
 }
 
 type MetricParameterInput struct {
@@ -184,68 +184,87 @@ type MetricParameterUpdateInput struct {
 }
 
 type MetricResult struct {
-	KpiID     string   `json:"kpiId"`
-	KpiName   *string  `json:"kpiName,omitempty"`
-	Value     *float64 `json:"value,omitempty"`
-	Benchmark *float64 `json:"benchmark,omitempty"`
+	KpiID           string   `json:"kpiId"`
+	KpiName         *string  `json:"kpiName,omitempty"`
+	Value           *float64 `json:"value,omitempty"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
 }
 
 type Mutation struct {
 }
 
 type ParameterValueInput struct {
-	ParamID string `json:"paramId"`
-	Value   string `json:"value"`
+	ParamID string         `json:"paramId"`
+	Value   map[string]any `json:"value"`
 }
 
 type PlayerPerformance struct {
-	PlayerID            string               `json:"playerId"`
-	PlayerName          *string              `json:"playerName,omitempty"`
-	ProfileType         *string              `json:"profileType,omitempty"`
-	GameDate            *string              `json:"gameDate,omitempty"`
-	GameID              string               `json:"gameId"`
-	TotalScore          *float64             `json:"totalScore,omitempty"`
-	TotalTimeTaken      *float64             `json:"totalTimeTaken,omitempty"`
-	CompetenceDetails   []*CompetenceDetail  `json:"competenceDetails,omitempty"`
-	StagePerformance    []*StagePerformance  `json:"stagePerformance,omitempty"`
-	GlobalMetrics       *GlobalMetrics       `json:"globalMetrics,omitempty"`
-	BenchmarkComparison *BenchmarkComparison `json:"benchmarkComparison,omitempty"`
+	PlayerID          string               `json:"playerId"`
+	PlayerName        *string              `json:"playerName,omitempty"`
+	ProfileType       *string              `json:"profileType,omitempty"`
+	GameDate          *string              `json:"gameDate,omitempty"`
+	GameID            string               `json:"gameId"`
+	TotalScore        *float64             `json:"totalScore,omitempty"`
+	TotalTimeTaken    *float64             `json:"totalTimeTaken,omitempty"`
+	CompetenceDetails []*CompetenceDetail  `json:"competenceDetails,omitempty"`
+	StagePerformance  []*StagePerformance  `json:"stagePerformance,omitempty"`
+	GlobalMetrics     []*StageMetricResult `json:"globalMetrics,omitempty"`
 }
 
 type PlayerPerformanceInput struct {
-	PlayerID        string                  `json:"playerId"`
-	PlayerName      string                  `json:"playerName"`
-	ProfileType     *string                 `json:"profileType,omitempty"`
-	GameID          string                  `json:"gameId"`
-	StageParameters []*StageParametersInput `json:"stageParameters"`
+	PlayerID string `json:"playerId"`
+	GameID   string `json:"gameId"`
+	DbIndex  string `json:"dbIndex"`
 }
 
 type Query struct {
 }
 
 type StageInput struct {
-	GameID      string   `json:"gameId"`
-	StageKey    string   `json:"stageKey"`
-	StageName   string   `json:"stageName"`
-	StageOrder  int32    `json:"stageOrder"`
-	Benchmark   *float64 `json:"benchmark,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	OptimalTime *int32   `json:"optimalTime,omitempty"`
+	GameID          string   `json:"gameId"`
+	StageKey        string   `json:"stageKey"`
+	StageName       string   `json:"stageName"`
+	StageOrder      int32    `json:"stageOrder"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	OptimalTime     *int32   `json:"optimalTime,omitempty"`
 }
 
 type StageMetricInput struct {
-	StageID  string `json:"stageId"`
-	MetricID string `json:"metricId"`
+	StageID           string   `json:"stageId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         string   `json:"metricKey"`
+	MetricName        string   `json:"metricName"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           string   `json:"formula"`
+	Weight            *float64 `json:"weight,omitempty"`
 }
 
 type StageMetricResult struct {
-	KpiID     string   `json:"kpiId"`
-	KpiName   *string  `json:"kpiName,omitempty"`
-	Category  *string  `json:"category,omitempty"`
-	Value     *float64 `json:"value,omitempty"`
-	Benchmark *float64 `json:"benchmark,omitempty"`
-	Formula   *string  `json:"formula,omitempty"`
-	RawData   *string  `json:"rawData,omitempty"`
+	KpiID           string         `json:"kpiId"`
+	KpiName         *string        `json:"kpiName,omitempty"`
+	Category        *string        `json:"category,omitempty"`
+	Value           *float64       `json:"value,omitempty"`
+	Benchmark       *float64       `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64       `json:"benchmarkMargin,omitempty"`
+	Formula         *string        `json:"formula,omitempty"`
+	RawData         map[string]any `json:"rawData,omitempty"`
+}
+
+type StageMetricUpdateInput struct {
+	MetricID          string   `json:"metricId"`
+	CompetenceID      *string  `json:"competenceId,omitempty"`
+	MetricKey         *string  `json:"metricKey,omitempty"`
+	MetricName        *string  `json:"metricName,omitempty"`
+	MetricDescription *string  `json:"metricDescription,omitempty"`
+	Benchmark         *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin   *float64 `json:"benchmarkMargin,omitempty"`
+	Formula           *string  `json:"formula,omitempty"`
+	Weight            *float64 `json:"weight,omitempty"`
 }
 
 type StageParametersInput struct {
@@ -262,17 +281,19 @@ type StagePerformance struct {
 	OptimalTime      *float64             `json:"optimalTime,omitempty"`
 	Score            *float64             `json:"score,omitempty"`
 	Benchmark        *float64             `json:"benchmark,omitempty"`
+	BenchmarkMargin  *float64             `json:"benchmarkMargin,omitempty"`
 	CompletionStatus *string              `json:"completionStatus,omitempty"`
 }
 
 type StageUpdateInput struct {
-	StageID     string   `json:"stageId"`
-	StageKey    *string  `json:"stageKey,omitempty"`
-	StageName   *string  `json:"stageName,omitempty"`
-	StageOrder  *int32   `json:"stageOrder,omitempty"`
-	Benchmark   *float64 `json:"benchmark,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	OptimalTime *int32   `json:"optimalTime,omitempty"`
+	StageID         string   `json:"stageId"`
+	StageKey        *string  `json:"stageKey,omitempty"`
+	StageName       *string  `json:"stageName,omitempty"`
+	StageOrder      *int32   `json:"stageOrder,omitempty"`
+	Benchmark       *float64 `json:"benchmark,omitempty"`
+	BenchmarkMargin *float64 `json:"benchmarkMargin,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	OptimalTime     *int32   `json:"optimalTime,omitempty"`
 }
 
 type Subscription struct {

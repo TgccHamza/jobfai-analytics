@@ -1,16 +1,16 @@
 # Queries
 type Query {
   # Admin Queries
-  getGames: [Game]
+  getGames: [Game!]
   getGameById(gameId: ID!): Game
   getCompetenciesByGame(gameId: ID!): [Competence]
   getCompetenceById(competenceId: ID!): Competence
-  getMetricsByCompetence(competenceId: ID!): [CompetenceMetric]
-  getMetricById(metricId: ID!): CompetenceMetric
+  getMetricsByCompetence(competenceId: ID!): [Metric]
+  getMetricById(metricId: ID!): Metric
   getParametersByMetric(metricId: ID!): [MetricParameter]
   getStagesByGame(gameId: ID!): [Stage]
   getStageById(stageId: ID!): Stage
-  getMetricsByStage(stageId: ID!): [CompetenceMetric]
+  getMetricsByStage(stageId: ID!): [Metric]
   getGameMetricsByGame(gameId: ID!): [GameMetric]
   getGameMetricById(metricId: ID!): GameMetric
   getParametersByGameMetric(metricId: ID!): [GameMetricParameter]

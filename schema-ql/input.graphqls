@@ -14,38 +14,46 @@ input GameUpdateInput {
 
 input CompetenceInput {
   gameId: ID!
+  parentId: Int
   competenceKey: String!
   competenceName: String!
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
 }
 
 input CompetenceUpdateInput {
   competenceId: ID!
+  parentId: Int
   competenceKey: String
   competenceName: String
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
 }
 
-input CompetenceMetricInput {
-  competenceId: ID!
+input StageMetricInput {
+  stageId: ID!
+  competenceId: ID
   metricKey: String!
   metricName: String!
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String!
   weight: Float
 }
 
-input CompetenceMetricUpdateInput {
+input StageMetricUpdateInput {
   metricId: ID!
+  competenceId: ID
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   weight: Float
 }
@@ -78,6 +86,7 @@ input StageInput {
   stageName: String!
   stageOrder: Int!
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
 }
@@ -88,31 +97,31 @@ input StageUpdateInput {
   stageName: String
   stageOrder: Int
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
 }
 
-input StageMetricInput {
-  stageId: ID!
-  metricId: ID!
-}
-
 input GameMetricInput {
   gameId: ID!
+  competenceId: ID
   metricKey: String!
   metricName: String!
   metricDescription: String
-  benchmark: String
+  benchmark: Float
+  benchmarkMargin: Float
   formula: String!
   description: String
 }
 
 input GameMetricUpdateInput {
   metricId: ID!
+  competenceId: ID
   metricKey: String
   metricName: String
   metricDescription: String
-  benchmark: String
+  benchmark: Float
+  benchmarkMargin: Float
   formula: String
   description: String
 }
@@ -160,10 +169,8 @@ input ConstantParameterUpdateInput {
 # Player Performance Input
 input PlayerPerformanceInput {
   playerId: ID!
-  playerName: String!
-  profileType: String
   gameId: ID!
-  stageParameters: [StageParametersInput!]!
+  dbIndex: ID!
 }
 
 input StageParametersInput {

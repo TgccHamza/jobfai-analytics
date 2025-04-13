@@ -10,9 +10,9 @@ type Subscription {
   competenceUpdated(competenceId: ID): Competence
   competenceDeleted(competenceId: ID): ID
   
-  # CompetenceMetric Subscriptions
-  competenceMetricCreated(competenceId: ID): CompetenceMetric
-  competenceMetricUpdated(metricId: ID): CompetenceMetric
+  # Metric Subscriptions
+  competenceMetricCreated(competenceId: ID): Metric
+  competenceMetricUpdated(metricId: ID): Metric
   competenceMetricDeleted(metricId: ID): ID
   
   # MetricParameter Subscriptions
@@ -33,12 +33,8 @@ type Subscription {
   gameMetricCreated(gameId: ID): GameMetric
   gameMetricUpdated(metricId: ID): GameMetric
   gameMetricDeleted(metricId: ID): ID
-  
-  # GameMetricParameter Subscriptions
-  gameMetricParameterCreated(metricId: ID): GameMetricParameter
-  gameMetricParameterUpdated(paramId: ID): GameMetricParameter
-  gameMetricParameterDeleted(paramId: ID): ID
-  
+
+
   # ConstantParameter Subscriptions
   constantParameterCreated(gameId: ID): ConstantParameter
   constantParameterUpdated(constId: ID): ConstantParameter

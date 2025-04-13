@@ -39,20 +39,6 @@ func (s *CompetenceService) GetCompetenceByID(competenceID int) (*models.Compete
 	return competence, nil
 }
 
-// GetCompetenceWithMetrics retrieves a competence with all its metrics
-func (s *CompetenceService) GetCompetenceWithMetrics(competenceID int) (*models.Competence, error) {
-	competence, err := s.competenceRepository.FindWithMetrics(competenceID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving competence with metrics: %w", err)
-	}
-
-	if competence == nil {
-		return nil, errors.New("competence not found")
-	}
-
-	return competence, nil
-}
-
 // CreateCompetence creates a new competence
 func (s *CompetenceService) CreateCompetence(competence *models.Competence) error {
 	if competence.GameID == "" || competence.CompetenceKey == "" || competence.CompetenceName == "" {
@@ -95,6 +81,6 @@ func (s *CompetenceService) DeleteCompetence(competenceID int) error {
 }
 
 // GetCompetenceMetrics retrieves all metrics for a competence
-func (s *CompetenceService) GetCompetenceMetrics(competenceID int) ([]models.CompetenceMetric, error) {
+func (s *CompetenceService) GetCompetenceMetrics(competenceID int) ([]models.Metric, error) {
 	return s.competenceMetricRepository.FindByCompetence(competenceID)
 }

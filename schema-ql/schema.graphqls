@@ -8,7 +8,7 @@ type Game {
   updatedAt: DateTime
   competencies: [Competence]
   stages: [Stage]
-  gameMetrics: [GameMetric]
+  gameMetrics: [Metric]
   constantParameters: [ConstantParameter]
 }
 
@@ -18,28 +18,34 @@ type Competence {
   competenceKey: String
   competenceName: String
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   weight: Float
   createdAt: DateTime
   updatedAt: DateTime
-  metrics: [CompetenceMetric]
+  metrics: [Metric]
   game: Game
+  parentCompetence: Competence
 }
 
-type CompetenceMetric {
+type Metric {
   metricId: ID!
   competenceId: ID
+  stageId: ID
+  gameId: ID
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   weight: Float
   createdAt: DateTime
   updatedAt: DateTime
   parameters: [MetricParameter]
   competence: Competence
-  stages: [Stage]
+  stage: Stage
+  game: Game
 }
 
 type MetricParameter {
@@ -54,7 +60,7 @@ type MetricParameter {
   description: String
   createdAt: DateTime
   updatedAt: DateTime
-  metric: CompetenceMetric
+  metric: Metric
 }
 
 type Stage {
@@ -64,21 +70,24 @@ type Stage {
   stageName: String
   stageOrder: Int
   benchmark: Float
+  benchmarkMargin: Float
   description: String
   optimalTime: Int
   createdAt: DateTime
   updatedAt: DateTime
-  metrics: [CompetenceMetric]
+  metrics: [Metric]
   game: Game
 }
 
 type GameMetric {
   metricId: ID!
   gameId: ID
+  competenceId: Int!
   metricKey: String
   metricName: String
   metricDescription: String
   benchmark: String
+  benchmarkMargin: Float
   formula: String
   description: String
   createdAt: DateTime
@@ -135,8 +144,7 @@ type PlayerPerformance {
   totalTimeTaken: Float
   competenceDetails: [CompetenceDetail]
   stagePerformance: [StagePerformance]
-  globalMetrics: GlobalMetrics
-  benchmarkComparison: BenchmarkComparison
+  globalMetrics: [StageMetricResult]
 }
 
 type CompetenceDetail {
@@ -144,6 +152,7 @@ type CompetenceDetail {
   name: String
   score: Float
   benchmark: Float
+  benchmarkMargin: Float
   weight: Float
   metrics: [MetricResult]
 }
@@ -153,6 +162,7 @@ type MetricResult {
   kpiName: String
   value: Float
   benchmark: Float
+  benchmarkMargin: Float
 }
 
 type StagePerformance {
@@ -163,6 +173,7 @@ type StagePerformance {
   optimalTime: Float
   score: Float
   benchmark: Float
+  benchmarkMargin: Float
   completionStatus: String
 }
 
@@ -172,6 +183,7 @@ type StageMetricResult {
   category: String
   value: Float
   benchmark: Float
+  benchmarkMargin: Float
   formula: String
   rawData: JSON
 }
@@ -190,11 +202,6 @@ type GlobalMetricResult {
   formula: String
 }
 
-type BenchmarkComparison {
-  percentileRank: Int
-  relativeToBenchmark: String
-  benchmarkScore: Float
-}
 
 # Custom scalar for JSON data
 scalar JSON

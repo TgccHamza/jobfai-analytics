@@ -16,21 +16,21 @@ func NewGameMetricRepository(db *gorm.DB) *GameMetricRepository {
 	return &GameMetricRepository{db: db}
 }
 
-func (r *GameMetricRepository) Create(gameMetric *models.GameMetric) error {
-	return r.db.Create(gameMetric).Error
+func (r *GameMetricRepository) Create(Metric *models.Metric) error {
+	return r.db.Create(Metric).Error
 }
 
-func (r *GameMetricRepository) Update(gameMetric *models.GameMetric) error {
-	return r.db.Save(gameMetric).Error
+func (r *GameMetricRepository) Update(Metric *models.Metric) error {
+	return r.db.Save(Metric).Error
 }
 
 func (r *GameMetricRepository) Delete(metricID int) error {
-	return r.db.Delete(&models.GameMetric{}, "metric_id = ?", metricID).Error
+	return r.db.Delete(&models.Metric{}, "metric_id = ?", metricID).Error
 }
 
-func (r *GameMetricRepository) FindByID(metricID int) (*models.GameMetric, error) {
-	var gameMetric models.GameMetric
-	err := r.db.First(&gameMetric, "metric_id = ?", metricID).Error
+func (r *GameMetricRepository) FindByID(metricID int) (*models.Metric, error) {
+	var Metric models.Metric
+	err := r.db.First(&Metric, "metric_id = ?", metricID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -38,25 +38,11 @@ func (r *GameMetricRepository) FindByID(metricID int) (*models.GameMetric, error
 		return nil, err
 	}
 
-	return &gameMetric, nil
+	return &Metric, nil
 }
 
-func (r *GameMetricRepository) FindByGame(gameID string) ([]models.GameMetric, error) {
-	var gameMetrics []models.GameMetric
+func (r *GameMetricRepository) FindByGame(gameID string) ([]models.Metric, error) {
+	var gameMetrics []models.Metric
 	err := r.db.Where("game_id = ?", gameID).Order("metric_name ASC").Find(&gameMetrics).Error
 	return gameMetrics, err
-}
-
-func (r *GameMetricRepository) FindWithParameters(metricID int) (*models.GameMetric, error) {
-	var gameMetric models.GameMetric
-	err := r.db.Preload("Parameters").
-		First(&gameMetric, "metric_id = ?", metricID).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &gameMetric, nil
 }

@@ -10,6 +10,8 @@ import (
 	"jobfai-analytics/internal/graph"
 	"jobfai-analytics/internal/graph/model"
 	"jobfai-analytics/internal/models"
+	"strconv"
+	"time"
 )
 
 // GameCreated is the resolver for the gameCreated field.
@@ -229,8 +231,8 @@ func (r *subscriptionResolver) CompetenceDeleted(ctx context.Context, competence
 }
 
 // CompetenceMetricCreated is the resolver for the competenceMetricCreated field.
-func (r *subscriptionResolver) CompetenceMetricCreated(ctx context.Context, competenceID *string) (<-chan *models.CompetenceMetric, error) {
-	metricChan := make(chan *models.CompetenceMetric, 1)
+func (r *subscriptionResolver) CompetenceMetricCreated(ctx context.Context, competenceID *string) (<-chan *models.Metric, error) {
+	metricChan := make(chan *models.Metric, 1)
 
 	eventName := "competence_metric:created"
 	if competenceID != nil {
@@ -238,7 +240,7 @@ func (r *subscriptionResolver) CompetenceMetricCreated(ctx context.Context, comp
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		metric, ok := data.(*models.CompetenceMetric)
+		metric, ok := data.(*models.Metric)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
@@ -269,8 +271,8 @@ func (r *subscriptionResolver) CompetenceMetricCreated(ctx context.Context, comp
 }
 
 // CompetenceMetricUpdated is the resolver for the competenceMetricUpdated field.
-func (r *subscriptionResolver) CompetenceMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.CompetenceMetric, error) {
-	metricChan := make(chan *models.CompetenceMetric, 1)
+func (r *subscriptionResolver) CompetenceMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.Metric, error) {
+	metricChan := make(chan *models.Metric, 1)
 
 	eventName := "competence_metric:updated"
 	if metricID != nil {
@@ -278,7 +280,7 @@ func (r *subscriptionResolver) CompetenceMetricUpdated(ctx context.Context, metr
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		metric, ok := data.(*models.CompetenceMetric)
+		metric, ok := data.(*models.Metric)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
@@ -346,22 +348,29 @@ func (r *subscriptionResolver) CompetenceMetricDeleted(ctx context.Context, metr
 }
 
 // MetricParameterCreated is the resolver for the metricParameterCreated field.
-func (r *subscriptionResolver) MetricParameterCreated(ctx context.Context, metricID *string) (<-chan *model.MetricParameter, error) {
-	paramChan := make(chan *model.MetricParameter, 1)
+// MetricParameterCreated resolver
+func (r *subscriptionResolver) MetricParameterCreated(ctx context.Context, metricID *string) (<-chan *models.MetricParameter, error) {
+	paramChan := make(chan *models.MetricParameter, 1)
 
 	eventName := "metric_parameter:created"
+	mID := -1
 	if metricID != nil {
-		eventName = fmt.Sprintf("metric_parameter:created:%s", *metricID)
+		// Convert string ID to int
+		mID, err := strconv.Atoi(*metricID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid metric ID format: %v", err)
+		}
+		eventName = fmt.Sprintf("metric_parameter:created:%d", mID)
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		param, ok := data.(*model.MetricParameter)
+		param, ok := data.(*models.MetricParameter)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
 
 		// Only send parameters for the specific metric if metricID is provided
-		if metricID != nil && *param.MetricID != *metricID {
+		if metricID != nil && param.MetricID != mID {
 			return nil
 		}
 
@@ -383,22 +392,28 @@ func (r *subscriptionResolver) MetricParameterCreated(ctx context.Context, metri
 }
 
 // MetricParameterUpdated is the resolver for the metricParameterUpdated field.
-func (r *subscriptionResolver) MetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *model.MetricParameter, error) {
-	paramChan := make(chan *model.MetricParameter, 1)
+func (r *subscriptionResolver) MetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *models.MetricParameter, error) {
+	paramChan := make(chan *models.MetricParameter, 1)
 
 	eventName := "metric_parameter:updated"
+	pID := -1
 	if paramID != nil {
-		eventName = fmt.Sprintf("metric_parameter:updated:%s", *paramID)
+		// Convert string ID to int
+		pID, err := strconv.Atoi(*paramID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid metric ID format: %v", err)
+		}
+		eventName = fmt.Sprintf("metric_parameter:updated:%v", pID)
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		param, ok := data.(*model.MetricParameter)
+		param, ok := data.(*models.MetricParameter)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
 
 		// Only send updates for the specific parameter if paramID is provided
-		if paramID != nil && param.ParamID != *paramID {
+		if paramID != nil && param.ParamID != pID {
 			return nil
 		}
 
@@ -669,8 +684,8 @@ func (r *subscriptionResolver) MetricRemovedFromStage(ctx context.Context, stage
 }
 
 // GameMetricCreated is the resolver for the gameMetricCreated field.
-func (r *subscriptionResolver) GameMetricCreated(ctx context.Context, gameID *string) (<-chan *models.GameMetric, error) {
-	metricChan := make(chan *models.GameMetric, 1)
+func (r *subscriptionResolver) GameMetricCreated(ctx context.Context, gameID *string) (<-chan *model.GameMetric, error) {
+	metricChan := make(chan *model.GameMetric, 1)
 
 	eventName := "game_metric:created"
 	if gameID != nil {
@@ -678,7 +693,7 @@ func (r *subscriptionResolver) GameMetricCreated(ctx context.Context, gameID *st
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		metric, ok := data.(*models.GameMetric)
+		metric, ok := data.(*models.Metric)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
@@ -687,9 +702,24 @@ func (r *subscriptionResolver) GameMetricCreated(ctx context.Context, gameID *st
 		if gameID != nil && metric.GameID != *gameID {
 			return nil
 		}
+		createdAt := metric.CreatedAt.Format(time.RFC3339)
+		updatedAt := metric.UpdatedAt.Format(time.RFC3339)
+		// Convert models.Metric to model.GameMetric
+		gameMetric := &model.GameMetric{
+			MetricID:          fmt.Sprintf("%d", metric.MetricID),
+			GameID:            &metric.GameID,
+			MetricKey:         &metric.MetricKey,
+			MetricName:        &metric.MetricName,
+			MetricDescription: &metric.MetricDescription,
+			Benchmark:         &metric.Formula,
+			BenchmarkMargin:   &metric.BenchmarkMargin,
+			Formula:           &metric.Formula,
+			CreatedAt:         &createdAt,
+			UpdatedAt:         &updatedAt,
+		}
 
 		select {
-		case metricChan <- metric:
+		case metricChan <- gameMetric:
 		default:
 			// Channel buffer is full, skip this update
 		}
@@ -706,8 +736,8 @@ func (r *subscriptionResolver) GameMetricCreated(ctx context.Context, gameID *st
 }
 
 // GameMetricUpdated is the resolver for the gameMetricUpdated field.
-func (r *subscriptionResolver) GameMetricUpdated(ctx context.Context, metricID *string) (<-chan *models.GameMetric, error) {
-	metricChan := make(chan *models.GameMetric, 1)
+func (r *subscriptionResolver) GameMetricUpdated(ctx context.Context, metricID *string) (<-chan *model.GameMetric, error) {
+	metricChan := make(chan *model.GameMetric, 1)
 
 	eventName := "game_metric:updated"
 	if metricID != nil {
@@ -715,7 +745,7 @@ func (r *subscriptionResolver) GameMetricUpdated(ctx context.Context, metricID *
 	}
 
 	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		metric, ok := data.(*models.GameMetric)
+		metric, ok := data.(*models.Metric)
 		if !ok {
 			return fmt.Errorf("invalid data type for %s event", eventName)
 		}
@@ -728,8 +758,24 @@ func (r *subscriptionResolver) GameMetricUpdated(ctx context.Context, metricID *
 			}
 		}
 
+		createdAt := metric.CreatedAt.Format(time.RFC3339)
+		updatedAt := metric.UpdatedAt.Format(time.RFC3339)
+		// Convert models.Metric to model.GameMetric
+		gameMetric := &model.GameMetric{
+			MetricID:          fmt.Sprintf("%d", metric.MetricID),
+			GameID:            &metric.GameID,
+			MetricKey:         &metric.MetricKey,
+			MetricName:        &metric.MetricName,
+			MetricDescription: &metric.MetricDescription,
+			Benchmark:         &metric.Formula,
+			BenchmarkMargin:   &metric.BenchmarkMargin,
+			Formula:           &metric.Formula,
+			CreatedAt:         &createdAt,
+			UpdatedAt:         &updatedAt,
+		}
+
 		select {
-		case metricChan <- metric:
+		case metricChan <- gameMetric:
 		default:
 			// Channel buffer is full, skip this update
 		}
@@ -762,123 +808,6 @@ func (r *subscriptionResolver) GameMetricDeleted(ctx context.Context, metricID *
 
 		// Only send deletion events for the specific metric if metricID is provided
 		if metricID != nil && *deletedID != *metricID {
-			return nil
-		}
-
-		select {
-		case deletedIDChan <- deletedID:
-		default:
-			// Channel buffer is full, skip this update
-		}
-		return nil
-	})
-
-	go func() {
-		<-ctx.Done()
-		r.subscriptionManager.Unsubscribe(eventName, subID)
-		close(deletedIDChan)
-	}()
-
-	return deletedIDChan, nil
-}
-
-// GameMetricParameterCreated is the resolver for the gameMetricParameterCreated field.
-func (r *subscriptionResolver) GameMetricParameterCreated(ctx context.Context, metricID *string) (<-chan *models.GameMetricParameter, error) {
-	paramChan := make(chan *models.GameMetricParameter, 1)
-
-	eventName := "game_metric_parameter:created"
-	if metricID != nil {
-		eventName = fmt.Sprintf("game_metric_parameter:created:%s", *metricID)
-	}
-
-	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		param, ok := data.(*models.GameMetricParameter)
-		if !ok {
-			return fmt.Errorf("invalid data type for %s event", eventName)
-		}
-
-		// Only send parameters for the specific metric if metricID is provided
-		if metricID != nil {
-			id := fmt.Sprintf("%d", param.MetricID)
-			if id != *metricID {
-				return nil
-			}
-		}
-
-		select {
-		case paramChan <- param:
-		default:
-			// Channel buffer is full, skip this update
-		}
-		return nil
-	})
-
-	go func() {
-		<-ctx.Done()
-		r.subscriptionManager.Unsubscribe(eventName, subID)
-		close(paramChan)
-	}()
-
-	return paramChan, nil
-}
-
-// GameMetricParameterUpdated is the resolver for the gameMetricParameterUpdated field.
-func (r *subscriptionResolver) GameMetricParameterUpdated(ctx context.Context, paramID *string) (<-chan *models.GameMetricParameter, error) {
-	paramChan := make(chan *models.GameMetricParameter, 1)
-
-	eventName := "game_metric_parameter:updated"
-	if paramID != nil {
-		eventName = fmt.Sprintf("game_metric_parameter:updated:%s", *paramID)
-	}
-
-	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		param, ok := data.(*models.GameMetricParameter)
-		if !ok {
-			return fmt.Errorf("invalid data type for %s event", eventName)
-		}
-
-		// Only send updates for the specific parameter if paramID is provided
-		if paramID != nil {
-			id := fmt.Sprintf("%d", param.ParamID)
-			if id != *paramID {
-				return nil
-			}
-		}
-
-		select {
-		case paramChan <- param:
-		default:
-			// Channel buffer is full, skip this update
-		}
-		return nil
-	})
-
-	go func() {
-		<-ctx.Done()
-		r.subscriptionManager.Unsubscribe(eventName, subID)
-		close(paramChan)
-	}()
-
-	return paramChan, nil
-}
-
-// GameMetricParameterDeleted is the resolver for the gameMetricParameterDeleted field.
-func (r *subscriptionResolver) GameMetricParameterDeleted(ctx context.Context, paramID *string) (<-chan *string, error) {
-	deletedIDChan := make(chan *string, 1)
-
-	eventName := "game_metric_parameter:deleted"
-	if paramID != nil {
-		eventName = fmt.Sprintf("game_metric_parameter:deleted:%s", *paramID)
-	}
-
-	subID := r.subscriptionManager.Subscribe(eventName, func(data interface{}) error {
-		deletedID, ok := data.(*string)
-		if !ok {
-			return fmt.Errorf("invalid data type for %s event", eventName)
-		}
-
-		// Only send deletion events for the specific parameter if paramID is provided
-		if paramID != nil && *deletedID != *paramID {
 			return nil
 		}
 

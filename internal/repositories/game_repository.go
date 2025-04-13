@@ -51,19 +51,8 @@ func (r *GameRepository) FindAllActive() ([]models.Game, error) {
 	return games, err
 }
 
-func (r *GameRepository) FindWithFullConfiguration(gameID string) (*models.Game, error) {
-	var game models.Game
-	err := r.db.Preload("Competencies.Metrics.Parameters").
-		Preload("Stages").
-		Preload("GameMetrics.Parameters").
-		Preload("ConstantParameters").
-		First(&game, "game_id = ?", gameID).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &game, nil
+func (r *GameRepository) FindByGame(gameID string) ([]models.Metric, error) {
+	var gameMetrics []models.Metric
+	err := r.db.Where("game_id = ?", gameID).Find(&gameMetrics).Error
+	return gameMetrics, err
 }

@@ -39,7 +39,7 @@ func NewMetricService(
 }
 
 // GetCompetenceMetricByID retrieves a competence metric by its ID
-func (s *MetricService) GetCompetenceMetricByID(metricID int) (*models.CompetenceMetric, error) {
+func (s *MetricService) GetMetricByID(metricID int) (*models.Metric, error) {
 	metric, err := s.competenceMetricRepository.FindByID(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving competence metric: %w", err)
@@ -52,38 +52,17 @@ func (s *MetricService) GetCompetenceMetricByID(metricID int) (*models.Competenc
 	return metric, nil
 }
 
-// GetCompetenceMetricWithParameters retrieves a competence metric with all its parameters
-func (s *MetricService) GetCompetenceMetricWithParameters(metricID int) (*models.CompetenceMetric, error) {
-	metric, err := s.competenceMetricRepository.FindWithParameters(metricID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving competence metric with parameters: %w", err)
-	}
-
-	if metric == nil {
-		return nil, errors.New("competence metric not found")
-	}
-
-	return metric, nil
-}
-
-// CreateCompetenceMetric creates a new competence metric
-func (s *MetricService) CreateCompetenceMetric(metric *models.CompetenceMetric) error {
+// CreateStageMetric creates a new competence metric
+func (s *MetricService) CreateStageMetric(metric *models.Metric) error {
 	if metric.CompetenceID == 0 || metric.MetricKey == "" || metric.MetricName == "" {
 		return errors.New("competence ID, metric key, and name are required")
 	}
 
-	// Validate formula
-	// if metric.Formula != "" {
-	// 	if _, err := s.formulaEvaluator.CompileFormula(metric.Formula); err != nil {
-	// 		return fmt.Errorf("invalid formula: %w", err)
-	// 	}
-	// }
-
 	return s.competenceMetricRepository.Create(metric)
 }
 
-// UpdateCompetenceMetric updates an existing competence metric
-func (s *MetricService) UpdateCompetenceMetric(metric *models.CompetenceMetric) error {
+// UpdateStageMetric updates an existing competence metric
+func (s *MetricService) UpdateStageMetric(metric *models.Metric) error {
 	if metric.MetricID == 0 {
 		return errors.New("metric ID is required")
 	}
@@ -108,7 +87,7 @@ func (s *MetricService) UpdateCompetenceMetric(metric *models.CompetenceMetric) 
 }
 
 // DeleteCompetenceMetric deletes a competence metric
-func (s *MetricService) DeleteCompetenceMetric(metricID int) error {
+func (s *MetricService) DeleteStageMetric(metricID int) error {
 	existingMetric, err := s.competenceMetricRepository.FindByID(metricID)
 	if err != nil {
 		return fmt.Errorf("error checking existing metric: %w", err)
@@ -122,7 +101,7 @@ func (s *MetricService) DeleteCompetenceMetric(metricID int) error {
 }
 
 // CreateCompetenceMetricParameter adds a parameter to a competence metric
-func (s *MetricService) CreateCompetenceMetricParameter(parameter *models.CompetenceMetricParameter) error {
+func (s *MetricService) CreateMetricParameter(parameter *models.MetricParameter) error {
 	if parameter.MetricID == 0 || parameter.ParamKey == "" || parameter.ParamName == "" {
 		return errors.New("metric ID, parameter key, and name are required")
 	}
@@ -131,7 +110,7 @@ func (s *MetricService) CreateCompetenceMetricParameter(parameter *models.Compet
 }
 
 // UpdateMetricParameter updates an existing metric parameter
-func (s *MetricService) UpdateMetricParameter(parameter *models.CompetenceMetricParameter) error {
+func (s *MetricService) UpdateMetricParameter(parameter *models.MetricParameter) error {
 	if parameter.ParamID == 0 {
 		return errors.New("parameter ID is required")
 	}
@@ -163,7 +142,7 @@ func (s *MetricService) DeleteMetricParameter(paramID int) error {
 }
 
 // GetGameMetricByID retrieves a game metric by its ID
-func (s *MetricService) GetGameMetricByID(metricID int) (*models.GameMetric, error) {
+func (s *MetricService) GetGameMetricByID(metricID int) (*models.Metric, error) {
 	metric, err := s.gameMetricRepository.FindByID(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game metric: %w", err)
@@ -176,22 +155,8 @@ func (s *MetricService) GetGameMetricByID(metricID int) (*models.GameMetric, err
 	return metric, nil
 }
 
-// GetGameMetricWithParameters retrieves a game metric with all its parameters
-func (s *MetricService) GetGameMetricWithParameters(metricID int) (*models.GameMetric, error) {
-	metric, err := s.gameMetricRepository.FindWithParameters(metricID)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving game metric with parameters: %w", err)
-	}
-
-	if metric == nil {
-		return nil, errors.New("game metric not found")
-	}
-
-	return metric, nil
-}
-
 // CreateGameMetric creates a new game metric
-func (s *MetricService) CreateGameMetric(metric *models.GameMetric) error {
+func (s *MetricService) CreateGameMetric(metric *models.Metric) error {
 	if metric.GameID == "" || metric.MetricKey == "" || metric.MetricName == "" {
 		return errors.New("game ID, metric key, and name are required")
 	}
@@ -207,7 +172,7 @@ func (s *MetricService) CreateGameMetric(metric *models.GameMetric) error {
 }
 
 // UpdateGameMetric updates an existing game metric
-func (s *MetricService) UpdateGameMetric(metric *models.GameMetric) error {
+func (s *MetricService) UpdateGameMetric(metric *models.Metric) error {
 	if metric.MetricID == 0 {
 		return errors.New("metric ID is required")
 	}
@@ -245,49 +210,8 @@ func (s *MetricService) DeleteGameMetric(metricID int) error {
 	return s.gameMetricRepository.Delete(metricID)
 }
 
-// CreateGameMetricParameter adds a parameter to a game metric
-func (s *MetricService) CreateGameMetricParameter(parameter *models.GameMetricParameter) error {
-	if parameter.MetricID == 0 || parameter.ParamKey == "" || parameter.ParamName == "" {
-		return errors.New("metric ID, parameter key, and name are required")
-	}
-
-	return s.gameMetricParameterRepository.Create(parameter)
-}
-
-// UpdateGameMetricParameter updates an existing game metric parameter
-func (s *MetricService) UpdateGameMetricParameter(parameter *models.GameMetricParameter) error {
-	if parameter.ParamID == 0 {
-		return errors.New("parameter ID is required")
-	}
-
-	existingParameter, err := s.gameMetricParameterRepository.FindByID(parameter.ParamID)
-	if err != nil {
-		return fmt.Errorf("error checking existing parameter: %w", err)
-	}
-
-	if existingParameter == nil {
-		return errors.New("parameter not found")
-	}
-
-	return s.gameMetricParameterRepository.Update(parameter)
-}
-
-// DeleteGameMetricParameter deletes a game metric parameter
-func (s *MetricService) DeleteGameMetricParameter(paramID int) error {
-	existingParameter, err := s.gameMetricParameterRepository.FindByID(paramID)
-	if err != nil {
-		return fmt.Errorf("error checking existing parameter: %w", err)
-	}
-
-	if existingParameter == nil {
-		return errors.New("parameter not found")
-	}
-
-	return s.gameMetricParameterRepository.Delete(paramID)
-}
-
-// GetCompetenceMetricParameters retrieves all parameters for a competence metric
-func (s *MetricService) GetCompetenceMetricParameters(metricID int) ([]models.CompetenceMetricParameter, error) {
+// GetMetricParameters retrieves all parameters for a competence metric
+func (s *MetricService) GetMetricParameters(metricID int) ([]models.MetricParameter, error) {
 	parameters, err := s.metricParameterRepository.FindByMetric(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving competence metric parameters: %w", err)
@@ -297,7 +221,7 @@ func (s *MetricService) GetCompetenceMetricParameters(metricID int) ([]models.Co
 }
 
 // GetGameMetricParameters retrieves all parameters for a game metric
-func (s *MetricService) GetGameMetricParameters(metricID int) ([]models.GameMetricParameter, error) {
+func (s *MetricService) GetGameMetricParameters(metricID int) ([]models.MetricParameter, error) {
 	parameters, err := s.gameMetricParameterRepository.FindByMetric(metricID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game metric parameters: %w", err)
@@ -307,7 +231,7 @@ func (s *MetricService) GetGameMetricParameters(metricID int) ([]models.GameMetr
 }
 
 // GetGameMetricsByGame retrieves all game metrics for a game
-func (s *MetricService) GetGameMetricsByGame(gameID string) ([]models.GameMetric, error) {
+func (s *MetricService) GetGameMetricsByGame(gameID string) ([]models.Metric, error) {
 	metrics, err := s.gameMetricRepository.FindByGame(gameID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game metrics: %w", err)
@@ -341,7 +265,7 @@ func (s *MetricService) GetConstantParameterByID(constID int) (*models.ConstantP
 }
 
 // GetGameMetricParameterByID retrieves a game metric parameter by its ID
-func (s *MetricService) GetGameMetricParameterByID(paramID int) (*models.GameMetricParameter, error) {
+func (s *MetricService) GetGameMetricParameterByID(paramID int) (*models.MetricParameter, error) {
 	parameter, err := s.gameMetricParameterRepository.FindByID(paramID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving game metric parameter: %w", err)
@@ -355,7 +279,7 @@ func (s *MetricService) GetGameMetricParameterByID(paramID int) (*models.GameMet
 }
 
 // GetCompetenceMetricParameterByID retrieves a competence metric parameter by its ID
-func (s *MetricService) GetCompetenceMetricParameterByID(paramID int) (*models.CompetenceMetricParameter, error) {
+func (s *MetricService) GetCompetenceMetricParameterByID(paramID int) (*models.MetricParameter, error) {
 	parameter, err := s.metricParameterRepository.FindByID(paramID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving competence metric parameter: %w", err)

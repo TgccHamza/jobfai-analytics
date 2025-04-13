@@ -21,17 +21,18 @@ func NewMetricCalculator(formulaEvaluator *evaluator.FormulaEvaluator) *MetricCa
 }
 
 // CalculateCompetenceMetric calculates a single competence metric based on parameters and constants
-func (c *MetricCalculator) CalculateCompetenceMetric(
-	metric *models.CompetenceMetric,
-	parameters map[string]interface{},
+func (c *MetricCalculator) CalculateMetric(
+	metric *models.Metric,
+	parameters []models.MetricParameter,
 	constants []models.ConstantParameter,
+	playerData map[string]interface{},
 ) (map[string]interface{}, error) {
 	// Prepare parameters for formula evaluation
 	evalParams := make(map[string]interface{})
 
 	// Add provided parameters
-	for key, value := range parameters {
-		evalParams[key] = c.convertParameter(value)
+	for _, parameter := range parameters {
+		evalParams[parameter.ParamKey] = c.convertParameter(playerData[parameter.ParamKey])
 	}
 
 	// Add constants
@@ -40,14 +41,14 @@ func (c *MetricCalculator) CalculateCompetenceMetric(
 	}
 
 	// Validate required parameters
-	for _, param := range metric.Parameters {
+	for _, param := range parameters {
 		if param.IsRequired {
 			if _, exists := evalParams[param.ParamKey]; !exists {
 				if param.DefaultValue != "" {
 					// Use default value if available
 					evalParams[param.ParamKey] = c.convertParameter(param.DefaultValue)
 				} else {
-					return nil, fmt.Errorf("required parameter %s is missing", param.ParamKey)
+					evalParams[param.ParamKey] = 0
 				}
 			}
 		}
@@ -67,7 +68,7 @@ func (c *MetricCalculator) CalculateCompetenceMetric(
 
 // CalculateGameMetric calculates a global game metric based on stage performances and competence details
 func (c *MetricCalculator) CalculateGameMetric(
-	gameMetric *models.GameMetric,
+	gameMetric *models.Metric,
 	stagePerformance []map[string]interface{},
 	competenceDetails map[string]map[string]interface{},
 ) (map[string]interface{}, error) {
@@ -121,16 +122,16 @@ func (c *MetricCalculator) convertParameter(value interface{}) interface{} {
 		}
 		// If it's a boolean string
 		if v == "true" {
-			return true
+			return 1
 		}
 		if v == "false" {
-			return false
+			return 0
 		}
-		return v
+		return 0
 	case float64, float32, int, int64, int32, bool:
 		return v
 	default:
 		// For other types, convert to string
-		return fmt.Sprintf("%v", v)
+		return 0
 	}
 }
