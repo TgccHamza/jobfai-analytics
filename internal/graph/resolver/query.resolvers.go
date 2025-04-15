@@ -134,13 +134,14 @@ func (r *queryResolver) GetParametersByMetric(ctx context.Context, metricID stri
 	result := make([]*models.MetricParameter, len(parameters))
 	for i, param := range parameters {
 		result[i] = &models.MetricParameter{
-			ParamID:     param.ParamID,
-			MetricID:    param.MetricID,
-			ParamName:   param.ParamName,
-			ParamKey:    param.ParamKey,
-			Description: param.Description,
-			ParamType:   param.ParamType,
-			IsRequired:  param.IsRequired,
+			ParamID:      param.ParamID,
+			MetricID:     param.MetricID,
+			ParamName:    param.ParamName,
+			ParamKey:     param.ParamKey,
+			Description:  param.Description,
+			DefaultValue: param.DefaultValue,
+			ParamType:    param.ParamType,
+			IsRequired:   param.IsRequired,
 		}
 	}
 
@@ -383,13 +384,14 @@ func (r *queryResolver) GetRequiredParametersForStage(ctx context.Context, stage
 	result := make([]*models.MetricParameter, len(parameters))
 	for i, param := range parameters {
 		result[i] = &models.MetricParameter{
-			ParamID:     param.ParamID,
-			MetricID:    param.MetricID,
-			ParamName:   param.ParamName,
-			ParamKey:    param.ParamKey,
-			Description: param.Description,
-			ParamType:   param.ParamType,
-			IsRequired:  param.IsRequired,
+			ParamID:      param.ParamID,
+			MetricID:     param.MetricID,
+			ParamName:    param.ParamName,
+			ParamKey:     param.ParamKey,
+			DefaultValue: param.DefaultValue,
+			Description:  param.Description,
+			ParamType:    param.ParamType,
+			IsRequired:   param.IsRequired,
 		}
 	}
 

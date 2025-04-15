@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"jobfai-analytics/internal/models"
@@ -32,6 +33,9 @@ func (c *MetricCalculator) CalculateMetric(
 
 	// Add provided parameters
 	for _, parameter := range parameters {
+		if playerData[parameter.ParamKey] == nil {
+			continue
+		}
 		evalParams[parameter.ParamKey] = c.convertParameter(playerData[parameter.ParamKey])
 	}
 
@@ -44,6 +48,7 @@ func (c *MetricCalculator) CalculateMetric(
 	for _, param := range parameters {
 		if param.IsRequired {
 			if _, exists := evalParams[param.ParamKey]; !exists {
+				fmt.Printf("Using default value for parameter %s: %v\n", param.ParamKey, param.DefaultValue)
 				if param.DefaultValue != "" {
 					// Use default value if available
 					evalParams[param.ParamKey] = c.convertParameter(param.DefaultValue)
@@ -114,11 +119,17 @@ func (c *MetricCalculator) CalculateGameMetric(
 
 // convertParameter converts various parameter types to appropriate values for formula evaluation
 func (c *MetricCalculator) convertParameter(value interface{}) interface{} {
+	fmt.Println("Value: ", value)
+	fmt.Println("Type:", reflect.TypeOf(value))
 	switch v := value.(type) {
 	case string:
 		// Try to convert string to number if possible
 		if floatVal, err := strconv.ParseFloat(v, 64); err == nil {
 			return floatVal
+		}
+
+		if intVal, err := strconv.ParseInt(v, 10, 64); err == nil {
+			return intVal
 		}
 		// If it's a boolean string
 		if v == "true" {
@@ -127,11 +138,13 @@ func (c *MetricCalculator) convertParameter(value interface{}) interface{} {
 		if v == "false" {
 			return 0
 		}
-		return 0
+		return v
 	case float64, float32, int, int64, int32, bool:
 		return v
+	case nil:
+		return 0
 	default:
 		// For other types, convert to string
-		return 0
+		return v
 	}
 }

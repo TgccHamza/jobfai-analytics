@@ -166,13 +166,14 @@ func (r *metricResolver) Parameters(ctx context.Context, obj *models.Metric) ([]
 	result := make([]*models.MetricParameter, len(parameters))
 	for i, param := range parameters {
 		result[i] = &models.MetricParameter{
-			ParamID:     param.ParamID,
-			MetricID:    param.MetricID,
-			ParamName:   param.ParamName,
-			ParamKey:    param.ParamKey,
-			Description: param.Description,
-			ParamType:   param.ParamType,
-			IsRequired:  param.IsRequired,
+			ParamID:      param.ParamID,
+			MetricID:     param.MetricID,
+			ParamName:    param.ParamName,
+			ParamKey:     param.ParamKey,
+			Description:  param.Description,
+			DefaultValue: param.DefaultValue,
+			ParamType:    param.ParamType,
+			IsRequired:   param.IsRequired,
 		}
 	}
 
