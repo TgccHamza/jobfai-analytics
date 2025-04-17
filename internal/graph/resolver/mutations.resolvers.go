@@ -6,14 +6,17 @@ package resolver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"jobfai-analytics/internal/graph"
 	"jobfai-analytics/internal/graph/model"
 	"jobfai-analytics/internal/models"
 	"jobfai-analytics/internal/services"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 )
 
 // CreateGame is the resolver for the createGame field.
@@ -898,6 +901,204 @@ func (r *mutationResolver) CalculatePlayerPerformance(ctx context.Context, input
 	}
 
 	return performance, nil
+}
+
+// CalculatePlayerPerformanceRaw is the resolver for the calculatePlayerPerformanceRaw field.
+func (r *mutationResolver) CalculatePlayerPerformanceRaw(ctx context.Context, input model.PlayerPerformanceInput) (map[string]any, error) {
+	// Convert input parameters to the format expected by the service
+	playerPerformanceInput := &services.PlayerPerformanceInput{
+		PlayerID: input.PlayerID,
+		GameID:   input.GameID,
+		DbIndex:  input.DbIndex,
+	}
+
+	// Call the service to calculate performance
+	result, err := r.PlayerPerformanceService.CalculatePlayerPerformance(*playerPerformanceInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate player performance: %w", err)
+	}
+
+	// Create the raw result map
+	rawResult := map[string]interface{}{
+		"gameId":     input.GameID,
+		"totalScore": result.TotalScore,
+	}
+
+	// Add competence details
+	competenceDetails := make([]map[string]interface{}, 0)
+	for key, comp := range result.CompetenceDetails {
+		compData, ok := comp.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		competenceScore := map[string]interface{}{
+			"competenceKey": key,
+		}
+
+		if name, ok := compData["name"].(string); ok {
+			competenceScore["name"] = name
+		}
+		if score, ok := compData["score"].(float64); ok {
+			competenceScore["score"] = score
+		}
+		if benchmark, ok := compData["benchmark"].(float64); ok {
+			competenceScore["benchmark"] = benchmark
+		}
+		if benchmarkMargin, ok := compData["benchmarkMargin"].(float64); ok {
+			competenceScore["benchmarkMargin"] = benchmarkMargin
+		}
+		if weight, ok := compData["weight"].(float64); ok {
+			competenceScore["weight"] = weight
+		}
+
+		// Add metrics for this competence
+		if metricsData, ok := compData["metrics"].([]map[string]interface{}); ok {
+			metrics := make([]map[string]interface{}, 0)
+			for _, metric := range metricsData {
+				metricResult := map[string]interface{}{
+					"kpiId": metric["kpiId"].(string),
+				}
+
+				if kpiName, ok := metric["kpiName"].(string); ok {
+					metricResult["kpiName"] = kpiName
+				}
+				if value, ok := metric["value"].(float64); ok {
+					metricResult["value"] = value
+				}
+				if benchmark, ok := metric["benchmark"].(float64); ok {
+					metricResult["benchmark"] = benchmark
+				}
+				if benchmarkMargin, ok := metric["benchmarkMargin"].(float64); ok {
+					metricResult["benchmarkMargin"] = benchmarkMargin
+				}
+
+				metrics = append(metrics, metricResult)
+			}
+			competenceScore["metrics"] = metrics
+		}
+
+		competenceDetails = append(competenceDetails, competenceScore)
+	}
+	rawResult["competenceDetails"] = competenceDetails
+
+	// Add stage performance data
+	stagePerformances := make([]map[string]interface{}, 0)
+	for _, stage := range result.StagePerformance {
+		stagePerf := map[string]interface{}{
+			"stageId": stage["stageId"],
+		}
+
+		if stageName, ok := stage["stageName"].(string); ok {
+			stagePerf["stageName"] = stageName
+		}
+		if score, ok := stage["score"].(float64); ok {
+			stagePerf["score"] = score
+		}
+		if benchmark, ok := stage["benchmark"].(float64); ok {
+			stagePerf["benchmark"] = benchmark
+		}
+		if timeTaken, ok := stage["timeTaken"].(float64); ok {
+			stagePerf["timeTaken"] = timeTaken
+		}
+		if optimalTime, ok := stage["optimalTime"].(float64); ok {
+			stagePerf["optimalTime"] = optimalTime
+		}
+		if completionStatus, ok := stage["completionStatus"].(string); ok {
+			stagePerf["completionStatus"] = completionStatus
+		}
+
+		// Add metrics for this stage
+		if metricsData, ok := stage["metrics"].([]map[string]interface{}); ok {
+			stageMetrics := make([]map[string]interface{}, 0)
+			for _, metric := range metricsData {
+				stageMetric := map[string]interface{}{}
+
+				if kpiId, ok := metric["kpiId"].(string); ok {
+					stageMetric["kpiId"] = kpiId
+				}
+				if kpiName, ok := metric["kpiName"].(string); ok {
+					stageMetric["kpiName"] = kpiName
+				}
+				if category, ok := metric["category"].(string); ok {
+					stageMetric["category"] = category
+				}
+				if formula, ok := metric["formula"].(string); ok {
+					stageMetric["formula"] = formula
+				}
+				if rawData, ok := metric["rawData"].(map[string]interface{}); ok {
+					stageMetric["rawData"] = rawData
+				}
+				if value, ok := metric["value"].(float64); ok {
+					stageMetric["value"] = value
+				}
+				if benchmark, ok := metric["benchmark"].(float64); ok {
+					stageMetric["benchmark"] = benchmark
+				}
+
+				stageMetrics = append(stageMetrics, stageMetric)
+			}
+			stagePerf["metrics"] = stageMetrics
+		}
+
+		stagePerformances = append(stagePerformances, stagePerf)
+	}
+	rawResult["stagePerformance"] = stagePerformances
+
+	// Add global metrics
+	globalMetrics := make([]map[string]interface{}, 0)
+	for _, metric := range result.GlobalMetrics {
+		gameMetric := map[string]interface{}{}
+
+		if kpiId, ok := metric["kpiId"].(string); ok {
+			gameMetric["kpiId"] = kpiId
+		}
+		if kpiName, ok := metric["kpiName"].(string); ok {
+			gameMetric["kpiName"] = kpiName
+		}
+		if category, ok := metric["category"].(string); ok {
+			gameMetric["category"] = category
+		}
+		if formula, ok := metric["formula"].(string); ok {
+			gameMetric["formula"] = formula
+		}
+		if rawData, ok := metric["rawData"].(map[string]interface{}); ok {
+			gameMetric["rawData"] = rawData
+		}
+		if value, ok := metric["value"].(float64); ok {
+			gameMetric["value"] = value
+		}
+		if benchmark, ok := metric["benchmark"].(float64); ok {
+			gameMetric["benchmark"] = benchmark
+		}
+
+		globalMetrics = append(globalMetrics, gameMetric)
+	}
+	rawResult["globalMetrics"] = globalMetrics
+
+	return rawResult, nil
+}
+
+// CalculatePlayerPerformanceQueue is the resolver for the calculatePlayerPerformanceQueue field.
+func (r *mutationResolver) CalculatePlayerPerformanceQueue(ctx context.Context, input model.PlayerPerformanceQueueInput) (map[string]any, error) {
+	payload, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+	// task options can be passed to NewTask, which can be overridden at enqueue time.
+	task := asynq.NewTask("calculate:performance", payload, asynq.MaxRetry(3), asynq.Timeout(10*time.Minute))
+
+	info, err := r.TaskService.EnqueueTask(task)
+	if err != nil {
+		return nil, fmt.Errorf("failed to enqueue performance calculation task: %w", err)
+	}
+
+	return map[string]interface{}{
+		"success": true,
+		"taskId":  info.ID,
+		"queue":   info.Queue,
+		"message": "Performance calculation task has been queued",
+	}, nil
 }
 
 // Mutation returns graph.MutationResolver implementation.

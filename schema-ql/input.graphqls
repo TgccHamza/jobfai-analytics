@@ -173,6 +173,13 @@ input PlayerPerformanceInput {
   dbIndex: ID!
 }
 
+input PlayerPerformanceQueueInput {
+  playerId: ID!
+  gameId: ID!
+  dbIndex: ID!
+  CallbackUrl: String!
+}
+
 input StageParametersInput {
   stageId: ID!
   parameters: [ParameterValueInput!]!

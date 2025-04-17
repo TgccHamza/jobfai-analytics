@@ -32,4 +32,6 @@ type Mutation {
 
   # Player Mutations
   calculatePlayerPerformance(input: PlayerPerformanceInput!): PlayerPerformance
+  calculatePlayerPerformanceRaw(input: PlayerPerformanceInput!): JSON
+  calculatePlayerPerformanceQueue(input: PlayerPerformanceQueueInput!): JSON
 }

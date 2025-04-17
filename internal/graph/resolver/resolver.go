@@ -21,6 +21,7 @@ type Resolver struct {
 	ConstantParameterService *services.ConstantParameterService
 	StageService             *services.StageService
 	PlayerPerformanceService *services.PlayerPerformanceService
+	TaskService              *services.TaskService
 	subscriptionManager      *subscription.Manager
 }
 
@@ -62,6 +63,7 @@ func NewResolver(db database.Service) *Resolver {
 		metricCalc, // MetricCalculator will be initialized in the service
 	)
 	constantParamService := services.NewConstantParameterService(constantParamRepo)
+	taskService := services.NewTaskService()
 
 	return &Resolver{
 		DB:                       db,
@@ -71,6 +73,7 @@ func NewResolver(db database.Service) *Resolver {
 		StageService:             stageService,
 		PlayerPerformanceService: playerPerformanceService,
 		ConstantParameterService: constantParamService,
+		TaskService:              taskService,
 		subscriptionManager:      subscription.NewManager(),
 	}
 }

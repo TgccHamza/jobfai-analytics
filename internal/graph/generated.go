@@ -197,28 +197,30 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CalculatePlayerPerformance func(childComplexity int, input model.PlayerPerformanceInput) int
-		CreateCompetence           func(childComplexity int, input model.CompetenceInput) int
-		CreateConstantParameter    func(childComplexity int, input model.ConstantParameterInput) int
-		CreateGame                 func(childComplexity int, input model.GameInput) int
-		CreateGameMetric           func(childComplexity int, input model.GameMetricInput) int
-		CreateMetricParameter      func(childComplexity int, input model.MetricParameterInput) int
-		CreateStage                func(childComplexity int, input model.StageInput) int
-		CreateStageMetric          func(childComplexity int, input model.StageMetricInput) int
-		DeleteCompetence           func(childComplexity int, competenceID string) int
-		DeleteConstantParameter    func(childComplexity int, constID string) int
-		DeleteGame                 func(childComplexity int, gameID string) int
-		DeleteGameMetric           func(childComplexity int, metricID string) int
-		DeleteMetricParameter      func(childComplexity int, paramID string) int
-		DeleteStage                func(childComplexity int, stageID string) int
-		DeleteStageMetric          func(childComplexity int, metricID string) int
-		UpdateCompetence           func(childComplexity int, input model.CompetenceUpdateInput) int
-		UpdateConstantParameter    func(childComplexity int, input model.ConstantParameterUpdateInput) int
-		UpdateGame                 func(childComplexity int, input model.GameUpdateInput) int
-		UpdateGameMetric           func(childComplexity int, input model.GameMetricUpdateInput) int
-		UpdateMetricParameter      func(childComplexity int, input model.MetricParameterUpdateInput) int
-		UpdateStage                func(childComplexity int, input model.StageUpdateInput) int
-		UpdateStageMetric          func(childComplexity int, input model.StageMetricUpdateInput) int
+		CalculatePlayerPerformance      func(childComplexity int, input model.PlayerPerformanceInput) int
+		CalculatePlayerPerformanceQueue func(childComplexity int, input model.PlayerPerformanceQueueInput) int
+		CalculatePlayerPerformanceRaw   func(childComplexity int, input model.PlayerPerformanceInput) int
+		CreateCompetence                func(childComplexity int, input model.CompetenceInput) int
+		CreateConstantParameter         func(childComplexity int, input model.ConstantParameterInput) int
+		CreateGame                      func(childComplexity int, input model.GameInput) int
+		CreateGameMetric                func(childComplexity int, input model.GameMetricInput) int
+		CreateMetricParameter           func(childComplexity int, input model.MetricParameterInput) int
+		CreateStage                     func(childComplexity int, input model.StageInput) int
+		CreateStageMetric               func(childComplexity int, input model.StageMetricInput) int
+		DeleteCompetence                func(childComplexity int, competenceID string) int
+		DeleteConstantParameter         func(childComplexity int, constID string) int
+		DeleteGame                      func(childComplexity int, gameID string) int
+		DeleteGameMetric                func(childComplexity int, metricID string) int
+		DeleteMetricParameter           func(childComplexity int, paramID string) int
+		DeleteStage                     func(childComplexity int, stageID string) int
+		DeleteStageMetric               func(childComplexity int, metricID string) int
+		UpdateCompetence                func(childComplexity int, input model.CompetenceUpdateInput) int
+		UpdateConstantParameter         func(childComplexity int, input model.ConstantParameterUpdateInput) int
+		UpdateGame                      func(childComplexity int, input model.GameUpdateInput) int
+		UpdateGameMetric                func(childComplexity int, input model.GameMetricUpdateInput) int
+		UpdateMetricParameter           func(childComplexity int, input model.MetricParameterUpdateInput) int
+		UpdateStage                     func(childComplexity int, input model.StageUpdateInput) int
+		UpdateStageMetric               func(childComplexity int, input model.StageMetricUpdateInput) int
 	}
 
 	PlayerPerformance struct {
@@ -380,6 +382,8 @@ type MutationResolver interface {
 	UpdateConstantParameter(ctx context.Context, input model.ConstantParameterUpdateInput) (*models.ConstantParameter, error)
 	DeleteConstantParameter(ctx context.Context, constID string) (*bool, error)
 	CalculatePlayerPerformance(ctx context.Context, input model.PlayerPerformanceInput) (*model.PlayerPerformance, error)
+	CalculatePlayerPerformanceRaw(ctx context.Context, input model.PlayerPerformanceInput) (map[string]any, error)
+	CalculatePlayerPerformanceQueue(ctx context.Context, input model.PlayerPerformanceQueueInput) (map[string]any, error)
 }
 type QueryResolver interface {
 	GetGames(ctx context.Context) ([]*models.Game, error)
@@ -1225,6 +1229,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CalculatePlayerPerformance(childComplexity, args["input"].(model.PlayerPerformanceInput)), true
+
+	case "Mutation.calculatePlayerPerformanceQueue":
+		if e.complexity.Mutation.CalculatePlayerPerformanceQueue == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_calculatePlayerPerformanceQueue_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CalculatePlayerPerformanceQueue(childComplexity, args["input"].(model.PlayerPerformanceQueueInput)), true
+
+	case "Mutation.calculatePlayerPerformanceRaw":
+		if e.complexity.Mutation.CalculatePlayerPerformanceRaw == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_calculatePlayerPerformanceRaw_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CalculatePlayerPerformanceRaw(childComplexity, args["input"].(model.PlayerPerformanceInput)), true
 
 	case "Mutation.createCompetence":
 		if e.complexity.Mutation.CreateCompetence == nil {
@@ -2298,6 +2326,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputMetricParameterUpdateInput,
 		ec.unmarshalInputParameterValueInput,
 		ec.unmarshalInputPlayerPerformanceInput,
+		ec.unmarshalInputPlayerPerformanceQueueInput,
 		ec.unmarshalInputStageInput,
 		ec.unmarshalInputStageMetricInput,
 		ec.unmarshalInputStageMetricUpdateInput,
@@ -2592,6 +2621,13 @@ input PlayerPerformanceInput {
   dbIndex: ID!
 }
 
+input PlayerPerformanceQueueInput {
+  playerId: ID!
+  gameId: ID!
+  dbIndex: ID!
+  CallbackUrl: String!
+}
+
 input StageParametersInput {
   stageId: ID!
   parameters: [ParameterValueInput!]!
@@ -2636,6 +2672,8 @@ type Mutation {
 
   # Player Mutations
   calculatePlayerPerformance(input: PlayerPerformanceInput!): PlayerPerformance
+  calculatePlayerPerformanceRaw(input: PlayerPerformanceInput!): JSON
+  calculatePlayerPerformanceQueue(input: PlayerPerformanceQueueInput!): JSON
 }`, BuiltIn: false},
 	{Name: "../../schema-ql/query.graphqls", Input: `# Queries
 type Query {
@@ -2923,6 +2961,52 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_calculatePlayerPerformanceQueue_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_calculatePlayerPerformanceQueue_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_calculatePlayerPerformanceQueue_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.PlayerPerformanceQueueInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNPlayerPerformanceQueueInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐPlayerPerformanceQueueInput(ctx, tmp)
+	}
+
+	var zeroVal model.PlayerPerformanceQueueInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_calculatePlayerPerformanceRaw_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_calculatePlayerPerformanceRaw_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_calculatePlayerPerformanceRaw_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.PlayerPerformanceInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNPlayerPerformanceInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐPlayerPerformanceInput(ctx, tmp)
+	}
+
+	var zeroVal model.PlayerPerformanceInput
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Mutation_calculatePlayerPerformance_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -11063,6 +11147,110 @@ func (ec *executionContext) fieldContext_Mutation_calculatePlayerPerformance(ctx
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_calculatePlayerPerformance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_calculatePlayerPerformanceRaw(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_calculatePlayerPerformanceRaw(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CalculatePlayerPerformanceRaw(rctx, fc.Args["input"].(model.PlayerPerformanceInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]any)
+	fc.Result = res
+	return ec.marshalOJSON2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_calculatePlayerPerformanceRaw(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_calculatePlayerPerformanceRaw_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_calculatePlayerPerformanceQueue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_calculatePlayerPerformanceQueue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CalculatePlayerPerformanceQueue(rctx, fc.Args["input"].(model.PlayerPerformanceQueueInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]any)
+	fc.Result = res
+	return ec.marshalOJSON2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_calculatePlayerPerformanceQueue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_calculatePlayerPerformanceQueue_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -19394,6 +19582,54 @@ func (ec *executionContext) unmarshalInputPlayerPerformanceInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPlayerPerformanceQueueInput(ctx context.Context, obj any) (model.PlayerPerformanceQueueInput, error) {
+	var it model.PlayerPerformanceQueueInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"playerId", "gameId", "dbIndex", "CallbackUrl"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "playerId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlayerID = data
+		case "gameId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GameID = data
+		case "dbIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbIndex"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DbIndex = data
+		case "CallbackUrl":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("CallbackUrl"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CallbackURL = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputStageInput(ctx context.Context, obj any) (model.StageInput, error) {
 	var it model.StageInput
 	asMap := map[string]any{}
@@ -21201,6 +21437,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_calculatePlayerPerformance(ctx, field)
 			})
+		case "calculatePlayerPerformanceRaw":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_calculatePlayerPerformanceRaw(ctx, field)
+			})
+		case "calculatePlayerPerformanceQueue":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_calculatePlayerPerformanceQueue(ctx, field)
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22666,6 +22910,11 @@ func (ec *executionContext) unmarshalNParameterValueInput2ᚖjobfaiᚑanalytics�
 
 func (ec *executionContext) unmarshalNPlayerPerformanceInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐPlayerPerformanceInput(ctx context.Context, v any) (model.PlayerPerformanceInput, error) {
 	res, err := ec.unmarshalInputPlayerPerformanceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPlayerPerformanceQueueInput2jobfaiᚑanalyticsᚋinternalᚋgraphᚋmodelᚐPlayerPerformanceQueueInput(ctx context.Context, v any) (model.PlayerPerformanceQueueInput, error) {
+	res, err := ec.unmarshalInputPlayerPerformanceQueueInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

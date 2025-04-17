@@ -218,6 +218,13 @@ type PlayerPerformanceInput struct {
 	DbIndex  string `json:"dbIndex"`
 }
 
+type PlayerPerformanceQueueInput struct {
+	PlayerID    string `json:"playerId"`
+	GameID      string `json:"gameId"`
+	DbIndex     string `json:"dbIndex"`
+	CallbackURL string `json:"CallbackUrl"`
+}
+
 type Query struct {
 }
 
